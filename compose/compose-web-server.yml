@@ -10,6 +10,11 @@ services:
       - ../proto:/proto
     networks:
       - rootstock
+    depends_on:
+      app-postgres:
+        condition: service_healthy
+      otel-collector:
+        condition: service_started
 
 networks:
   rootstock:

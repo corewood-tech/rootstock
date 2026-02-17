@@ -1,6 +1,7 @@
 COMPOSE_FILES := -f $(CURDIR)/compose/compose-data.yml \
                 -f $(CURDIR)/compose/compose-identity.yml \
                 -f $(CURDIR)/compose/compose-proxy.yml \
+                -f $(CURDIR)/compose/compose-observability.yml \
                 -f $(CURDIR)/compose/compose-web-server.yml
 
 .PHONY: up down proto

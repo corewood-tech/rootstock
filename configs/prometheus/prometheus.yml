@@ -1,0 +1,12 @@
+# Prometheus config — receives metrics via OTLP push from the OTel Collector.
+# No scrape targets needed; the collector pushes via /api/v1/otlp.
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+# Self-scrape for Prometheus health metrics.
+scrape_configs:
+  - job_name: prometheus
+    static_configs:
+      - targets: ["localhost:9090"]

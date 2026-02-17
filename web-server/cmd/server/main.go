@@ -10,11 +10,17 @@ import (
 	"syscall"
 
 	"connectrpc.com/connect"
+	"connectrpc.com/otelconnect"
 
 	"rootstock/web-server/config"
+	"rootstock/web-server/global/events"
+	"rootstock/web-server/global/observability"
 	connecthandlers "rootstock/web-server/handlers/connect"
 	"rootstock/web-server/proto/rootstock/v1/rootstockv1connect"
+	sqlconnect "rootstock/web-server/repo/sql/connect"
 	"rootstock/web-server/server"
+
+	"go.opentelemetry.io/contrib/instrumentation/runtime"
 )
 
 func main() {
@@ -33,7 +39,37 @@ func run() error {
 		return fmt.Errorf("load config: %w", err)
 	}
 
-	interceptors := connect.WithInterceptors(server.BinaryOnlyInterceptor())
+	// Observability — first thing after config
+	if err := observability.Initialize(ctx, cfg.Observability); err != nil {
+		return fmt.Errorf("initialize observability: %w", err)
+	}
+	defer observability.Shutdown(ctx)
+
+	logger := observability.GetLogger("main")
+
+	// Database pool
+	pool, err := sqlconnect.OpenPostgres(ctx, cfg.Database.Postgres)
+	if err != nil {
+		return fmt.Errorf("open postgres: %w", err)
+	}
+	defer pool.Close()
+
+	// Events (DBOS) — uses injected pool
+	if err := events.Initialize(ctx, pool, cfg.Events.AppName); err != nil {
+		return fmt.Errorf("initialize events: %w", err)
+	}
+	defer events.Shutdown()
+
+	// Runtime metrics (goroutines, memory, GC)
+	if err := runtime.Start(); err != nil {
+		return fmt.Errorf("start runtime metrics: %w", err)
+	}
+
+	otelInterceptor, err := otelconnect.NewInterceptor()
+	if err != nil {
+		return fmt.Errorf("create otel interceptor: %w", err)
+	}
+	interceptors := connect.WithInterceptors(otelInterceptor, server.BinaryOnlyInterceptor())
 
 	healthHandler := connecthandlers.NewHealthServiceHandler()
 	path, handler := rootstockv1connect.NewHealthServiceHandler(healthHandler, interceptors)
@@ -51,7 +87,7 @@ func run() error {
 
 	errChan := make(chan error, 1)
 	go func() {
-		fmt.Printf("server listening on %s\n", addr)
+		logger.Info(ctx, "server listening", map[string]interface{}{"addr": addr})
 		if err := httpServer.Serve(lis); err != nil && err != http.ErrServerClosed {
 			errChan <- fmt.Errorf("serve: %w", err)
 		}
@@ -59,7 +95,7 @@ func run() error {
 
 	select {
 	case <-ctx.Done():
-		fmt.Println("shutting down server...")
+		logger.Info(ctx, "shutting down server...", nil)
 		return httpServer.Close()
 	case err := <-errChan:
 		return err

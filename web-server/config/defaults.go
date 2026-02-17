@@ -8,12 +8,12 @@ func defaults() Config {
 		},
 		Database: DatabaseConfig{
 			Postgres: PostgresConfig{
-				Host:    "localhost",
-				Port:    5432,
-				User:    "rootstock",
+				Host:     "app-postgres",
+				Port:     5432,
+				User:     "rootstock",
 				Password: "rootstock",
-				DBName:  "rootstock",
-				SSLMode: "disable",
+				DBName:   "rootstock",
+				SSLMode:  "disable",
 			},
 		},
 		Identity: IdentityConfig{
@@ -31,6 +31,12 @@ func defaults() Config {
 			TraceExporter: "stdout",
 			ServiceName:   "rootstock",
 			Endpoint:      "localhost:4317",
+			EnableTraces:  true,
+			EnableMetrics: false,
+			EnableLogs:    true,
+		},
+		Events: EventsConfig{
+			AppName: "rootstock",
 		},
 	}
 }

@@ -1,5 +1,5 @@
 services:
-  postgres:
+  zitadel-postgres:
     restart: unless-stopped
     image: postgres:17
     environment:
@@ -14,11 +14,31 @@ services:
     networks:
       - rootstock
     volumes:
-      - postgres-data:/var/lib/postgresql/data:rw
+      - zitadel-postgres-data:/var/lib/postgresql/data:rw
+
+  app-postgres:
+    restart: unless-stopped
+    image: postgres:17
+    environment:
+      PGUSER: rootstock
+      POSTGRES_USER: rootstock
+      POSTGRES_PASSWORD: rootstock
+      POSTGRES_DB: rootstock
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -d rootstock -U rootstock"]
+      interval: 10s
+      timeout: 30s
+      retries: 5
+      start_period: 20s
+    networks:
+      - rootstock
+    volumes:
+      - app-postgres-data:/var/lib/postgresql/data:rw
 
 networks:
   rootstock:
     name: rootstock
 
 volumes:
-  postgres-data:
+  zitadel-postgres-data:
+  app-postgres-data:

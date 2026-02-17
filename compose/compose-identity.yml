@@ -10,7 +10,7 @@ services:
       ZITADEL_TLS_ENABLED: false
 
       # Database connection — admin (migrations)
-      ZITADEL_DATABASE_POSTGRES_HOST: postgres
+      ZITADEL_DATABASE_POSTGRES_HOST: zitadel-postgres
       ZITADEL_DATABASE_POSTGRES_PORT: 5432
       ZITADEL_DATABASE_POSTGRES_DATABASE: zitadel
       ZITADEL_DATABASE_POSTGRES_ADMIN_USERNAME: postgres
@@ -48,7 +48,7 @@ services:
     networks:
       - rootstock
     depends_on:
-      postgres:
+      zitadel-postgres:
         condition: service_healthy
 
   zitadel-login:

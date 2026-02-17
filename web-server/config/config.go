@@ -19,6 +19,7 @@ type Config struct {
 	Identity      IdentityConfig      `koanf:"identity"`
 	Authorization AuthorizationConfig `koanf:"authorization"`
 	Observability ObservabilityConfig `koanf:"observability"`
+	Events        EventsConfig        `koanf:"events"`
 }
 
 type ServerConfig struct {
@@ -61,6 +62,13 @@ type ObservabilityConfig struct {
 	TraceExporter string `koanf:"trace_exporter"`
 	ServiceName   string `koanf:"service_name"`
 	Endpoint      string `koanf:"endpoint"`
+	EnableTraces  bool   `koanf:"enable_traces"`
+	EnableMetrics bool   `koanf:"enable_metrics"`
+	EnableLogs    bool   `koanf:"enable_logs"`
+}
+
+type EventsConfig struct {
+	AppName string `koanf:"app_name"`
 }
 
 // Load builds the config by layering: defaults → YAML file → env vars → CLI flags.

@@ -4,7 +4,7 @@ server:
 
 database:
   postgres:
-    host: postgres
+    host: app-postgres
     port: 5432
     user: rootstock
     password: rootstock
@@ -21,6 +21,12 @@ authorization:
     policy_path: /policies
 
 observability:
-  trace_exporter: stdout
+  trace_exporter: otlp
   service_name: rootstock
-  endpoint: otel-collector:4317
+  endpoint: otel-collector:4318
+  enable_traces: true
+  enable_metrics: true
+  enable_logs: true
+
+events:
+  app_name: rootstock
