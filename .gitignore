@@ -22,6 +22,9 @@ tmp/
 *.swo
 *~
 
+# Grapher (experimental JIT knowledge graph)
+grapher/
+
 # OS
 .DS_Store
 Thumbs.db
