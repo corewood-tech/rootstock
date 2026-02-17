@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package rootstock.v1;
+
+option go_package = "rootstock/web-server/proto/rootstock/v1;rootstockv1";
+
+service HealthService {
+  rpc Check(CheckRequest) returns (CheckResponse);
+}
+
+message CheckRequest {}
+
+message CheckResponse {
+  string status = 1;
+}

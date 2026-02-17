@@ -1,0 +1,74 @@
+services:
+  zitadel:
+    restart: unless-stopped
+    image: ghcr.io/zitadel/zitadel:v4.11.0
+    command: start-from-init --masterkey "MasterkeyNeedsToHave32Characters"
+    environment:
+      ZITADEL_EXTERNALDOMAIN: localhost
+      ZITADEL_EXTERNALPORT: 9999
+      ZITADEL_EXTERNALSECURE: false
+      ZITADEL_TLS_ENABLED: false
+
+      # Database connection — admin (migrations)
+      ZITADEL_DATABASE_POSTGRES_HOST: postgres
+      ZITADEL_DATABASE_POSTGRES_PORT: 5432
+      ZITADEL_DATABASE_POSTGRES_DATABASE: zitadel
+      ZITADEL_DATABASE_POSTGRES_ADMIN_USERNAME: postgres
+      ZITADEL_DATABASE_POSTGRES_ADMIN_PASSWORD: postgres
+      ZITADEL_DATABASE_POSTGRES_ADMIN_SSL_MODE: disable
+
+      # Database connection — application (runtime)
+      ZITADEL_DATABASE_POSTGRES_USER_USERNAME: zitadel
+      ZITADEL_DATABASE_POSTGRES_USER_PASSWORD: zitadel
+      ZITADEL_DATABASE_POSTGRES_USER_SSL_MODE: disable
+
+      # First instance setup
+      ZITADEL_FIRSTINSTANCE_ORG_HUMAN_PASSWORDCHANGEREQUIRED: false
+      ZITADEL_FIRSTINSTANCE_LOGINCLIENTPATPATH: /zitadel-data/login-client.pat
+      ZITADEL_FIRSTINSTANCE_ORG_LOGINCLIENT_MACHINE_USERNAME: login-client
+      ZITADEL_FIRSTINSTANCE_ORG_LOGINCLIENT_MACHINE_NAME: Automatically Initialized IAM_LOGIN_CLIENT
+      ZITADEL_FIRSTINSTANCE_ORG_LOGINCLIENT_PAT_EXPIRATIONDATE: "2029-01-01T00:00:00Z"
+
+      # Login v2 UI
+      ZITADEL_DEFAULTINSTANCE_FEATURES_LOGINV2_REQUIRED: true
+      ZITADEL_DEFAULTINSTANCE_FEATURES_LOGINV2_BASEURI: http://localhost:9999/ui/v2/login/
+      ZITADEL_OIDC_DEFAULTLOGINURLV2: http://localhost:9999/ui/v2/login/login?authRequest=
+      ZITADEL_OIDC_DEFAULTLOGOUTURLV2: http://localhost:9999/ui/v2/login/logout?post_logout_redirect=
+      ZITADEL_SAML_DEFAULTLOGINURLV2: http://localhost:9999/ui/v2/login/login?samlRequest=
+
+    user: "0"
+    volumes:
+      - zitadel-data:/zitadel-data
+    healthcheck:
+      test: ["CMD", "/app/zitadel", "ready"]
+      interval: 10s
+      timeout: 60s
+      retries: 5
+      start_period: 60s
+    networks:
+      - rootstock
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  zitadel-login:
+    restart: unless-stopped
+    image: ghcr.io/zitadel/zitadel-login:latest
+    environment:
+      ZITADEL_API_URL: http://zitadel:8080
+      NEXT_PUBLIC_BASE_PATH: /ui/v2/login
+      ZITADEL_SERVICE_USER_TOKEN_FILE: /zitadel-data/login-client.pat
+      CUSTOM_REQUEST_HEADERS: "Host:localhost"
+    volumes:
+      - zitadel-data:/zitadel-data:ro
+    networks:
+      - rootstock
+    depends_on:
+      - zitadel
+
+networks:
+  rootstock:
+    name: rootstock
+
+volumes:
+  zitadel-data:

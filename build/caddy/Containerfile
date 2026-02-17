@@ -1,0 +1,14 @@
+FROM caddy:2-builder AS builder
+
+RUN apk add --no-cache gcc musl-dev brotli-dev
+
+ENV CGO_ENABLED=1
+
+RUN xcaddy build \
+    --with github.com/dunglas/caddy-cbrotli
+
+FROM caddy:2-alpine
+
+RUN apk add --no-cache brotli
+
+COPY --from=builder /usr/bin/caddy /usr/bin/caddy

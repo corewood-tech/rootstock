@@ -1,0 +1,16 @@
+services:
+  web-server:
+    build:
+      context: ../
+      dockerfile: ./build/web-server/Containerfile.dev
+    ports:
+      - "8080:8080"
+    volumes:
+      - ../web-server:/src
+      - ../proto:/proto
+    networks:
+      - rootstock
+
+networks:
+  rootstock:
+    name: rootstock

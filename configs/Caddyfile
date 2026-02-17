@@ -1,0 +1,16 @@
+:9999 {
+	# Login v2 UI
+	handle /ui/v2/login/* {
+		reverse_proxy zitadel-login:3000
+	}
+
+	# Zitadel — catch-all
+	handle {
+		reverse_proxy zitadel:8080 {
+			header_up Host localhost:9999
+			header_up X-Forwarded-For {http.request.remote}
+			header_up X-Forwarded-Proto {http.request.scheme}
+			header_up X-Forwarded-Host localhost:9999
+		}
+	}
+}

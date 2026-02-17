@@ -1,0 +1,15 @@
+services:
+  caddy:
+    build:
+      context: ../
+      dockerfile: ./build/caddy/Containerfile
+    ports:
+      - "9999:9999"
+    volumes:
+      - ../configs/Caddyfile:/etc/caddy/Caddyfile
+    networks:
+      - rootstock
+
+networks:
+  rootstock:
+    name: rootstock

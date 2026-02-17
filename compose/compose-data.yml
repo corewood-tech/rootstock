@@ -1,0 +1,24 @@
+services:
+  postgres:
+    restart: unless-stopped
+    image: postgres:17
+    environment:
+      PGUSER: postgres
+      POSTGRES_PASSWORD: postgres
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -d zitadel -U postgres"]
+      interval: 10s
+      timeout: 30s
+      retries: 5
+      start_period: 20s
+    networks:
+      - rootstock
+    volumes:
+      - postgres-data:/var/lib/postgresql/data:rw
+
+networks:
+  rootstock:
+    name: rootstock
+
+volumes:
+  postgres-data:

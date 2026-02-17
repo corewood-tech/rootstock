@@ -1,0 +1,13 @@
+FROM golang:1.25rc2-alpine
+
+RUN go install github.com/air-verse/air@latest && \
+    go install google.golang.org/protobuf/cmd/protoc-gen-go@latest && \
+    go install connectrpc.com/connect/cmd/protoc-gen-connect-go@latest && \
+    go install github.com/bufbuild/buf/cmd/buf@latest
+
+WORKDIR /src
+
+COPY build/web-server/dev/.air.toml /etc/air/.air.toml
+COPY web-server/go.mod ./
+
+ENTRYPOINT ["air", "-c", "/etc/air/.air.toml"]

@@ -1,0 +1,26 @@
+server:
+  host: 0.0.0.0
+  port: 8080
+
+database:
+  postgres:
+    host: postgres
+    port: 5432
+    user: rootstock
+    password: rootstock
+    dbname: rootstock
+    sslmode: disable
+
+identity:
+  zitadel:
+    host: zitadel
+    port: 8080
+
+authorization:
+  opa:
+    policy_path: /policies
+
+observability:
+  trace_exporter: stdout
+  service_name: rootstock
+  endpoint: otel-collector:4317
