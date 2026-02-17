@@ -1,0 +1,27 @@
+# Go
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+vendor/
+
+# Svelte / npm
+node_modules/
+dist/
+.svelte-kit/
+.env
+.env.*
+
+# Tmp
+tmp/
+*.tmp
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
