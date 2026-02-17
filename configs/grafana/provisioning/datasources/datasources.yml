@@ -4,7 +4,7 @@ datasources:
   - name: Prometheus
     uid: prometheus
     type: prometheus
-    url: http://prometheus:9090
+    url: http://prometheus:9090/prometheus
     isDefault: true
     jsonData:
       timeInterval: "15s"

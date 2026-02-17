@@ -17,6 +17,7 @@ import (
 	"rootstock/web-server/global/observability"
 	connecthandlers "rootstock/web-server/handlers/connect"
 	"rootstock/web-server/proto/rootstock/v1/rootstockv1connect"
+	"rootstock/web-server/repo/authorization"
 	sqlconnect "rootstock/web-server/repo/sql/connect"
 	"rootstock/web-server/server"
 
@@ -65,11 +66,17 @@ func run() error {
 		return fmt.Errorf("start runtime metrics: %w", err)
 	}
 
+	// Authorization (OPA)
+	authzRepo := authorization.NewOPARepository()
+	if err := authzRepo.Recompile(ctx); err != nil {
+		return fmt.Errorf("compile authorization policy: %w", err)
+	}
+
 	otelInterceptor, err := otelconnect.NewInterceptor()
 	if err != nil {
 		return fmt.Errorf("create otel interceptor: %w", err)
 	}
-	interceptors := connect.WithInterceptors(otelInterceptor, server.BinaryOnlyInterceptor())
+	interceptors := connect.WithInterceptors(otelInterceptor, server.AuthorizationInterceptor(authzRepo), server.BinaryOnlyInterceptor())
 
 	healthHandler := connecthandlers.NewHealthServiceHandler()
 	path, handler := rootstockv1connect.NewHealthServiceHandler(healthHandler, interceptors)

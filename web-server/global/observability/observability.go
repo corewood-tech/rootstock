@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log/slog"
 	"os"
-	"sync"
 
 	"go.opentelemetry.io/contrib/bridges/otelslog"
 	"go.opentelemetry.io/otel"
@@ -34,23 +33,42 @@ type Logger interface {
 	Debug(ctx context.Context, msg string, attrs map[string]interface{})
 }
 
+// providers holds the initialized OTel providers.
+type providers struct {
+	tracer *sdktrace.TracerProvider
+	meter  *sdkmetric.MeterProvider
+	logger *sdklog.LoggerProvider
+}
+
+type getTracerReq struct {
+	name string
+	resp chan trace.Tracer
+}
+
+type getMeterReq struct {
+	name string
+	resp chan metric.Meter
+}
+
+type getLoggerReq struct {
+	name string
+	resp chan Logger
+}
+
+type shutdownReq struct {
+	ctx  context.Context
+	resp chan error
+}
+
 var (
-	mu             sync.RWMutex
-	tracerProvider *sdktrace.TracerProvider
-	meterProvider  *sdkmetric.MeterProvider
-	logProvider    *sdklog.LoggerProvider
-	initialized    bool
+	tracerCh   = make(chan getTracerReq)
+	meterCh    = make(chan getMeterReq)
+	loggerCh   = make(chan getLoggerReq)
+	shutdownCh = make(chan shutdownReq)
 )
 
-// Initialize sets up the global OTel providers based on the given config.
+// Initialize sets up the global OTel providers and starts the manager goroutine.
 func Initialize(ctx context.Context, cfg config.ObservabilityConfig) error {
-	mu.Lock()
-	defer mu.Unlock()
-
-	if initialized {
-		return nil
-	}
-
 	res, err := resource.New(ctx,
 		resource.WithAttributes(
 			semconv.ServiceName(cfg.ServiceName),
@@ -60,101 +78,115 @@ func Initialize(ctx context.Context, cfg config.ObservabilityConfig) error {
 		return fmt.Errorf("create resource: %w", err)
 	}
 
+	p := &providers{}
+
 	if cfg.EnableTraces {
-		if err := initTracer(ctx, cfg, res); err != nil {
+		if err := initTracer(ctx, cfg, res, p); err != nil {
 			return fmt.Errorf("init tracer: %w", err)
 		}
 	}
 
 	if cfg.EnableMetrics {
-		if err := initMeter(ctx, cfg, res); err != nil {
+		if err := initMeter(ctx, cfg, res, p); err != nil {
 			return fmt.Errorf("init meter: %w", err)
 		}
 	}
 
 	if cfg.EnableLogs {
-		if err := initLogger(ctx, cfg, res); err != nil {
+		if err := initLogger(ctx, cfg, res, p); err != nil {
 			return fmt.Errorf("init logger: %w", err)
 		}
 	}
 
-	initialized = true
+	go manage(p)
 	return nil
+}
+
+// manage owns all provider state. All access goes through channels.
+func manage(p *providers) {
+	for {
+		select {
+		case req := <-tracerCh:
+			if p.tracer != nil {
+				req.resp <- p.tracer.Tracer(req.name)
+			} else {
+				req.resp <- otel.Tracer(req.name)
+			}
+
+		case req := <-meterCh:
+			if p.meter != nil {
+				req.resp <- p.meter.Meter(req.name)
+			} else {
+				req.resp <- otel.Meter(req.name)
+			}
+
+		case req := <-loggerCh:
+			var handler slog.Handler
+			if p.logger != nil {
+				handler = otelslog.NewHandler(req.name, otelslog.WithLoggerProvider(p.logger))
+			} else {
+				handler = slog.NewJSONHandler(os.Stdout, nil)
+			}
+			req.resp <- &slogLogger{
+				logger: slog.New(handler).With("component", req.name),
+			}
+
+		case req := <-shutdownCh:
+			var errs []error
+			if p.tracer != nil {
+				if err := p.tracer.Shutdown(req.ctx); err != nil {
+					errs = append(errs, fmt.Errorf("shutdown tracer: %w", err))
+				}
+				p.tracer = nil
+			}
+			if p.meter != nil {
+				if err := p.meter.Shutdown(req.ctx); err != nil {
+					errs = append(errs, fmt.Errorf("shutdown meter: %w", err))
+				}
+				p.meter = nil
+			}
+			if p.logger != nil {
+				if err := p.logger.Shutdown(req.ctx); err != nil {
+					errs = append(errs, fmt.Errorf("shutdown logger: %w", err))
+				}
+				p.logger = nil
+			}
+			if len(errs) > 0 {
+				req.resp <- fmt.Errorf("shutdown errors: %v", errs)
+			} else {
+				req.resp <- nil
+			}
+			return
+		}
+	}
 }
 
 // Shutdown gracefully shuts down all providers.
 func Shutdown(ctx context.Context) error {
-	mu.Lock()
-	defer mu.Unlock()
-
-	var errs []error
-
-	if tracerProvider != nil {
-		if err := tracerProvider.Shutdown(ctx); err != nil {
-			errs = append(errs, fmt.Errorf("shutdown tracer: %w", err))
-		}
-		tracerProvider = nil
-	}
-
-	if meterProvider != nil {
-		if err := meterProvider.Shutdown(ctx); err != nil {
-			errs = append(errs, fmt.Errorf("shutdown meter: %w", err))
-		}
-		meterProvider = nil
-	}
-
-	if logProvider != nil {
-		if err := logProvider.Shutdown(ctx); err != nil {
-			errs = append(errs, fmt.Errorf("shutdown logger: %w", err))
-		}
-		logProvider = nil
-	}
-
-	initialized = false
-
-	if len(errs) > 0 {
-		return fmt.Errorf("shutdown errors: %v", errs)
-	}
-	return nil
+	resp := make(chan error, 1)
+	shutdownCh <- shutdownReq{ctx: ctx, resp: resp}
+	return <-resp
 }
 
 // GetTracer returns a named tracer from the global provider.
 func GetTracer(name string) trace.Tracer {
-	mu.RLock()
-	defer mu.RUnlock()
-
-	if tracerProvider != nil {
-		return tracerProvider.Tracer(name)
-	}
-	return otel.Tracer(name)
+	resp := make(chan trace.Tracer, 1)
+	tracerCh <- getTracerReq{name: name, resp: resp}
+	return <-resp
 }
 
 // GetMeter returns a named meter from the global provider.
 func GetMeter(name string) metric.Meter {
-	mu.RLock()
-	defer mu.RUnlock()
-
-	if meterProvider != nil {
-		return meterProvider.Meter(name)
-	}
-	return otel.Meter(name)
+	resp := make(chan metric.Meter, 1)
+	meterCh <- getMeterReq{name: name, resp: resp}
+	return <-resp
 }
 
 // GetLogger returns a Logger backed by OTel if available, otherwise slog.
 func GetLogger(name string) Logger {
-	mu.RLock()
-	defer mu.RUnlock()
-
-	var handler slog.Handler
-	if logProvider != nil {
-		handler = otelslog.NewHandler(name, otelslog.WithLoggerProvider(logProvider))
-	} else {
-		handler = slog.NewJSONHandler(os.Stdout, nil)
-	}
-
-	return &slogLogger{
-		logger: slog.New(handler).With("component", name),
-	}
+	resp := make(chan Logger, 1)
+	loggerCh <- getLoggerReq{name: name, resp: resp}
+	return <-resp
 }
 
 // slogLogger implements Logger using the standard library slog package.
@@ -189,7 +221,7 @@ func attrsToSlogArgs(attrs map[string]interface{}) []any {
 	return args
 }
 
-func initTracer(ctx context.Context, cfg config.ObservabilityConfig, res *resource.Resource) error {
+func initTracer(ctx context.Context, cfg config.ObservabilityConfig, res *resource.Resource, p *providers) error {
 	var exporter sdktrace.SpanExporter
 	var err error
 
@@ -207,15 +239,15 @@ func initTracer(ctx context.Context, cfg config.ObservabilityConfig, res *resour
 		return fmt.Errorf("create trace exporter: %w", err)
 	}
 
-	tracerProvider = sdktrace.NewTracerProvider(
+	p.tracer = sdktrace.NewTracerProvider(
 		sdktrace.WithBatcher(exporter),
 		sdktrace.WithResource(res),
 	)
-	otel.SetTracerProvider(tracerProvider)
+	otel.SetTracerProvider(p.tracer)
 	return nil
 }
 
-func initMeter(ctx context.Context, cfg config.ObservabilityConfig, res *resource.Resource) error {
+func initMeter(ctx context.Context, cfg config.ObservabilityConfig, res *resource.Resource, p *providers) error {
 	var exporter sdkmetric.Exporter
 	var err error
 
@@ -233,15 +265,15 @@ func initMeter(ctx context.Context, cfg config.ObservabilityConfig, res *resourc
 		return fmt.Errorf("create metric exporter: %w", err)
 	}
 
-	meterProvider = sdkmetric.NewMeterProvider(
+	p.meter = sdkmetric.NewMeterProvider(
 		sdkmetric.WithReader(sdkmetric.NewPeriodicReader(exporter)),
 		sdkmetric.WithResource(res),
 	)
-	otel.SetMeterProvider(meterProvider)
+	otel.SetMeterProvider(p.meter)
 	return nil
 }
 
-func initLogger(ctx context.Context, cfg config.ObservabilityConfig, res *resource.Resource) error {
+func initLogger(ctx context.Context, cfg config.ObservabilityConfig, res *resource.Resource, p *providers) error {
 	var exporter sdklog.Exporter
 	var err error
 
@@ -259,7 +291,7 @@ func initLogger(ctx context.Context, cfg config.ObservabilityConfig, res *resour
 		return fmt.Errorf("create log exporter: %w", err)
 	}
 
-	logProvider = sdklog.NewLoggerProvider(
+	p.logger = sdklog.NewLoggerProvider(
 		sdklog.WithProcessor(sdklog.NewBatchProcessor(exporter)),
 		sdklog.WithResource(res),
 	)
