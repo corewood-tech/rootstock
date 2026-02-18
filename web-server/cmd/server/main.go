@@ -18,6 +18,8 @@ import (
 	connecthandlers "rootstock/web-server/handlers/connect"
 	"rootstock/web-server/proto/rootstock/v1/rootstockv1connect"
 	"rootstock/web-server/repo/authorization"
+	eventsrepo "rootstock/web-server/repo/events"
+	o11yrepo "rootstock/web-server/repo/observability"
 	sqlconnect "rootstock/web-server/repo/sql/connect"
 	"rootstock/web-server/server"
 
@@ -40,10 +42,12 @@ func run() error {
 		return fmt.Errorf("load config: %w", err)
 	}
 
-	// Observability — first thing after config
-	if err := observability.Initialize(ctx, cfg.Observability); err != nil {
-		return fmt.Errorf("initialize observability: %w", err)
+	// Observability repo — first thing after config
+	o11y, err := o11yrepo.NewOTelRepository(ctx, cfg.Observability)
+	if err != nil {
+		return fmt.Errorf("create observability repo: %w", err)
 	}
+	observability.Initialize(o11y)
 	defer observability.Shutdown(ctx)
 
 	logger := observability.GetLogger("main")
@@ -55,10 +59,12 @@ func run() error {
 	}
 	defer pool.Close()
 
-	// Events (DBOS) — uses injected pool
-	if err := events.Initialize(ctx, pool, cfg.Events.AppName); err != nil {
-		return fmt.Errorf("initialize events: %w", err)
+	// Events repo — uses injected pool
+	evts, err := eventsrepo.NewDBOSRepository(ctx, pool, cfg.Events.AppName)
+	if err != nil {
+		return fmt.Errorf("create events repo: %w", err)
 	}
+	events.Initialize(evts)
 	defer events.Shutdown()
 
 	// Runtime metrics (goroutines, memory, GC)

@@ -9,7 +9,8 @@ import (
 
 	"github.com/open-policy-agent/opa/v1/rego"
 
-	"rootstock/web-server/global/observability"
+	o11yglobal "rootstock/web-server/global/observability"
+	o11yrepo "rootstock/web-server/repo/observability"
 )
 
 //go:embed policies/authz.rego
@@ -38,7 +39,7 @@ type stopReq struct {
 type opaState struct {
 	prepared    rego.PreparedEvalQuery
 	initialized bool
-	logger      observability.Logger
+	logger      o11yrepo.Logger
 	evalCh      chan evalReq
 	recompileCh chan recompileReq
 	stopCh      chan stopReq
@@ -48,7 +49,7 @@ type opaState struct {
 // It starts a manager goroutine that owns all mutable state.
 func NewOPARepository() Repository {
 	s := &opaState{
-		logger:      observability.GetLogger("authorization"),
+		logger:      o11yglobal.GetLogger("authorization"),
 		evalCh:      make(chan evalReq),
 		recompileCh: make(chan recompileReq),
 		stopCh:      make(chan stopReq),

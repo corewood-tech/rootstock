@@ -1,16 +1,11 @@
 package events
 
 import (
-	"context"
-	"fmt"
-	"time"
-
-	"github.com/dbos-inc/dbos-transact-golang/dbos"
-	"github.com/jackc/pgx/v5/pgxpool"
+	eventsrepo "rootstock/web-server/repo/events"
 )
 
 type getContextReq struct {
-	resp chan dbos.DBOSContext
+	resp chan eventsrepo.WorkflowContext
 }
 
 type shutdownReq struct {
@@ -22,53 +17,36 @@ var (
 	shutdownCh   = make(chan shutdownReq)
 )
 
-// Initialize creates a DBOS context using the provided pool and launches it.
-// The caller owns the pool lifecycle — Shutdown does not close it.
-func Initialize(ctx context.Context, pool *pgxpool.Pool, appName string) error {
-	cfg := dbos.Config{
-		AppName:      appName,
-		SystemDBPool: pool,
-	}
-
-	dbosCtx, err := dbos.NewDBOSContext(ctx, cfg)
-	if err != nil {
-		return fmt.Errorf("create DBOS context: %w", err)
-	}
-
-	if err := dbos.Launch(dbosCtx); err != nil {
-		return fmt.Errorf("launch DBOS: %w", err)
-	}
-
-	go manage(dbosCtx)
-	return nil
+// Initialize starts the manager goroutine that delegates to the provided repository.
+func Initialize(repo eventsrepo.Repository) {
+	go manage(repo)
 }
 
-// manage owns the DBOS context. All access goes through channels.
-func manage(dbosCtx dbos.DBOSContext) {
+// manage owns the repo reference. All access goes through channels.
+func manage(repo eventsrepo.Repository) {
 	for {
 		select {
 		case req := <-getContextCh:
-			req.resp <- dbosCtx
+			req.resp <- repo.GetContext()
 
 		case req := <-shutdownCh:
-			dbos.Shutdown(dbosCtx, 30*time.Second)
+			repo.Shutdown()
 			req.resp <- struct{}{}
 			return
 		}
 	}
 }
 
-// Shutdown gracefully shuts down the DBOS runtime.
-// It does not close the database pool.
+// Shutdown gracefully shuts down the events runtime.
 func Shutdown() {
 	resp := make(chan struct{}, 1)
 	shutdownCh <- shutdownReq{resp: resp}
 	<-resp
 }
 
-// GetContext returns the DBOS context for workflow execution.
-func GetContext() dbos.DBOSContext {
-	resp := make(chan dbos.DBOSContext, 1)
+// GetContext returns the workflow context for event execution.
+func GetContext() eventsrepo.WorkflowContext {
+	resp := make(chan eventsrepo.WorkflowContext, 1)
 	getContextCh <- getContextReq{resp: resp}
 	return <-resp
 }

@@ -28,79 +28,52 @@ This repository demonstrates the effectiveness of ROOTSTOCK by showing a complet
 
 ## Architecture
 
-ROOTSTOCK follows [Clean Architecture](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html) principles. The core idea: **source code dependencies point inward, while data flows outward**. Inner layers define interfaces; outer layers implement them. This keeps business logic independent of frameworks, databases, and transport — making the system testable, swappable, and resilient to change ([summary by Martin](https://blog.cleancoder.com/uncle-bob/2011/11/22/Clean-Architecture.html)).
+ROOTSTOCK uses [volatility-based decomposition](https://www.informit.com/articles/article.aspx?p=2995357&seqNum=2) to determine component boundaries — things that change independently are isolated behind separate boundaries so that a change in one area doesn't ripple across the system. [Clean Architecture](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html) governs the dependency direction between those components: **source code dependencies always point inward**, from infrastructure toward domain logic.
 
-### Application Layers
+### Request Pipeline
 
-The request pipeline has four distinct layers, each with a single responsibility:
+Every request flows through a four-layer pipeline. Each layer has a single responsibility and imports only from the layer below it.
 
 | Layer | Responsibility |
 |-------|---------------|
-| **Handlers** | Protocol translation, identity resolution, auth enforcement |
+| **Handlers** | Protocol translation and auth — accept a Connect RPC, resolve identity (Zitadel) and authorization (OPA), drop unauthenticated requests at edge, pass auth data explicitly into the flow request |
 | **Flows** | Orchestration and sequencing of operations |
 | **Ops** | Business logic — the actual rules and decisions |
 | **Repo** | Data access and external service integration |
 
-### Dependency Rule
+```
+Handlers → Flows → Ops → Repo → PostgreSQL
+```
 
-Imports always point inward — from infrastructure toward the domain. Nothing in an inner layer knows about anything in an outer layer.
+Dependencies point inward along this pipeline. Nothing in an inner layer knows about anything in an outer layer.
 
 ```mermaid
 graph LR
-    subgraph Outer["Infrastructure"]
-        direction TB
-        DB[(PostgreSQL)]
-        OTEL[OpenTelemetry]
-        DBOS[DBOS Events]
-        Caddy[Caddy Proxy]
-        Zitadel[Zitadel Identity]
-    end
-
-    subgraph Adapters["Interface Adapters"]
-        direction TB
-        Handlers[Handlers]
-        Repo[Repo]
-        Config[Configuration]
-    end
-
-    subgraph Core["Domain Core"]
-        direction TB
-        Flows[Flows]
-        Ops[Ops]
-        Proto[Protobuf Definitions]
-    end
-
-    Handlers -->|imports| Flows
-    Flows -->|imports| Ops
-    Ops -->|imports| Proto
-    Repo -->|imports| Proto
-    DB -.->|implements| Repo
-    Zitadel -.->|implements| Handlers
-
-    style Core fill:#4a7c59,stroke:#2d5016,color:#fff
-    style Adapters fill:#5b8a72,stroke:#3d6b54,color:#fff
-    style Outer fill:#7da68e,stroke:#5b8a72,color:#fff
+    RPC([RPC]) --> Handler
+    Handler --> Global[Global Auth]
+    Global --> AuthRepo[Auth Repo]
+    AuthRepo --> Zitadel([Zitadel])
+    AuthRepo --> OPA([OPA])
+    Handler -.-|unauthenticated| Drop[DROP]
+    Handler -->|auth data in request| Flow
+    Flow --> Op1[Op]
+    Flow --> Op2[Op]
+    Op1 --> Repo1[Repo]
+    Op1 --> Repo2[Repo]
+    Op2 --> Repo2
+    Op2 --> Repo3[Repo]
+    Repo1 --> DB[(PostgreSQL)]
+    Repo2 --> API([3rd Party API])
+    Repo3 --> ObjStore[(Object Store)]
 ```
 
-### Data Flow
+**Handlers** sit at the edge. They resolve the protocol (Connect RPC) and authenticate/authorize via a **global** — the only handler → global → repo path in the system. The auth global calls the auth repo (Zitadel for identity, OPA for authorization). Unauthenticated or unauthorized requests are dropped here — they never reach business logic. Auth-derived data (user ID, roles) is passed **explicitly into the flow request**, giving flows a clean contract with no hidden side-channel dependencies.
 
-Data enters from the outside world and moves inward through the layers. Responses travel back out the same path. The arrows here represent **data movement** — the opposite direction of the dependency arrows above.
+**Flows** orchestrate. A flow checks state and calls whichever ops it needs — any flow can call any op, there is no vertical grouping. Flows do not call repos directly.
 
-```mermaid
-graph LR
-    Client([Client]) -->|request| Caddy
-    Caddy -->|proxy| Server[HTTP Server]
-    Server -->|intercept| Handlers
-    Handlers -->|orchestrate| Flows
-    Flows -->|execute| Ops
-    Ops -->|query| Repo
-    Repo -->|SQL| DB[(PostgreSQL)]
-    DB -->|rows| Repo
-    Repo -->|domain| Ops
-    Ops -->|result| Flows
-    Flows -->|response| Handlers
-    Handlers -->|protobuf| Client
-```
+**Ops** execute business logic. They are the only layer that calls repos, enforcing the Clean Architecture boundary between business rules and data access.
+
+**Observability** is a global concern injected at construction time. It lives in `global/` and calls an **o11y repo** that wraps the specific implementation (currently OpenTelemetry) — the repo obfuscates vendor details so globals are never tied to a specific provider. O11y changes independently from business logic — a different axis of volatility.
 
 ### Initialization Order
 
@@ -126,16 +99,16 @@ rootstock/
 │   ├── global/
 │   │   ├── observability/         # OpenTelemetry traces, metrics, logs
 │   │   └── events/                # DBOS workflow engine
-│   ├── handlers/connect/          # Protocol + auth resolution
+│   ├── handlers/connect/          # Protocol + auth resolution, calls flows
 │   ├── flows/                     # Orchestration + sequencing
 │   ├── ops/                       # Business logic
 │   ├── repo/sql/connect/          # Data access (pgx)
-│   ├── server/                    # HTTP interceptors & middleware
+│   ├── server/                    # Server wiring and middleware
 │   └── proto/rootstock/v1/        # Generated protobuf + Connect code
 ├── compose/                       # Podman/Docker Compose orchestration
 ├── build/                         # Container images (dev & prod)
 └── configs/                       # Service configs (Caddyfile)
 ```
 
-Each directory maps to a single architectural layer. Imports only reach inward: `handlers/` → `flows/` → `ops/` → `repo/`, never the reverse.
+Each directory maps to a single boundary drawn by volatility. Imports along the pipeline point inward: `handlers/` → `flows/` → `ops/` → `repo/`, never the reverse. Auth is resolved at the handler (edge), not as a separate cross-cutting layer. Observability (`global/`) is injected at construction time and changes independently from business logic.
 
