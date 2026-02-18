@@ -1,0 +1,21 @@
+services:
+  ui:
+    build:
+      context: ../
+      dockerfile: ./build/ui/Containerfile.dev
+    volumes:
+      - ../ui/src:/app/src
+      - ../ui/static:/app/static
+      - ../ui/svelte.config.js:/app/svelte.config.js
+      - ../ui/vite.config.js:/app/vite.config.js
+      - ../ui/tsconfig.json:/app/tsconfig.json
+      - ui_node_modules:/app/node_modules
+    networks:
+      - rootstock
+
+volumes:
+  ui_node_modules:
+
+networks:
+  rootstock:
+    name: rootstock

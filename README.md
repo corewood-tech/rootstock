@@ -6,8 +6,29 @@
 
 > Rootstock refers to the established root of a fruit plant that can be grafted with limbs from other trees. Because the established root proves hearty and reliable, the branches grow from its steady supply of nutrients and solid grounding.
 
-A reference architecture for LLM-driven engineering which reliably scales.
-Branch out without uprooting your project.
+ROOTSTOCK serves two purposes:
+- A reference architecture for LLM-driven engineering which reliably scales, designed and used by [Corewood](https://corewood.io). Branch out without uprooting your project.
+- A citizen scientific data collection platform — gamified campaigns connect researchers with citizen scientists who already own the sensors.
+
+## System
+
+Open-source, community-driven science data acquisition.
+
+### Problem
+
+Current methods of acquiring field data for scientific analysis are expensive, slow, and limited in geographic scope. Meanwhile, consumer IoT devices — weather stations, air quality monitors, water sensors, GPS-enabled devices — are already deployed at massive scale in people's homes and backyards. These are distributed mini-labs sitting idle. The **last-mile problem**: there is no standard, low-friction way to connect these consumer devices to active research needs.
+
+### Solution
+
+Researchers create **data campaigns** — structured requests specifying what data they need, where, when, and to what quality standard. Citizen scientists discover campaigns relevant to their location and equipment, connect their IoT devices, and contribute sensor readings. Engagement is incentivized through **gamification and sweepstakes** rather than per-unit compensation, so per-data-point cost approaches zero as the network grows.
+
+| Actor | Role |
+|-------|------|
+| **Researchers** | Define campaigns, set quality thresholds, analyze collected data |
+| **Citizen Scientists** | Discover campaigns, connect IoT devices, contribute readings |
+| **IoT Devices** | Primary data source — untrusted input validated against campaign constraints |
+
+The full requirements specification follows the [Volere template](./spec/).
 
 ## LLM assisted engineering
 
@@ -36,13 +57,13 @@ Every request flows through a four-layer pipeline. Each layer has a single respo
 
 | Layer | Responsibility |
 |-------|---------------|
-| **Handlers** | Protocol translation and auth — accept a Connect RPC, resolve identity (Zitadel) and authorization (OPA), drop unauthenticated requests at edge, pass auth data explicitly into the flow request |
+| **Handlers** | Protocol translation — accept a Connect RPC, run auth, drop unauthorized requests at edge, pass auth data explicitly into the flow request |
 | **Flows** | Orchestration and sequencing of operations |
 | **Ops** | Business logic — the actual rules and decisions |
 | **Repo** | Data access and external service integration |
 
 ```
-Handlers → Flows → Ops → Repo → PostgreSQL
+Handlers → Auth → Flow → Ops → Repo → SQL
 ```
 
 Dependencies point inward along this pipeline. Nothing in an inner layer knows about anything in an outer layer.
@@ -50,24 +71,34 @@ Dependencies point inward along this pipeline. Nothing in an inner layer knows a
 ```mermaid
 graph LR
     RPC([RPC]) --> Handler
-    Handler --> Global[Global Auth]
-    Global --> AuthRepo[Auth Repo]
-    AuthRepo --> Zitadel([Zitadel])
-    AuthRepo --> OPA([OPA])
-    Handler -.-|unauthenticated| Drop[DROP]
-    Handler -->|auth data in request| Flow
+    Handler --> Auth
+    Auth -.-|unauthorized| Drop[DROP]
+    Auth -->|auth data in request| Flow
     Flow --> Op1[Op]
     Flow --> Op2[Op]
     Op1 --> Repo1[Repo]
     Op1 --> Repo2[Repo]
     Op2 --> Repo2
     Op2 --> Repo3[Repo]
-    Repo1 --> DB[(PostgreSQL)]
+    Repo1 --> DB[(SQL)]
     Repo2 --> API([3rd Party API])
     Repo3 --> ObjStore[(Object Store)]
 ```
 
-**Handlers** sit at the edge. They resolve the protocol (Connect RPC) and authenticate/authorize via a **global** — the only handler → global → repo path in the system. The auth global calls the auth repo (Zitadel for identity, OPA for authorization). Unauthenticated or unauthorized requests are dropped here — they never reach business logic. Auth-derived data (user ID, roles) is passed **explicitly into the flow request**, giving flows a clean contract with no hidden side-channel dependencies.
+**Handlers** sit at the edge. They resolve the protocol (Connect RPC) and run **auth** as a sub-flow. Unauthorized requests are dropped here — they never reach business logic. Auth-derived data (user ID, roles) is passed **explicitly into the flow request**, giving flows a clean contract with no hidden side-channel dependencies.
+
+#### Auth Detail
+
+Auth is a global concern that delegates to repos, following the same vendor-obfuscation pattern as observability. The handler calls the auth global, which calls identity and authorization repos. Vendors are implementation details hidden behind repo interfaces.
+
+```mermaid
+graph LR
+    Handler --> AuthGlobal[Auth Global]
+    AuthGlobal --> IdPRepo[Identity Repo]
+    AuthGlobal --> AuthzRepo[Authorization Repo]
+    IdPRepo --> IdP([IdP])
+    AuthzRepo --> Authz([Authz Engine])
+```
 
 **Flows** orchestrate. A flow checks state and calls whichever ops it needs — any flow can call any op, there is no vertical grouping. Flows do not call repos directly.
 
@@ -83,7 +114,7 @@ The application starts up in strict sequential order — each layer depends on t
 graph TD
     A[Config] -->|needed by all| B[Observability]
     B -->|logging available| C[Database Pool]
-    C -->|pool injected| D[Events / DBOS]
+    C -->|pool injected| D[Events]
     D -->|all systems ready| E[HTTP Server + Handlers]
 ```
 
@@ -97,12 +128,16 @@ rootstock/
 │   ├── cmd/server/                # Entry point (main.go)
 │   ├── config/                    # Hierarchical config loading
 │   ├── global/
-│   │   ├── observability/         # OpenTelemetry traces, metrics, logs
-│   │   └── events/                # DBOS workflow engine
+│   │   ├── observability/         # Singleton o11y accessor (delegates to repo)
+│   │   └── events/                # Singleton events accessor (delegates to repo)
 │   ├── handlers/connect/          # Protocol + auth resolution, calls flows
 │   ├── flows/                     # Orchestration + sequencing
 │   ├── ops/                       # Business logic
-│   ├── repo/sql/connect/          # Data access (pgx)
+│   ├── repo/
+│   │   ├── authorization/         # OPA policy evaluation
+│   │   ├── observability/         # OpenTelemetry implementation
+│   │   ├── events/                # DBOS workflow implementation
+│   │   └── sql/connect/           # PostgreSQL connection (pgx)
 │   ├── server/                    # Server wiring and middleware
 │   └── proto/rootstock/v1/        # Generated protobuf + Connect code
 ├── compose/                       # Podman/Docker Compose orchestration
@@ -111,4 +146,72 @@ rootstock/
 ```
 
 Each directory maps to a single boundary drawn by volatility. Imports along the pipeline point inward: `handlers/` → `flows/` → `ops/` → `repo/`, never the reverse. Auth is resolved at the handler (edge), not as a separate cross-cutting layer. Observability (`global/`) is injected at construction time and changes independently from business logic.
+
+## Tech Stack
+
+| Concern | Technology |
+|---------|------------|
+| Language | Go |
+| RPC | [Connect RPC](https://connectrpc.com/) (protobuf) |
+| Database | PostgreSQL ([pgx](https://github.com/jackc/pgx)) |
+| Identity | [Zitadel](https://zitadel.com/) |
+| Authorization | [Open Policy Agent](https://www.openpolicyagent.org/) |
+| Workflow Engine | [DBOS](https://dbos.dev/) |
+| Observability | [OpenTelemetry](https://opentelemetry.io/) → Prometheus, Tempo, Loki, Grafana |
+| Config | [koanf](https://github.com/knadh/koanf) (YAML → env → flags) |
+| Reverse Proxy | [Caddy](https://caddyserver.com/) |
+| Containers | Podman Compose |
+
+## Prerequisites
+
+- [Podman](https://podman.io/) with `podman compose` (or Docker with `docker compose`)
+- That's it — Go, buf, air, and all other tooling run inside containers.
+
+## Getting Started
+
+```bash
+git clone https://github.com/corewood-io/rootstock.git
+cd rootstock
+make up
+```
+
+This starts the full stack: web server, databases, identity provider, observability, and reverse proxy.
+
+The web server hot reloads on file changes — edit Go code and it rebuilds automatically.
+
+### Verify
+
+Health check (binary protobuf — JSON is rejected by the server):
+
+```bash
+curl -s -X POST http://localhost:8080/rootstock.v1.HealthService/Check \
+  -H "Content-Type: application/proto" --data-binary ''
+```
+
+### Observe
+
+| Service | URL |
+|---------|-----|
+| Grafana | http://localhost:9999/grafana/ |
+| Prometheus | http://localhost:9999/prometheus/ |
+
+### Generate Protobuf
+
+```bash
+make proto
+```
+
+### Stop
+
+```bash
+make down
+```
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md). Open an issue before writing code. Keep changes focused and match existing patterns.
+
+## License
+
+[BSD 3-Clause](LICENSE) — Copyright 2026, Corewood.
 

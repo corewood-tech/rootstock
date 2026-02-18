@@ -1,0 +1,88 @@
+@import 'tailwindcss';
+
+
+
+@theme {
+  /* Forest greens */
+  --color-forest-900: #06150D;
+  --color-forest-800: #0B2B1A;
+  --color-forest-700: #0F3B24;
+  --color-forest-600: #143D26;
+  --color-forest-500: #1A5C35;
+  --color-forest-400: #2D7A4A;
+  --color-forest-300: #4A8F63;
+
+  /* Bark browns */
+  --color-bark-900: #1A120C;
+  --color-bark-800: #2C1E14;
+  --color-bark-700: #3D2B1F;
+  --color-bark-600: #5C4033;
+  --color-bark-500: #6B4D3A;
+  --color-bark-400: #8B6F5E;
+
+  /* Morpho blues */
+  --color-morpho-deep: #0C3547;
+  --color-morpho-700: #0F4C6B;
+  --color-morpho-600: #16688E;
+  --color-morpho-500: #1B7EB0;
+  --color-morpho-400: #2A95C8;
+  --color-morpho-300: #4AADDA;
+  --color-morpho-glow: #6EC5E9;
+
+  /* Dart reds */
+  --color-dart-deep: #5C1410;
+  --color-dart-900: #7A1A14;
+  --color-dart-800: #962118;
+  --color-dart-700: #B5281C;
+  --color-dart-600: #CC3022;
+  --color-dart-500: #E23D28;
+  --color-dart-400: #E85A48;
+  --color-dart-300: #ED7E6E;
+  --color-dart-glow: #F2A093;
+
+  /* Cream neutrals */
+  --color-cream-50: #FAF7F0;
+  --color-cream-100: #F5F0E6;
+  --color-cream-200: #EBE4D4;
+  --color-cream-300: #E0D6C2;
+  --color-cream-400: #D4C9AE;
+  --color-cream-500: #C4B899;
+  --color-cream-600: #A69E86;
+  --color-cream-700: #8A8370;
+
+  /* Semantic aliases */
+  --color-surface: #0B2B1A;
+  --color-surface-alt: #06150D;
+  --color-border: rgba(250, 247, 240, 0.08);
+  --color-border-strong: rgba(250, 247, 240, 0.12);
+  --color-text-primary: #F5F0E6;
+  --color-text-secondary: #A69E86;
+  --color-accent: #1B7EB0;
+  --color-accent-hover: #2A95C8;
+
+  /* Font stacks */
+  --font-display: 'Roca Two', system-ui, sans-serif;
+  --font-body: 'HK Grotesk Pro', system-ui, sans-serif;
+  --font-mono: ui-monospace, 'SF Mono', 'Cascadia Code', 'Fira Code', monospace;
+}
+
+body {
+  font-family: var(--font-body);
+  color: var(--color-text-primary);
+  background-color: #161210;
+  background-image:
+    radial-gradient(ellipse at 0% 0%, #1A120C 0%, transparent 60%),
+    radial-gradient(ellipse at 100% 100%, #0B2B1A 0%, transparent 60%),
+    radial-gradient(ellipse at 100% 0%, rgba(20, 16, 12, 0.5) 0%, transparent 50%),
+    radial-gradient(ellipse at 0% 100%, rgba(10, 30, 20, 0.4) 0%, transparent 50%);
+  background-attachment: fixed;
+  min-height: 100vh;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

@@ -1,0 +1,19 @@
+services:
+  e2e:
+    build:
+      context: ../
+      dockerfile: ./build/e2e/Containerfile.dev
+    volumes:
+      - ../e2e/tests:/e2e/tests
+      - ../e2e/playwright.config.ts:/e2e/playwright.config.ts
+      - ../e2e/package.json:/e2e/package.json
+      - e2e_node_modules:/e2e/node_modules
+    networks:
+      - rootstock
+
+volumes:
+  e2e_node_modules:
+
+networks:
+  rootstock:
+    name: rootstock

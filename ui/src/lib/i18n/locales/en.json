@@ -1,0 +1,14 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "app_name": "Rootstock"
+  },
+  "nav": {
+    "home": "Home",
+    "skip_to_content": "Skip to main content"
+  },
+  "home": {
+    "title": "Rootstock",
+    "subtitle": "Welcome to Rootstock"
+  }
+}
