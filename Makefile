@@ -7,7 +7,7 @@ COMPOSE_FILES := -f $(CURDIR)/compose/compose-data.yml \
 
 E2E_FILES := $(COMPOSE_FILES) -f $(CURDIR)/compose/compose-e2e.yml
 
-.PHONY: up down clean proto recreate build test unit-test
+.PHONY: up down clean proto recreate build test unit-test tidy go-get
 
 up:
 	podman compose $(COMPOSE_FILES) up -d
@@ -29,6 +29,12 @@ build:
 
 unit-test:
 	podman compose $(COMPOSE_FILES) exec web-server go test -p 1 -count=1 $(PKGS)
+
+tidy:
+	podman compose $(COMPOSE_FILES) exec web-server go mod tidy
+
+go-get:
+	podman compose $(COMPOSE_FILES) exec web-server go get $(PKG)
 
 test:
 	podman compose $(E2E_FILES) run --rm e2e

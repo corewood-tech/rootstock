@@ -13,13 +13,21 @@ import (
 	"connectrpc.com/otelconnect"
 
 	"rootstock/web-server/config"
+	campaignflows "rootstock/web-server/flows/campaign"
+	orgflows "rootstock/web-server/flows/org"
 	"rootstock/web-server/global/events"
 	"rootstock/web-server/global/observability"
 	connecthandlers "rootstock/web-server/handlers/connect"
+	campaignops "rootstock/web-server/ops/campaign"
+	orgops "rootstock/web-server/ops/org"
+	readingops "rootstock/web-server/ops/reading"
 	"rootstock/web-server/proto/rootstock/v1/rootstockv1connect"
 	"rootstock/web-server/repo/authorization"
+	campaignrepo "rootstock/web-server/repo/campaign"
 	eventsrepo "rootstock/web-server/repo/events"
+	identityrepo "rootstock/web-server/repo/identity"
 	o11yrepo "rootstock/web-server/repo/observability"
+	readingrepo "rootstock/web-server/repo/reading"
 	sqlconnect "rootstock/web-server/repo/sql/connect"
 	sqlmigrate "rootstock/web-server/repo/sql/migrate"
 	"rootstock/web-server/server"
@@ -100,11 +108,55 @@ func run() error {
 	}
 	interceptors := connect.WithInterceptors(otelInterceptor, server.AuthorizationInterceptor(jwtVerifier, authzRepo), server.BinaryOnlyInterceptor())
 
+	// Business repos
+	cRepo := campaignrepo.NewRepository(pool)
+	defer cRepo.Shutdown()
+	rRepo := readingrepo.NewRepository(pool)
+	defer rRepo.Shutdown()
+
+	// Identity repo (Zitadel)
+	iRepo, err := identityrepo.NewRepository(ctx, cfg.Identity.Zitadel)
+	if err != nil {
+		return fmt.Errorf("create identity repo: %w", err)
+	}
+	defer iRepo.Shutdown()
+
+	// Ops
+	cOps := campaignops.NewOps(cRepo)
+	rOps := readingops.NewOps(rRepo)
+	oOps := orgops.NewOps(iRepo)
+
+	// Campaign flows
+	createCampaignFlow := campaignflows.NewCreateCampaignFlow(cOps)
+	publishCampaignFlow := campaignflows.NewPublishCampaignFlow(cOps)
+	browseCampaignsFlow := campaignflows.NewBrowseCampaignsFlow(cOps)
+	campaignDashboardFlow := campaignflows.NewDashboardFlow(rOps)
+
+	// Org flows
+	createOrgFlow := orgflows.NewCreateOrgFlow(oOps)
+	nestOrgFlow := orgflows.NewNestOrgFlow(oOps)
+	defineRoleFlow := orgflows.NewDefineRoleFlow(oOps)
+	assignRoleFlow := orgflows.NewAssignRoleFlow(oOps)
+	inviteUserFlow := orgflows.NewInviteUserFlow(oOps)
+
+	// Handlers
 	healthHandler := connecthandlers.NewHealthServiceHandler()
-	path, handler := rootstockv1connect.NewHealthServiceHandler(healthHandler, interceptors)
+	healthPath, healthH := rootstockv1connect.NewHealthServiceHandler(healthHandler, interceptors)
+
+	campaignHandler := connecthandlers.NewCampaignServiceHandler(
+		createCampaignFlow, publishCampaignFlow, browseCampaignsFlow, campaignDashboardFlow,
+	)
+	campaignPath, campaignH := rootstockv1connect.NewCampaignServiceHandler(campaignHandler, interceptors)
+
+	orgHandler := connecthandlers.NewOrgServiceHandler(
+		createOrgFlow, nestOrgFlow, defineRoleFlow, assignRoleFlow, inviteUserFlow,
+	)
+	orgPath, orgH := rootstockv1connect.NewOrgServiceHandler(orgHandler, interceptors)
 
 	mux := http.NewServeMux()
-	mux.Handle(path, handler)
+	mux.Handle(healthPath, healthH)
+	mux.Handle(campaignPath, campaignH)
+	mux.Handle(orgPath, orgH)
 
 	addr := fmt.Sprintf("%s:%d", cfg.Server.Host, cfg.Server.Port)
 	lis, err := net.Listen("tcp", addr)

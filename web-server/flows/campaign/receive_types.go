@@ -1,4 +1,4 @@
-package flows
+package campaign
 
 import "time"
 
@@ -32,13 +32,11 @@ type EligibilityInput struct {
 	FirmwareMin     string
 }
 
-// IngestReadingInput is what callers send to IngestReadingFlow.
-type IngestReadingInput struct {
-	DeviceID        string
-	CampaignID      string
-	Value           float64
-	Timestamp       time.Time
-	Geolocation     string
-	FirmwareVersion string
-	CertSerial      string
+// BrowseCampaignsInput is what callers send to BrowseCampaignsFlow.
+type BrowseCampaignsInput struct {
+	Status    string
+	OrgID     string
+	Longitude *float64
+	Latitude  *float64
+	RadiusKm  *float64
 }

@@ -101,6 +101,1294 @@ func (x *CheckResponse) GetStatus() string {
 	return ""
 }
 
+type ParameterProto struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Name          string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	Unit          string                 `protobuf:"bytes,2,opt,name=unit,proto3" json:"unit,omitempty"`
+	MinRange      *float64               `protobuf:"fixed64,3,opt,name=min_range,json=minRange,proto3,oneof" json:"min_range,omitempty"`
+	MaxRange      *float64               `protobuf:"fixed64,4,opt,name=max_range,json=maxRange,proto3,oneof" json:"max_range,omitempty"`
+	Precision     *int32                 `protobuf:"varint,5,opt,name=precision,proto3,oneof" json:"precision,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ParameterProto) Reset() {
+	*x = ParameterProto{}
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[2]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ParameterProto) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ParameterProto) ProtoMessage() {}
+
+func (x *ParameterProto) ProtoReflect() protoreflect.Message {
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[2]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ParameterProto.ProtoReflect.Descriptor instead.
+func (*ParameterProto) Descriptor() ([]byte, []int) {
+	return file_rootstock_v1_rootstock_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *ParameterProto) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *ParameterProto) GetUnit() string {
+	if x != nil {
+		return x.Unit
+	}
+	return ""
+}
+
+func (x *ParameterProto) GetMinRange() float64 {
+	if x != nil && x.MinRange != nil {
+		return *x.MinRange
+	}
+	return 0
+}
+
+func (x *ParameterProto) GetMaxRange() float64 {
+	if x != nil && x.MaxRange != nil {
+		return *x.MaxRange
+	}
+	return 0
+}
+
+func (x *ParameterProto) GetPrecision() int32 {
+	if x != nil && x.Precision != nil {
+		return *x.Precision
+	}
+	return 0
+}
+
+type RegionProto struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	GeoJson       string                 `protobuf:"bytes,1,opt,name=geo_json,json=geoJson,proto3" json:"geo_json,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RegionProto) Reset() {
+	*x = RegionProto{}
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[3]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RegionProto) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RegionProto) ProtoMessage() {}
+
+func (x *RegionProto) ProtoReflect() protoreflect.Message {
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[3]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RegionProto.ProtoReflect.Descriptor instead.
+func (*RegionProto) Descriptor() ([]byte, []int) {
+	return file_rootstock_v1_rootstock_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *RegionProto) GetGeoJson() string {
+	if x != nil {
+		return x.GeoJson
+	}
+	return ""
+}
+
+type EligibilityProto struct {
+	state           protoimpl.MessageState `protogen:"open.v1"`
+	DeviceClass     string                 `protobuf:"bytes,1,opt,name=device_class,json=deviceClass,proto3" json:"device_class,omitempty"`
+	Tier            int32                  `protobuf:"varint,2,opt,name=tier,proto3" json:"tier,omitempty"`
+	RequiredSensors []string               `protobuf:"bytes,3,rep,name=required_sensors,json=requiredSensors,proto3" json:"required_sensors,omitempty"`
+	FirmwareMin     string                 `protobuf:"bytes,4,opt,name=firmware_min,json=firmwareMin,proto3" json:"firmware_min,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
+}
+
+func (x *EligibilityProto) Reset() {
+	*x = EligibilityProto{}
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[4]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *EligibilityProto) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*EligibilityProto) ProtoMessage() {}
+
+func (x *EligibilityProto) ProtoReflect() protoreflect.Message {
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[4]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use EligibilityProto.ProtoReflect.Descriptor instead.
+func (*EligibilityProto) Descriptor() ([]byte, []int) {
+	return file_rootstock_v1_rootstock_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *EligibilityProto) GetDeviceClass() string {
+	if x != nil {
+		return x.DeviceClass
+	}
+	return ""
+}
+
+func (x *EligibilityProto) GetTier() int32 {
+	if x != nil {
+		return x.Tier
+	}
+	return 0
+}
+
+func (x *EligibilityProto) GetRequiredSensors() []string {
+	if x != nil {
+		return x.RequiredSensors
+	}
+	return nil
+}
+
+func (x *EligibilityProto) GetFirmwareMin() string {
+	if x != nil {
+		return x.FirmwareMin
+	}
+	return ""
+}
+
+type CampaignProto struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	OrgId         string                 `protobuf:"bytes,2,opt,name=org_id,json=orgId,proto3" json:"org_id,omitempty"`
+	Status        string                 `protobuf:"bytes,3,opt,name=status,proto3" json:"status,omitempty"`
+	WindowStart   *string                `protobuf:"bytes,4,opt,name=window_start,json=windowStart,proto3,oneof" json:"window_start,omitempty"`
+	WindowEnd     *string                `protobuf:"bytes,5,opt,name=window_end,json=windowEnd,proto3,oneof" json:"window_end,omitempty"`
+	CreatedBy     string                 `protobuf:"bytes,6,opt,name=created_by,json=createdBy,proto3" json:"created_by,omitempty"`
+	CreatedAt     string                 `protobuf:"bytes,7,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CampaignProto) Reset() {
+	*x = CampaignProto{}
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[5]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CampaignProto) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CampaignProto) ProtoMessage() {}
+
+func (x *CampaignProto) ProtoReflect() protoreflect.Message {
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[5]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CampaignProto.ProtoReflect.Descriptor instead.
+func (*CampaignProto) Descriptor() ([]byte, []int) {
+	return file_rootstock_v1_rootstock_proto_rawDescGZIP(), []int{5}
+}
+
+func (x *CampaignProto) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *CampaignProto) GetOrgId() string {
+	if x != nil {
+		return x.OrgId
+	}
+	return ""
+}
+
+func (x *CampaignProto) GetStatus() string {
+	if x != nil {
+		return x.Status
+	}
+	return ""
+}
+
+func (x *CampaignProto) GetWindowStart() string {
+	if x != nil && x.WindowStart != nil {
+		return *x.WindowStart
+	}
+	return ""
+}
+
+func (x *CampaignProto) GetWindowEnd() string {
+	if x != nil && x.WindowEnd != nil {
+		return *x.WindowEnd
+	}
+	return ""
+}
+
+func (x *CampaignProto) GetCreatedBy() string {
+	if x != nil {
+		return x.CreatedBy
+	}
+	return ""
+}
+
+func (x *CampaignProto) GetCreatedAt() string {
+	if x != nil {
+		return x.CreatedAt
+	}
+	return ""
+}
+
+type CreateCampaignRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	OrgId         string                 `protobuf:"bytes,1,opt,name=org_id,json=orgId,proto3" json:"org_id,omitempty"`
+	CreatedBy     string                 `protobuf:"bytes,2,opt,name=created_by,json=createdBy,proto3" json:"created_by,omitempty"`
+	WindowStart   *string                `protobuf:"bytes,3,opt,name=window_start,json=windowStart,proto3,oneof" json:"window_start,omitempty"`
+	WindowEnd     *string                `protobuf:"bytes,4,opt,name=window_end,json=windowEnd,proto3,oneof" json:"window_end,omitempty"`
+	Parameters    []*ParameterProto      `protobuf:"bytes,5,rep,name=parameters,proto3" json:"parameters,omitempty"`
+	Regions       []*RegionProto         `protobuf:"bytes,6,rep,name=regions,proto3" json:"regions,omitempty"`
+	Eligibility   []*EligibilityProto    `protobuf:"bytes,7,rep,name=eligibility,proto3" json:"eligibility,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CreateCampaignRequest) Reset() {
+	*x = CreateCampaignRequest{}
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[6]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CreateCampaignRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CreateCampaignRequest) ProtoMessage() {}
+
+func (x *CreateCampaignRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[6]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CreateCampaignRequest.ProtoReflect.Descriptor instead.
+func (*CreateCampaignRequest) Descriptor() ([]byte, []int) {
+	return file_rootstock_v1_rootstock_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *CreateCampaignRequest) GetOrgId() string {
+	if x != nil {
+		return x.OrgId
+	}
+	return ""
+}
+
+func (x *CreateCampaignRequest) GetCreatedBy() string {
+	if x != nil {
+		return x.CreatedBy
+	}
+	return ""
+}
+
+func (x *CreateCampaignRequest) GetWindowStart() string {
+	if x != nil && x.WindowStart != nil {
+		return *x.WindowStart
+	}
+	return ""
+}
+
+func (x *CreateCampaignRequest) GetWindowEnd() string {
+	if x != nil && x.WindowEnd != nil {
+		return *x.WindowEnd
+	}
+	return ""
+}
+
+func (x *CreateCampaignRequest) GetParameters() []*ParameterProto {
+	if x != nil {
+		return x.Parameters
+	}
+	return nil
+}
+
+func (x *CreateCampaignRequest) GetRegions() []*RegionProto {
+	if x != nil {
+		return x.Regions
+	}
+	return nil
+}
+
+func (x *CreateCampaignRequest) GetEligibility() []*EligibilityProto {
+	if x != nil {
+		return x.Eligibility
+	}
+	return nil
+}
+
+type CreateCampaignResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Campaign      *CampaignProto         `protobuf:"bytes,1,opt,name=campaign,proto3" json:"campaign,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CreateCampaignResponse) Reset() {
+	*x = CreateCampaignResponse{}
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[7]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CreateCampaignResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CreateCampaignResponse) ProtoMessage() {}
+
+func (x *CreateCampaignResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[7]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CreateCampaignResponse.ProtoReflect.Descriptor instead.
+func (*CreateCampaignResponse) Descriptor() ([]byte, []int) {
+	return file_rootstock_v1_rootstock_proto_rawDescGZIP(), []int{7}
+}
+
+func (x *CreateCampaignResponse) GetCampaign() *CampaignProto {
+	if x != nil {
+		return x.Campaign
+	}
+	return nil
+}
+
+type PublishCampaignRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	CampaignId    string                 `protobuf:"bytes,1,opt,name=campaign_id,json=campaignId,proto3" json:"campaign_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *PublishCampaignRequest) Reset() {
+	*x = PublishCampaignRequest{}
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[8]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PublishCampaignRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PublishCampaignRequest) ProtoMessage() {}
+
+func (x *PublishCampaignRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[8]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PublishCampaignRequest.ProtoReflect.Descriptor instead.
+func (*PublishCampaignRequest) Descriptor() ([]byte, []int) {
+	return file_rootstock_v1_rootstock_proto_rawDescGZIP(), []int{8}
+}
+
+func (x *PublishCampaignRequest) GetCampaignId() string {
+	if x != nil {
+		return x.CampaignId
+	}
+	return ""
+}
+
+type PublishCampaignResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *PublishCampaignResponse) Reset() {
+	*x = PublishCampaignResponse{}
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[9]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PublishCampaignResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PublishCampaignResponse) ProtoMessage() {}
+
+func (x *PublishCampaignResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[9]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PublishCampaignResponse.ProtoReflect.Descriptor instead.
+func (*PublishCampaignResponse) Descriptor() ([]byte, []int) {
+	return file_rootstock_v1_rootstock_proto_rawDescGZIP(), []int{9}
+}
+
+type ListCampaignsRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Status        string                 `protobuf:"bytes,1,opt,name=status,proto3" json:"status,omitempty"`
+	OrgId         string                 `protobuf:"bytes,2,opt,name=org_id,json=orgId,proto3" json:"org_id,omitempty"`
+	Longitude     *float64               `protobuf:"fixed64,3,opt,name=longitude,proto3,oneof" json:"longitude,omitempty"`
+	Latitude      *float64               `protobuf:"fixed64,4,opt,name=latitude,proto3,oneof" json:"latitude,omitempty"`
+	RadiusKm      *float64               `protobuf:"fixed64,5,opt,name=radius_km,json=radiusKm,proto3,oneof" json:"radius_km,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListCampaignsRequest) Reset() {
+	*x = ListCampaignsRequest{}
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[10]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListCampaignsRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListCampaignsRequest) ProtoMessage() {}
+
+func (x *ListCampaignsRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[10]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListCampaignsRequest.ProtoReflect.Descriptor instead.
+func (*ListCampaignsRequest) Descriptor() ([]byte, []int) {
+	return file_rootstock_v1_rootstock_proto_rawDescGZIP(), []int{10}
+}
+
+func (x *ListCampaignsRequest) GetStatus() string {
+	if x != nil {
+		return x.Status
+	}
+	return ""
+}
+
+func (x *ListCampaignsRequest) GetOrgId() string {
+	if x != nil {
+		return x.OrgId
+	}
+	return ""
+}
+
+func (x *ListCampaignsRequest) GetLongitude() float64 {
+	if x != nil && x.Longitude != nil {
+		return *x.Longitude
+	}
+	return 0
+}
+
+func (x *ListCampaignsRequest) GetLatitude() float64 {
+	if x != nil && x.Latitude != nil {
+		return *x.Latitude
+	}
+	return 0
+}
+
+func (x *ListCampaignsRequest) GetRadiusKm() float64 {
+	if x != nil && x.RadiusKm != nil {
+		return *x.RadiusKm
+	}
+	return 0
+}
+
+type ListCampaignsResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Campaigns     []*CampaignProto       `protobuf:"bytes,1,rep,name=campaigns,proto3" json:"campaigns,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListCampaignsResponse) Reset() {
+	*x = ListCampaignsResponse{}
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[11]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListCampaignsResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListCampaignsResponse) ProtoMessage() {}
+
+func (x *ListCampaignsResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[11]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListCampaignsResponse.ProtoReflect.Descriptor instead.
+func (*ListCampaignsResponse) Descriptor() ([]byte, []int) {
+	return file_rootstock_v1_rootstock_proto_rawDescGZIP(), []int{11}
+}
+
+func (x *ListCampaignsResponse) GetCampaigns() []*CampaignProto {
+	if x != nil {
+		return x.Campaigns
+	}
+	return nil
+}
+
+type GetCampaignDashboardRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	CampaignId    string                 `protobuf:"bytes,1,opt,name=campaign_id,json=campaignId,proto3" json:"campaign_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetCampaignDashboardRequest) Reset() {
+	*x = GetCampaignDashboardRequest{}
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[12]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetCampaignDashboardRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetCampaignDashboardRequest) ProtoMessage() {}
+
+func (x *GetCampaignDashboardRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[12]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetCampaignDashboardRequest.ProtoReflect.Descriptor instead.
+func (*GetCampaignDashboardRequest) Descriptor() ([]byte, []int) {
+	return file_rootstock_v1_rootstock_proto_rawDescGZIP(), []int{12}
+}
+
+func (x *GetCampaignDashboardRequest) GetCampaignId() string {
+	if x != nil {
+		return x.CampaignId
+	}
+	return ""
+}
+
+type GetCampaignDashboardResponse struct {
+	state           protoimpl.MessageState `protogen:"open.v1"`
+	CampaignId      string                 `protobuf:"bytes,1,opt,name=campaign_id,json=campaignId,proto3" json:"campaign_id,omitempty"`
+	AcceptedCount   int32                  `protobuf:"varint,2,opt,name=accepted_count,json=acceptedCount,proto3" json:"accepted_count,omitempty"`
+	QuarantineCount int32                  `protobuf:"varint,3,opt,name=quarantine_count,json=quarantineCount,proto3" json:"quarantine_count,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
+}
+
+func (x *GetCampaignDashboardResponse) Reset() {
+	*x = GetCampaignDashboardResponse{}
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[13]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetCampaignDashboardResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetCampaignDashboardResponse) ProtoMessage() {}
+
+func (x *GetCampaignDashboardResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[13]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetCampaignDashboardResponse.ProtoReflect.Descriptor instead.
+func (*GetCampaignDashboardResponse) Descriptor() ([]byte, []int) {
+	return file_rootstock_v1_rootstock_proto_rawDescGZIP(), []int{13}
+}
+
+func (x *GetCampaignDashboardResponse) GetCampaignId() string {
+	if x != nil {
+		return x.CampaignId
+	}
+	return ""
+}
+
+func (x *GetCampaignDashboardResponse) GetAcceptedCount() int32 {
+	if x != nil {
+		return x.AcceptedCount
+	}
+	return 0
+}
+
+func (x *GetCampaignDashboardResponse) GetQuarantineCount() int32 {
+	if x != nil {
+		return x.QuarantineCount
+	}
+	return 0
+}
+
+type CreateOrgRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Name          string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CreateOrgRequest) Reset() {
+	*x = CreateOrgRequest{}
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[14]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CreateOrgRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CreateOrgRequest) ProtoMessage() {}
+
+func (x *CreateOrgRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[14]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CreateOrgRequest.ProtoReflect.Descriptor instead.
+func (*CreateOrgRequest) Descriptor() ([]byte, []int) {
+	return file_rootstock_v1_rootstock_proto_rawDescGZIP(), []int{14}
+}
+
+func (x *CreateOrgRequest) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+type CreateOrgResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	OrgId         string                 `protobuf:"bytes,1,opt,name=org_id,json=orgId,proto3" json:"org_id,omitempty"`
+	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CreateOrgResponse) Reset() {
+	*x = CreateOrgResponse{}
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[15]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CreateOrgResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CreateOrgResponse) ProtoMessage() {}
+
+func (x *CreateOrgResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[15]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CreateOrgResponse.ProtoReflect.Descriptor instead.
+func (*CreateOrgResponse) Descriptor() ([]byte, []int) {
+	return file_rootstock_v1_rootstock_proto_rawDescGZIP(), []int{15}
+}
+
+func (x *CreateOrgResponse) GetOrgId() string {
+	if x != nil {
+		return x.OrgId
+	}
+	return ""
+}
+
+func (x *CreateOrgResponse) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+type NestOrgRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Name          string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	ParentOrgId   string                 `protobuf:"bytes,2,opt,name=parent_org_id,json=parentOrgId,proto3" json:"parent_org_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *NestOrgRequest) Reset() {
+	*x = NestOrgRequest{}
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[16]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *NestOrgRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*NestOrgRequest) ProtoMessage() {}
+
+func (x *NestOrgRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[16]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use NestOrgRequest.ProtoReflect.Descriptor instead.
+func (*NestOrgRequest) Descriptor() ([]byte, []int) {
+	return file_rootstock_v1_rootstock_proto_rawDescGZIP(), []int{16}
+}
+
+func (x *NestOrgRequest) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *NestOrgRequest) GetParentOrgId() string {
+	if x != nil {
+		return x.ParentOrgId
+	}
+	return ""
+}
+
+type NestOrgResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	OrgId         string                 `protobuf:"bytes,1,opt,name=org_id,json=orgId,proto3" json:"org_id,omitempty"`
+	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *NestOrgResponse) Reset() {
+	*x = NestOrgResponse{}
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[17]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *NestOrgResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*NestOrgResponse) ProtoMessage() {}
+
+func (x *NestOrgResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[17]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use NestOrgResponse.ProtoReflect.Descriptor instead.
+func (*NestOrgResponse) Descriptor() ([]byte, []int) {
+	return file_rootstock_v1_rootstock_proto_rawDescGZIP(), []int{17}
+}
+
+func (x *NestOrgResponse) GetOrgId() string {
+	if x != nil {
+		return x.OrgId
+	}
+	return ""
+}
+
+func (x *NestOrgResponse) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+type DefineRoleRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	ProjectId     string                 `protobuf:"bytes,1,opt,name=project_id,json=projectId,proto3" json:"project_id,omitempty"`
+	RoleKey       string                 `protobuf:"bytes,2,opt,name=role_key,json=roleKey,proto3" json:"role_key,omitempty"`
+	DisplayName   string                 `protobuf:"bytes,3,opt,name=display_name,json=displayName,proto3" json:"display_name,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DefineRoleRequest) Reset() {
+	*x = DefineRoleRequest{}
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[18]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DefineRoleRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DefineRoleRequest) ProtoMessage() {}
+
+func (x *DefineRoleRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[18]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DefineRoleRequest.ProtoReflect.Descriptor instead.
+func (*DefineRoleRequest) Descriptor() ([]byte, []int) {
+	return file_rootstock_v1_rootstock_proto_rawDescGZIP(), []int{18}
+}
+
+func (x *DefineRoleRequest) GetProjectId() string {
+	if x != nil {
+		return x.ProjectId
+	}
+	return ""
+}
+
+func (x *DefineRoleRequest) GetRoleKey() string {
+	if x != nil {
+		return x.RoleKey
+	}
+	return ""
+}
+
+func (x *DefineRoleRequest) GetDisplayName() string {
+	if x != nil {
+		return x.DisplayName
+	}
+	return ""
+}
+
+type DefineRoleResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	ProjectId     string                 `protobuf:"bytes,1,opt,name=project_id,json=projectId,proto3" json:"project_id,omitempty"`
+	RoleKey       string                 `protobuf:"bytes,2,opt,name=role_key,json=roleKey,proto3" json:"role_key,omitempty"`
+	DisplayName   string                 `protobuf:"bytes,3,opt,name=display_name,json=displayName,proto3" json:"display_name,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DefineRoleResponse) Reset() {
+	*x = DefineRoleResponse{}
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[19]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DefineRoleResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DefineRoleResponse) ProtoMessage() {}
+
+func (x *DefineRoleResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[19]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DefineRoleResponse.ProtoReflect.Descriptor instead.
+func (*DefineRoleResponse) Descriptor() ([]byte, []int) {
+	return file_rootstock_v1_rootstock_proto_rawDescGZIP(), []int{19}
+}
+
+func (x *DefineRoleResponse) GetProjectId() string {
+	if x != nil {
+		return x.ProjectId
+	}
+	return ""
+}
+
+func (x *DefineRoleResponse) GetRoleKey() string {
+	if x != nil {
+		return x.RoleKey
+	}
+	return ""
+}
+
+func (x *DefineRoleResponse) GetDisplayName() string {
+	if x != nil {
+		return x.DisplayName
+	}
+	return ""
+}
+
+type AssignRoleRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	UserId        string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	ProjectId     string                 `protobuf:"bytes,2,opt,name=project_id,json=projectId,proto3" json:"project_id,omitempty"`
+	RoleKeys      []string               `protobuf:"bytes,3,rep,name=role_keys,json=roleKeys,proto3" json:"role_keys,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *AssignRoleRequest) Reset() {
+	*x = AssignRoleRequest{}
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[20]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *AssignRoleRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*AssignRoleRequest) ProtoMessage() {}
+
+func (x *AssignRoleRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[20]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use AssignRoleRequest.ProtoReflect.Descriptor instead.
+func (*AssignRoleRequest) Descriptor() ([]byte, []int) {
+	return file_rootstock_v1_rootstock_proto_rawDescGZIP(), []int{20}
+}
+
+func (x *AssignRoleRequest) GetUserId() string {
+	if x != nil {
+		return x.UserId
+	}
+	return ""
+}
+
+func (x *AssignRoleRequest) GetProjectId() string {
+	if x != nil {
+		return x.ProjectId
+	}
+	return ""
+}
+
+func (x *AssignRoleRequest) GetRoleKeys() []string {
+	if x != nil {
+		return x.RoleKeys
+	}
+	return nil
+}
+
+type AssignRoleResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	UserGrantId   string                 `protobuf:"bytes,1,opt,name=user_grant_id,json=userGrantId,proto3" json:"user_grant_id,omitempty"`
+	UserId        string                 `protobuf:"bytes,2,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	ProjectId     string                 `protobuf:"bytes,3,opt,name=project_id,json=projectId,proto3" json:"project_id,omitempty"`
+	RoleKeys      []string               `protobuf:"bytes,4,rep,name=role_keys,json=roleKeys,proto3" json:"role_keys,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *AssignRoleResponse) Reset() {
+	*x = AssignRoleResponse{}
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[21]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *AssignRoleResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*AssignRoleResponse) ProtoMessage() {}
+
+func (x *AssignRoleResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[21]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use AssignRoleResponse.ProtoReflect.Descriptor instead.
+func (*AssignRoleResponse) Descriptor() ([]byte, []int) {
+	return file_rootstock_v1_rootstock_proto_rawDescGZIP(), []int{21}
+}
+
+func (x *AssignRoleResponse) GetUserGrantId() string {
+	if x != nil {
+		return x.UserGrantId
+	}
+	return ""
+}
+
+func (x *AssignRoleResponse) GetUserId() string {
+	if x != nil {
+		return x.UserId
+	}
+	return ""
+}
+
+func (x *AssignRoleResponse) GetProjectId() string {
+	if x != nil {
+		return x.ProjectId
+	}
+	return ""
+}
+
+func (x *AssignRoleResponse) GetRoleKeys() []string {
+	if x != nil {
+		return x.RoleKeys
+	}
+	return nil
+}
+
+type InviteUserRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	OrgId         string                 `protobuf:"bytes,1,opt,name=org_id,json=orgId,proto3" json:"org_id,omitempty"`
+	Email         string                 `protobuf:"bytes,2,opt,name=email,proto3" json:"email,omitempty"`
+	GivenName     string                 `protobuf:"bytes,3,opt,name=given_name,json=givenName,proto3" json:"given_name,omitempty"`
+	FamilyName    string                 `protobuf:"bytes,4,opt,name=family_name,json=familyName,proto3" json:"family_name,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *InviteUserRequest) Reset() {
+	*x = InviteUserRequest{}
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[22]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *InviteUserRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*InviteUserRequest) ProtoMessage() {}
+
+func (x *InviteUserRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[22]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use InviteUserRequest.ProtoReflect.Descriptor instead.
+func (*InviteUserRequest) Descriptor() ([]byte, []int) {
+	return file_rootstock_v1_rootstock_proto_rawDescGZIP(), []int{22}
+}
+
+func (x *InviteUserRequest) GetOrgId() string {
+	if x != nil {
+		return x.OrgId
+	}
+	return ""
+}
+
+func (x *InviteUserRequest) GetEmail() string {
+	if x != nil {
+		return x.Email
+	}
+	return ""
+}
+
+func (x *InviteUserRequest) GetGivenName() string {
+	if x != nil {
+		return x.GivenName
+	}
+	return ""
+}
+
+func (x *InviteUserRequest) GetFamilyName() string {
+	if x != nil {
+		return x.FamilyName
+	}
+	return ""
+}
+
+type InviteUserResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	UserId        string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	EmailCode     string                 `protobuf:"bytes,2,opt,name=email_code,json=emailCode,proto3" json:"email_code,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *InviteUserResponse) Reset() {
+	*x = InviteUserResponse{}
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[23]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *InviteUserResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*InviteUserResponse) ProtoMessage() {}
+
+func (x *InviteUserResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[23]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use InviteUserResponse.ProtoReflect.Descriptor instead.
+func (*InviteUserResponse) Descriptor() ([]byte, []int) {
+	return file_rootstock_v1_rootstock_proto_rawDescGZIP(), []int{23}
+}
+
+func (x *InviteUserResponse) GetUserId() string {
+	if x != nil {
+		return x.UserId
+	}
+	return ""
+}
+
+func (x *InviteUserResponse) GetEmailCode() string {
+	if x != nil {
+		return x.EmailCode
+	}
+	return ""
+}
+
 var File_rootstock_v1_rootstock_proto protoreflect.FileDescriptor
 
 const file_rootstock_v1_rootstock_proto_rawDesc = "" +
@@ -108,9 +1396,140 @@ const file_rootstock_v1_rootstock_proto_rawDesc = "" +
 	"\x1crootstock/v1/rootstock.proto\x12\frootstock.v1\"\x0e\n" +
 	"\fCheckRequest\"'\n" +
 	"\rCheckResponse\x12\x16\n" +
-	"\x06status\x18\x01 \x01(\tR\x06status2Q\n" +
+	"\x06status\x18\x01 \x01(\tR\x06status\"\xc9\x01\n" +
+	"\x0eParameterProto\x12\x12\n" +
+	"\x04name\x18\x01 \x01(\tR\x04name\x12\x12\n" +
+	"\x04unit\x18\x02 \x01(\tR\x04unit\x12 \n" +
+	"\tmin_range\x18\x03 \x01(\x01H\x00R\bminRange\x88\x01\x01\x12 \n" +
+	"\tmax_range\x18\x04 \x01(\x01H\x01R\bmaxRange\x88\x01\x01\x12!\n" +
+	"\tprecision\x18\x05 \x01(\x05H\x02R\tprecision\x88\x01\x01B\f\n" +
+	"\n" +
+	"_min_rangeB\f\n" +
+	"\n" +
+	"_max_rangeB\f\n" +
+	"\n" +
+	"_precision\"(\n" +
+	"\vRegionProto\x12\x19\n" +
+	"\bgeo_json\x18\x01 \x01(\tR\ageoJson\"\x97\x01\n" +
+	"\x10EligibilityProto\x12!\n" +
+	"\fdevice_class\x18\x01 \x01(\tR\vdeviceClass\x12\x12\n" +
+	"\x04tier\x18\x02 \x01(\x05R\x04tier\x12)\n" +
+	"\x10required_sensors\x18\x03 \x03(\tR\x0frequiredSensors\x12!\n" +
+	"\ffirmware_min\x18\x04 \x01(\tR\vfirmwareMin\"\xf8\x01\n" +
+	"\rCampaignProto\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x15\n" +
+	"\x06org_id\x18\x02 \x01(\tR\x05orgId\x12\x16\n" +
+	"\x06status\x18\x03 \x01(\tR\x06status\x12&\n" +
+	"\fwindow_start\x18\x04 \x01(\tH\x00R\vwindowStart\x88\x01\x01\x12\"\n" +
+	"\n" +
+	"window_end\x18\x05 \x01(\tH\x01R\twindowEnd\x88\x01\x01\x12\x1d\n" +
+	"\n" +
+	"created_by\x18\x06 \x01(\tR\tcreatedBy\x12\x1d\n" +
+	"\n" +
+	"created_at\x18\a \x01(\tR\tcreatedAtB\x0f\n" +
+	"\r_window_startB\r\n" +
+	"\v_window_end\"\xee\x02\n" +
+	"\x15CreateCampaignRequest\x12\x15\n" +
+	"\x06org_id\x18\x01 \x01(\tR\x05orgId\x12\x1d\n" +
+	"\n" +
+	"created_by\x18\x02 \x01(\tR\tcreatedBy\x12&\n" +
+	"\fwindow_start\x18\x03 \x01(\tH\x00R\vwindowStart\x88\x01\x01\x12\"\n" +
+	"\n" +
+	"window_end\x18\x04 \x01(\tH\x01R\twindowEnd\x88\x01\x01\x12<\n" +
+	"\n" +
+	"parameters\x18\x05 \x03(\v2\x1c.rootstock.v1.ParameterProtoR\n" +
+	"parameters\x123\n" +
+	"\aregions\x18\x06 \x03(\v2\x19.rootstock.v1.RegionProtoR\aregions\x12@\n" +
+	"\veligibility\x18\a \x03(\v2\x1e.rootstock.v1.EligibilityProtoR\veligibilityB\x0f\n" +
+	"\r_window_startB\r\n" +
+	"\v_window_end\"Q\n" +
+	"\x16CreateCampaignResponse\x127\n" +
+	"\bcampaign\x18\x01 \x01(\v2\x1b.rootstock.v1.CampaignProtoR\bcampaign\"9\n" +
+	"\x16PublishCampaignRequest\x12\x1f\n" +
+	"\vcampaign_id\x18\x01 \x01(\tR\n" +
+	"campaignId\"\x19\n" +
+	"\x17PublishCampaignResponse\"\xd4\x01\n" +
+	"\x14ListCampaignsRequest\x12\x16\n" +
+	"\x06status\x18\x01 \x01(\tR\x06status\x12\x15\n" +
+	"\x06org_id\x18\x02 \x01(\tR\x05orgId\x12!\n" +
+	"\tlongitude\x18\x03 \x01(\x01H\x00R\tlongitude\x88\x01\x01\x12\x1f\n" +
+	"\blatitude\x18\x04 \x01(\x01H\x01R\blatitude\x88\x01\x01\x12 \n" +
+	"\tradius_km\x18\x05 \x01(\x01H\x02R\bradiusKm\x88\x01\x01B\f\n" +
+	"\n" +
+	"_longitudeB\v\n" +
+	"\t_latitudeB\f\n" +
+	"\n" +
+	"_radius_km\"R\n" +
+	"\x15ListCampaignsResponse\x129\n" +
+	"\tcampaigns\x18\x01 \x03(\v2\x1b.rootstock.v1.CampaignProtoR\tcampaigns\">\n" +
+	"\x1bGetCampaignDashboardRequest\x12\x1f\n" +
+	"\vcampaign_id\x18\x01 \x01(\tR\n" +
+	"campaignId\"\x91\x01\n" +
+	"\x1cGetCampaignDashboardResponse\x12\x1f\n" +
+	"\vcampaign_id\x18\x01 \x01(\tR\n" +
+	"campaignId\x12%\n" +
+	"\x0eaccepted_count\x18\x02 \x01(\x05R\racceptedCount\x12)\n" +
+	"\x10quarantine_count\x18\x03 \x01(\x05R\x0fquarantineCount\"&\n" +
+	"\x10CreateOrgRequest\x12\x12\n" +
+	"\x04name\x18\x01 \x01(\tR\x04name\">\n" +
+	"\x11CreateOrgResponse\x12\x15\n" +
+	"\x06org_id\x18\x01 \x01(\tR\x05orgId\x12\x12\n" +
+	"\x04name\x18\x02 \x01(\tR\x04name\"H\n" +
+	"\x0eNestOrgRequest\x12\x12\n" +
+	"\x04name\x18\x01 \x01(\tR\x04name\x12\"\n" +
+	"\rparent_org_id\x18\x02 \x01(\tR\vparentOrgId\"<\n" +
+	"\x0fNestOrgResponse\x12\x15\n" +
+	"\x06org_id\x18\x01 \x01(\tR\x05orgId\x12\x12\n" +
+	"\x04name\x18\x02 \x01(\tR\x04name\"p\n" +
+	"\x11DefineRoleRequest\x12\x1d\n" +
+	"\n" +
+	"project_id\x18\x01 \x01(\tR\tprojectId\x12\x19\n" +
+	"\brole_key\x18\x02 \x01(\tR\aroleKey\x12!\n" +
+	"\fdisplay_name\x18\x03 \x01(\tR\vdisplayName\"q\n" +
+	"\x12DefineRoleResponse\x12\x1d\n" +
+	"\n" +
+	"project_id\x18\x01 \x01(\tR\tprojectId\x12\x19\n" +
+	"\brole_key\x18\x02 \x01(\tR\aroleKey\x12!\n" +
+	"\fdisplay_name\x18\x03 \x01(\tR\vdisplayName\"h\n" +
+	"\x11AssignRoleRequest\x12\x17\n" +
+	"\auser_id\x18\x01 \x01(\tR\x06userId\x12\x1d\n" +
+	"\n" +
+	"project_id\x18\x02 \x01(\tR\tprojectId\x12\x1b\n" +
+	"\trole_keys\x18\x03 \x03(\tR\broleKeys\"\x8d\x01\n" +
+	"\x12AssignRoleResponse\x12\"\n" +
+	"\ruser_grant_id\x18\x01 \x01(\tR\vuserGrantId\x12\x17\n" +
+	"\auser_id\x18\x02 \x01(\tR\x06userId\x12\x1d\n" +
+	"\n" +
+	"project_id\x18\x03 \x01(\tR\tprojectId\x12\x1b\n" +
+	"\trole_keys\x18\x04 \x03(\tR\broleKeys\"\x80\x01\n" +
+	"\x11InviteUserRequest\x12\x15\n" +
+	"\x06org_id\x18\x01 \x01(\tR\x05orgId\x12\x14\n" +
+	"\x05email\x18\x02 \x01(\tR\x05email\x12\x1d\n" +
+	"\n" +
+	"given_name\x18\x03 \x01(\tR\tgivenName\x12\x1f\n" +
+	"\vfamily_name\x18\x04 \x01(\tR\n" +
+	"familyName\"L\n" +
+	"\x12InviteUserResponse\x12\x17\n" +
+	"\auser_id\x18\x01 \x01(\tR\x06userId\x12\x1d\n" +
+	"\n" +
+	"email_code\x18\x02 \x01(\tR\temailCode2Q\n" +
 	"\rHealthService\x12@\n" +
-	"\x05Check\x12\x1a.rootstock.v1.CheckRequest\x1a\x1b.rootstock.v1.CheckResponseB5Z3rootstock/web-server/proto/rootstock/v1;rootstockv1b\x06proto3"
+	"\x05Check\x12\x1a.rootstock.v1.CheckRequest\x1a\x1b.rootstock.v1.CheckResponse2\x97\x03\n" +
+	"\x0fCampaignService\x12[\n" +
+	"\x0eCreateCampaign\x12#.rootstock.v1.CreateCampaignRequest\x1a$.rootstock.v1.CreateCampaignResponse\x12^\n" +
+	"\x0fPublishCampaign\x12$.rootstock.v1.PublishCampaignRequest\x1a%.rootstock.v1.PublishCampaignResponse\x12X\n" +
+	"\rListCampaigns\x12\".rootstock.v1.ListCampaignsRequest\x1a#.rootstock.v1.ListCampaignsResponse\x12m\n" +
+	"\x14GetCampaignDashboard\x12).rootstock.v1.GetCampaignDashboardRequest\x1a*.rootstock.v1.GetCampaignDashboardResponse2\x95\x03\n" +
+	"\n" +
+	"OrgService\x12L\n" +
+	"\tCreateOrg\x12\x1e.rootstock.v1.CreateOrgRequest\x1a\x1f.rootstock.v1.CreateOrgResponse\x12F\n" +
+	"\aNestOrg\x12\x1c.rootstock.v1.NestOrgRequest\x1a\x1d.rootstock.v1.NestOrgResponse\x12O\n" +
+	"\n" +
+	"DefineRole\x12\x1f.rootstock.v1.DefineRoleRequest\x1a .rootstock.v1.DefineRoleResponse\x12O\n" +
+	"\n" +
+	"AssignRole\x12\x1f.rootstock.v1.AssignRoleRequest\x1a .rootstock.v1.AssignRoleResponse\x12O\n" +
+	"\n" +
+	"InviteUser\x12\x1f.rootstock.v1.InviteUserRequest\x1a .rootstock.v1.InviteUserResponseB5Z3rootstock/web-server/proto/rootstock/v1;rootstockv1b\x06proto3"
 
 var (
 	file_rootstock_v1_rootstock_proto_rawDescOnce sync.Once
@@ -124,19 +1543,64 @@ func file_rootstock_v1_rootstock_proto_rawDescGZIP() []byte {
 	return file_rootstock_v1_rootstock_proto_rawDescData
 }
 
-var file_rootstock_v1_rootstock_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
+var file_rootstock_v1_rootstock_proto_msgTypes = make([]protoimpl.MessageInfo, 24)
 var file_rootstock_v1_rootstock_proto_goTypes = []any{
-	(*CheckRequest)(nil),  // 0: rootstock.v1.CheckRequest
-	(*CheckResponse)(nil), // 1: rootstock.v1.CheckResponse
+	(*CheckRequest)(nil),                 // 0: rootstock.v1.CheckRequest
+	(*CheckResponse)(nil),                // 1: rootstock.v1.CheckResponse
+	(*ParameterProto)(nil),               // 2: rootstock.v1.ParameterProto
+	(*RegionProto)(nil),                  // 3: rootstock.v1.RegionProto
+	(*EligibilityProto)(nil),             // 4: rootstock.v1.EligibilityProto
+	(*CampaignProto)(nil),                // 5: rootstock.v1.CampaignProto
+	(*CreateCampaignRequest)(nil),        // 6: rootstock.v1.CreateCampaignRequest
+	(*CreateCampaignResponse)(nil),       // 7: rootstock.v1.CreateCampaignResponse
+	(*PublishCampaignRequest)(nil),       // 8: rootstock.v1.PublishCampaignRequest
+	(*PublishCampaignResponse)(nil),      // 9: rootstock.v1.PublishCampaignResponse
+	(*ListCampaignsRequest)(nil),         // 10: rootstock.v1.ListCampaignsRequest
+	(*ListCampaignsResponse)(nil),        // 11: rootstock.v1.ListCampaignsResponse
+	(*GetCampaignDashboardRequest)(nil),  // 12: rootstock.v1.GetCampaignDashboardRequest
+	(*GetCampaignDashboardResponse)(nil), // 13: rootstock.v1.GetCampaignDashboardResponse
+	(*CreateOrgRequest)(nil),             // 14: rootstock.v1.CreateOrgRequest
+	(*CreateOrgResponse)(nil),            // 15: rootstock.v1.CreateOrgResponse
+	(*NestOrgRequest)(nil),               // 16: rootstock.v1.NestOrgRequest
+	(*NestOrgResponse)(nil),              // 17: rootstock.v1.NestOrgResponse
+	(*DefineRoleRequest)(nil),            // 18: rootstock.v1.DefineRoleRequest
+	(*DefineRoleResponse)(nil),           // 19: rootstock.v1.DefineRoleResponse
+	(*AssignRoleRequest)(nil),            // 20: rootstock.v1.AssignRoleRequest
+	(*AssignRoleResponse)(nil),           // 21: rootstock.v1.AssignRoleResponse
+	(*InviteUserRequest)(nil),            // 22: rootstock.v1.InviteUserRequest
+	(*InviteUserResponse)(nil),           // 23: rootstock.v1.InviteUserResponse
 }
 var file_rootstock_v1_rootstock_proto_depIdxs = []int32{
-	0, // 0: rootstock.v1.HealthService.Check:input_type -> rootstock.v1.CheckRequest
-	1, // 1: rootstock.v1.HealthService.Check:output_type -> rootstock.v1.CheckResponse
-	1, // [1:2] is the sub-list for method output_type
-	0, // [0:1] is the sub-list for method input_type
-	0, // [0:0] is the sub-list for extension type_name
-	0, // [0:0] is the sub-list for extension extendee
-	0, // [0:0] is the sub-list for field type_name
+	2,  // 0: rootstock.v1.CreateCampaignRequest.parameters:type_name -> rootstock.v1.ParameterProto
+	3,  // 1: rootstock.v1.CreateCampaignRequest.regions:type_name -> rootstock.v1.RegionProto
+	4,  // 2: rootstock.v1.CreateCampaignRequest.eligibility:type_name -> rootstock.v1.EligibilityProto
+	5,  // 3: rootstock.v1.CreateCampaignResponse.campaign:type_name -> rootstock.v1.CampaignProto
+	5,  // 4: rootstock.v1.ListCampaignsResponse.campaigns:type_name -> rootstock.v1.CampaignProto
+	0,  // 5: rootstock.v1.HealthService.Check:input_type -> rootstock.v1.CheckRequest
+	6,  // 6: rootstock.v1.CampaignService.CreateCampaign:input_type -> rootstock.v1.CreateCampaignRequest
+	8,  // 7: rootstock.v1.CampaignService.PublishCampaign:input_type -> rootstock.v1.PublishCampaignRequest
+	10, // 8: rootstock.v1.CampaignService.ListCampaigns:input_type -> rootstock.v1.ListCampaignsRequest
+	12, // 9: rootstock.v1.CampaignService.GetCampaignDashboard:input_type -> rootstock.v1.GetCampaignDashboardRequest
+	14, // 10: rootstock.v1.OrgService.CreateOrg:input_type -> rootstock.v1.CreateOrgRequest
+	16, // 11: rootstock.v1.OrgService.NestOrg:input_type -> rootstock.v1.NestOrgRequest
+	18, // 12: rootstock.v1.OrgService.DefineRole:input_type -> rootstock.v1.DefineRoleRequest
+	20, // 13: rootstock.v1.OrgService.AssignRole:input_type -> rootstock.v1.AssignRoleRequest
+	22, // 14: rootstock.v1.OrgService.InviteUser:input_type -> rootstock.v1.InviteUserRequest
+	1,  // 15: rootstock.v1.HealthService.Check:output_type -> rootstock.v1.CheckResponse
+	7,  // 16: rootstock.v1.CampaignService.CreateCampaign:output_type -> rootstock.v1.CreateCampaignResponse
+	9,  // 17: rootstock.v1.CampaignService.PublishCampaign:output_type -> rootstock.v1.PublishCampaignResponse
+	11, // 18: rootstock.v1.CampaignService.ListCampaigns:output_type -> rootstock.v1.ListCampaignsResponse
+	13, // 19: rootstock.v1.CampaignService.GetCampaignDashboard:output_type -> rootstock.v1.GetCampaignDashboardResponse
+	15, // 20: rootstock.v1.OrgService.CreateOrg:output_type -> rootstock.v1.CreateOrgResponse
+	17, // 21: rootstock.v1.OrgService.NestOrg:output_type -> rootstock.v1.NestOrgResponse
+	19, // 22: rootstock.v1.OrgService.DefineRole:output_type -> rootstock.v1.DefineRoleResponse
+	21, // 23: rootstock.v1.OrgService.AssignRole:output_type -> rootstock.v1.AssignRoleResponse
+	23, // 24: rootstock.v1.OrgService.InviteUser:output_type -> rootstock.v1.InviteUserResponse
+	15, // [15:25] is the sub-list for method output_type
+	5,  // [5:15] is the sub-list for method input_type
+	5,  // [5:5] is the sub-list for extension type_name
+	5,  // [5:5] is the sub-list for extension extendee
+	0,  // [0:5] is the sub-list for field type_name
 }
 
 func init() { file_rootstock_v1_rootstock_proto_init() }
@@ -144,15 +1608,19 @@ func file_rootstock_v1_rootstock_proto_init() {
 	if File_rootstock_v1_rootstock_proto != nil {
 		return
 	}
+	file_rootstock_v1_rootstock_proto_msgTypes[2].OneofWrappers = []any{}
+	file_rootstock_v1_rootstock_proto_msgTypes[5].OneofWrappers = []any{}
+	file_rootstock_v1_rootstock_proto_msgTypes[6].OneofWrappers = []any{}
+	file_rootstock_v1_rootstock_proto_msgTypes[10].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_rootstock_v1_rootstock_proto_rawDesc), len(file_rootstock_v1_rootstock_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   2,
+			NumMessages:   24,
 			NumExtensions: 0,
-			NumServices:   1,
+			NumServices:   3,
 		},
 		GoTypes:           file_rootstock_v1_rootstock_proto_goTypes,
 		DependencyIndexes: file_rootstock_v1_rootstock_proto_depIdxs,

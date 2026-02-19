@@ -1,4 +1,4 @@
-package flows
+package campaign
 
 import (
 	"context"
@@ -85,7 +85,6 @@ func TestCreateCampaignWithParameters(t *testing.T) {
 		t.Fatalf("Run(): %v", err)
 	}
 
-	// Verify parameter was persisted
 	var count int
 	pool.QueryRow(ctx, "SELECT count(*) FROM campaign_parameters WHERE campaign_id = $1", campaign.ID).Scan(&count)
 	if count != 1 {

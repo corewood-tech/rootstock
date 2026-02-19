@@ -1,4 +1,4 @@
-package flows
+package reading
 
 import (
 	"context"
@@ -57,7 +57,6 @@ func TestIngestValidReading(t *testing.T) {
 	flow, pool := setupIngestTest(t)
 	ctx := context.Background()
 
-	// Create campaign with rules
 	now := time.Now().UTC()
 	start := now.Add(-1 * time.Hour)
 	end := now.Add(1 * time.Hour)
@@ -77,14 +76,12 @@ func TestIngestValidReading(t *testing.T) {
 		t.Fatalf("create campaign: %v", err)
 	}
 
-	// Create device
 	var deviceID string
 	pool.QueryRow(ctx,
 		`INSERT INTO devices (owner_id, class, firmware_version, tier, sensors, status)
 		 VALUES ('user-1', 'sensor', '1.0.0', 1, '{temp}', 'active') RETURNING id`,
 	).Scan(&deviceID)
 
-	// Ingest valid reading
 	rd, err := flow.Run(ctx, IngestReadingInput{
 		DeviceID:        deviceID,
 		CampaignID:      campaign.ID,
@@ -127,7 +124,6 @@ func TestIngestOutOfRangeReading(t *testing.T) {
 		 VALUES ('user-1', 'sensor', '1.0.0', 1, '{temp}', 'active') RETURNING id`,
 	).Scan(&deviceID)
 
-	// Ingest reading with value above max range
 	rd, err := flow.Run(ctx, IngestReadingInput{
 		DeviceID:        deviceID,
 		CampaignID:      campaign.ID,
@@ -152,7 +148,7 @@ func TestIngestOutsideWindowReading(t *testing.T) {
 	ctx := context.Background()
 
 	now := time.Now().UTC()
-	start := now.Add(1 * time.Hour) // window hasn't started yet
+	start := now.Add(1 * time.Hour)
 	end := now.Add(2 * time.Hour)
 
 	cRepo := campaignrepo.NewRepository(pool)
@@ -174,7 +170,7 @@ func TestIngestOutsideWindowReading(t *testing.T) {
 		DeviceID:        deviceID,
 		CampaignID:      campaign.ID,
 		Value:           23.5,
-		Timestamp:       now, // before window start
+		Timestamp:       now,
 		FirmwareVersion: "1.0.0",
 		CertSerial:      "serial-1",
 	})

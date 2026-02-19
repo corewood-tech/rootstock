@@ -13,3 +13,151 @@ message CheckRequest {}
 message CheckResponse {
   string status = 1;
 }
+
+// CampaignService manages scientific data collection campaigns.
+service CampaignService {
+  rpc CreateCampaign(CreateCampaignRequest) returns (CreateCampaignResponse);
+  rpc PublishCampaign(PublishCampaignRequest) returns (PublishCampaignResponse);
+  rpc ListCampaigns(ListCampaignsRequest) returns (ListCampaignsResponse);
+  rpc GetCampaignDashboard(GetCampaignDashboardRequest) returns (GetCampaignDashboardResponse);
+}
+
+// Campaign messages
+
+message ParameterProto {
+  string name = 1;
+  string unit = 2;
+  optional double min_range = 3;
+  optional double max_range = 4;
+  optional int32 precision = 5;
+}
+
+message RegionProto {
+  string geo_json = 1;
+}
+
+message EligibilityProto {
+  string device_class = 1;
+  int32 tier = 2;
+  repeated string required_sensors = 3;
+  string firmware_min = 4;
+}
+
+message CampaignProto {
+  string id = 1;
+  string org_id = 2;
+  string status = 3;
+  optional string window_start = 4;
+  optional string window_end = 5;
+  string created_by = 6;
+  string created_at = 7;
+}
+
+message CreateCampaignRequest {
+  string org_id = 1;
+  string created_by = 2;
+  optional string window_start = 3;
+  optional string window_end = 4;
+  repeated ParameterProto parameters = 5;
+  repeated RegionProto regions = 6;
+  repeated EligibilityProto eligibility = 7;
+}
+
+message CreateCampaignResponse {
+  CampaignProto campaign = 1;
+}
+
+message PublishCampaignRequest {
+  string campaign_id = 1;
+}
+
+message PublishCampaignResponse {}
+
+message ListCampaignsRequest {
+  string status = 1;
+  string org_id = 2;
+  optional double longitude = 3;
+  optional double latitude = 4;
+  optional double radius_km = 5;
+}
+
+message ListCampaignsResponse {
+  repeated CampaignProto campaigns = 1;
+}
+
+message GetCampaignDashboardRequest {
+  string campaign_id = 1;
+}
+
+message GetCampaignDashboardResponse {
+  string campaign_id = 1;
+  int32 accepted_count = 2;
+  int32 quarantine_count = 3;
+}
+
+// OrgService manages organizations, roles, and user invitations.
+service OrgService {
+  rpc CreateOrg(CreateOrgRequest) returns (CreateOrgResponse);
+  rpc NestOrg(NestOrgRequest) returns (NestOrgResponse);
+  rpc DefineRole(DefineRoleRequest) returns (DefineRoleResponse);
+  rpc AssignRole(AssignRoleRequest) returns (AssignRoleResponse);
+  rpc InviteUser(InviteUserRequest) returns (InviteUserResponse);
+}
+
+// Org messages
+
+message CreateOrgRequest {
+  string name = 1;
+}
+
+message CreateOrgResponse {
+  string org_id = 1;
+  string name = 2;
+}
+
+message NestOrgRequest {
+  string name = 1;
+  string parent_org_id = 2;
+}
+
+message NestOrgResponse {
+  string org_id = 1;
+  string name = 2;
+}
+
+message DefineRoleRequest {
+  string project_id = 1;
+  string role_key = 2;
+  string display_name = 3;
+}
+
+message DefineRoleResponse {
+  string project_id = 1;
+  string role_key = 2;
+  string display_name = 3;
+}
+
+message AssignRoleRequest {
+  string user_id = 1;
+  string project_id = 2;
+  repeated string role_keys = 3;
+}
+
+message AssignRoleResponse {
+  string user_grant_id = 1;
+  string user_id = 2;
+  string project_id = 3;
+  repeated string role_keys = 4;
+}
+
+message InviteUserRequest {
+  string org_id = 1;
+  string email = 2;
+  string given_name = 3;
+  string family_name = 4;
+}
+
+message InviteUserResponse {
+  string user_id = 1;
+  string email_code = 2;
+}

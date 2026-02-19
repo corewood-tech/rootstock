@@ -23,6 +23,10 @@ const _ = connect.IsAtLeastVersion1_13_0
 const (
 	// HealthServiceName is the fully-qualified name of the HealthService service.
 	HealthServiceName = "rootstock.v1.HealthService"
+	// CampaignServiceName is the fully-qualified name of the CampaignService service.
+	CampaignServiceName = "rootstock.v1.CampaignService"
+	// OrgServiceName is the fully-qualified name of the OrgService service.
+	OrgServiceName = "rootstock.v1.OrgService"
 )
 
 // These constants are the fully-qualified names of the RPCs defined in this package. They're
@@ -35,6 +39,28 @@ const (
 const (
 	// HealthServiceCheckProcedure is the fully-qualified name of the HealthService's Check RPC.
 	HealthServiceCheckProcedure = "/rootstock.v1.HealthService/Check"
+	// CampaignServiceCreateCampaignProcedure is the fully-qualified name of the CampaignService's
+	// CreateCampaign RPC.
+	CampaignServiceCreateCampaignProcedure = "/rootstock.v1.CampaignService/CreateCampaign"
+	// CampaignServicePublishCampaignProcedure is the fully-qualified name of the CampaignService's
+	// PublishCampaign RPC.
+	CampaignServicePublishCampaignProcedure = "/rootstock.v1.CampaignService/PublishCampaign"
+	// CampaignServiceListCampaignsProcedure is the fully-qualified name of the CampaignService's
+	// ListCampaigns RPC.
+	CampaignServiceListCampaignsProcedure = "/rootstock.v1.CampaignService/ListCampaigns"
+	// CampaignServiceGetCampaignDashboardProcedure is the fully-qualified name of the CampaignService's
+	// GetCampaignDashboard RPC.
+	CampaignServiceGetCampaignDashboardProcedure = "/rootstock.v1.CampaignService/GetCampaignDashboard"
+	// OrgServiceCreateOrgProcedure is the fully-qualified name of the OrgService's CreateOrg RPC.
+	OrgServiceCreateOrgProcedure = "/rootstock.v1.OrgService/CreateOrg"
+	// OrgServiceNestOrgProcedure is the fully-qualified name of the OrgService's NestOrg RPC.
+	OrgServiceNestOrgProcedure = "/rootstock.v1.OrgService/NestOrg"
+	// OrgServiceDefineRoleProcedure is the fully-qualified name of the OrgService's DefineRole RPC.
+	OrgServiceDefineRoleProcedure = "/rootstock.v1.OrgService/DefineRole"
+	// OrgServiceAssignRoleProcedure is the fully-qualified name of the OrgService's AssignRole RPC.
+	OrgServiceAssignRoleProcedure = "/rootstock.v1.OrgService/AssignRole"
+	// OrgServiceInviteUserProcedure is the fully-qualified name of the OrgService's InviteUser RPC.
+	OrgServiceInviteUserProcedure = "/rootstock.v1.OrgService/InviteUser"
 )
 
 // HealthServiceClient is a client for the rootstock.v1.HealthService service.
@@ -105,4 +131,326 @@ type UnimplementedHealthServiceHandler struct{}
 
 func (UnimplementedHealthServiceHandler) Check(context.Context, *connect.Request[v1.CheckRequest]) (*connect.Response[v1.CheckResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("rootstock.v1.HealthService.Check is not implemented"))
+}
+
+// CampaignServiceClient is a client for the rootstock.v1.CampaignService service.
+type CampaignServiceClient interface {
+	CreateCampaign(context.Context, *connect.Request[v1.CreateCampaignRequest]) (*connect.Response[v1.CreateCampaignResponse], error)
+	PublishCampaign(context.Context, *connect.Request[v1.PublishCampaignRequest]) (*connect.Response[v1.PublishCampaignResponse], error)
+	ListCampaigns(context.Context, *connect.Request[v1.ListCampaignsRequest]) (*connect.Response[v1.ListCampaignsResponse], error)
+	GetCampaignDashboard(context.Context, *connect.Request[v1.GetCampaignDashboardRequest]) (*connect.Response[v1.GetCampaignDashboardResponse], error)
+}
+
+// NewCampaignServiceClient constructs a client for the rootstock.v1.CampaignService service. By
+// default, it uses the Connect protocol with the binary Protobuf Codec, asks for gzipped responses,
+// and sends uncompressed requests. To use the gRPC or gRPC-Web protocols, supply the
+// connect.WithGRPC() or connect.WithGRPCWeb() options.
+//
+// The URL supplied here should be the base URL for the Connect or gRPC server (for example,
+// http://api.acme.com or https://acme.com/grpc).
+func NewCampaignServiceClient(httpClient connect.HTTPClient, baseURL string, opts ...connect.ClientOption) CampaignServiceClient {
+	baseURL = strings.TrimRight(baseURL, "/")
+	campaignServiceMethods := v1.File_rootstock_v1_rootstock_proto.Services().ByName("CampaignService").Methods()
+	return &campaignServiceClient{
+		createCampaign: connect.NewClient[v1.CreateCampaignRequest, v1.CreateCampaignResponse](
+			httpClient,
+			baseURL+CampaignServiceCreateCampaignProcedure,
+			connect.WithSchema(campaignServiceMethods.ByName("CreateCampaign")),
+			connect.WithClientOptions(opts...),
+		),
+		publishCampaign: connect.NewClient[v1.PublishCampaignRequest, v1.PublishCampaignResponse](
+			httpClient,
+			baseURL+CampaignServicePublishCampaignProcedure,
+			connect.WithSchema(campaignServiceMethods.ByName("PublishCampaign")),
+			connect.WithClientOptions(opts...),
+		),
+		listCampaigns: connect.NewClient[v1.ListCampaignsRequest, v1.ListCampaignsResponse](
+			httpClient,
+			baseURL+CampaignServiceListCampaignsProcedure,
+			connect.WithSchema(campaignServiceMethods.ByName("ListCampaigns")),
+			connect.WithClientOptions(opts...),
+		),
+		getCampaignDashboard: connect.NewClient[v1.GetCampaignDashboardRequest, v1.GetCampaignDashboardResponse](
+			httpClient,
+			baseURL+CampaignServiceGetCampaignDashboardProcedure,
+			connect.WithSchema(campaignServiceMethods.ByName("GetCampaignDashboard")),
+			connect.WithClientOptions(opts...),
+		),
+	}
+}
+
+// campaignServiceClient implements CampaignServiceClient.
+type campaignServiceClient struct {
+	createCampaign       *connect.Client[v1.CreateCampaignRequest, v1.CreateCampaignResponse]
+	publishCampaign      *connect.Client[v1.PublishCampaignRequest, v1.PublishCampaignResponse]
+	listCampaigns        *connect.Client[v1.ListCampaignsRequest, v1.ListCampaignsResponse]
+	getCampaignDashboard *connect.Client[v1.GetCampaignDashboardRequest, v1.GetCampaignDashboardResponse]
+}
+
+// CreateCampaign calls rootstock.v1.CampaignService.CreateCampaign.
+func (c *campaignServiceClient) CreateCampaign(ctx context.Context, req *connect.Request[v1.CreateCampaignRequest]) (*connect.Response[v1.CreateCampaignResponse], error) {
+	return c.createCampaign.CallUnary(ctx, req)
+}
+
+// PublishCampaign calls rootstock.v1.CampaignService.PublishCampaign.
+func (c *campaignServiceClient) PublishCampaign(ctx context.Context, req *connect.Request[v1.PublishCampaignRequest]) (*connect.Response[v1.PublishCampaignResponse], error) {
+	return c.publishCampaign.CallUnary(ctx, req)
+}
+
+// ListCampaigns calls rootstock.v1.CampaignService.ListCampaigns.
+func (c *campaignServiceClient) ListCampaigns(ctx context.Context, req *connect.Request[v1.ListCampaignsRequest]) (*connect.Response[v1.ListCampaignsResponse], error) {
+	return c.listCampaigns.CallUnary(ctx, req)
+}
+
+// GetCampaignDashboard calls rootstock.v1.CampaignService.GetCampaignDashboard.
+func (c *campaignServiceClient) GetCampaignDashboard(ctx context.Context, req *connect.Request[v1.GetCampaignDashboardRequest]) (*connect.Response[v1.GetCampaignDashboardResponse], error) {
+	return c.getCampaignDashboard.CallUnary(ctx, req)
+}
+
+// CampaignServiceHandler is an implementation of the rootstock.v1.CampaignService service.
+type CampaignServiceHandler interface {
+	CreateCampaign(context.Context, *connect.Request[v1.CreateCampaignRequest]) (*connect.Response[v1.CreateCampaignResponse], error)
+	PublishCampaign(context.Context, *connect.Request[v1.PublishCampaignRequest]) (*connect.Response[v1.PublishCampaignResponse], error)
+	ListCampaigns(context.Context, *connect.Request[v1.ListCampaignsRequest]) (*connect.Response[v1.ListCampaignsResponse], error)
+	GetCampaignDashboard(context.Context, *connect.Request[v1.GetCampaignDashboardRequest]) (*connect.Response[v1.GetCampaignDashboardResponse], error)
+}
+
+// NewCampaignServiceHandler builds an HTTP handler from the service implementation. It returns the
+// path on which to mount the handler and the handler itself.
+//
+// By default, handlers support the Connect, gRPC, and gRPC-Web protocols with the binary Protobuf
+// and JSON codecs. They also support gzip compression.
+func NewCampaignServiceHandler(svc CampaignServiceHandler, opts ...connect.HandlerOption) (string, http.Handler) {
+	campaignServiceMethods := v1.File_rootstock_v1_rootstock_proto.Services().ByName("CampaignService").Methods()
+	campaignServiceCreateCampaignHandler := connect.NewUnaryHandler(
+		CampaignServiceCreateCampaignProcedure,
+		svc.CreateCampaign,
+		connect.WithSchema(campaignServiceMethods.ByName("CreateCampaign")),
+		connect.WithHandlerOptions(opts...),
+	)
+	campaignServicePublishCampaignHandler := connect.NewUnaryHandler(
+		CampaignServicePublishCampaignProcedure,
+		svc.PublishCampaign,
+		connect.WithSchema(campaignServiceMethods.ByName("PublishCampaign")),
+		connect.WithHandlerOptions(opts...),
+	)
+	campaignServiceListCampaignsHandler := connect.NewUnaryHandler(
+		CampaignServiceListCampaignsProcedure,
+		svc.ListCampaigns,
+		connect.WithSchema(campaignServiceMethods.ByName("ListCampaigns")),
+		connect.WithHandlerOptions(opts...),
+	)
+	campaignServiceGetCampaignDashboardHandler := connect.NewUnaryHandler(
+		CampaignServiceGetCampaignDashboardProcedure,
+		svc.GetCampaignDashboard,
+		connect.WithSchema(campaignServiceMethods.ByName("GetCampaignDashboard")),
+		connect.WithHandlerOptions(opts...),
+	)
+	return "/rootstock.v1.CampaignService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.URL.Path {
+		case CampaignServiceCreateCampaignProcedure:
+			campaignServiceCreateCampaignHandler.ServeHTTP(w, r)
+		case CampaignServicePublishCampaignProcedure:
+			campaignServicePublishCampaignHandler.ServeHTTP(w, r)
+		case CampaignServiceListCampaignsProcedure:
+			campaignServiceListCampaignsHandler.ServeHTTP(w, r)
+		case CampaignServiceGetCampaignDashboardProcedure:
+			campaignServiceGetCampaignDashboardHandler.ServeHTTP(w, r)
+		default:
+			http.NotFound(w, r)
+		}
+	})
+}
+
+// UnimplementedCampaignServiceHandler returns CodeUnimplemented from all methods.
+type UnimplementedCampaignServiceHandler struct{}
+
+func (UnimplementedCampaignServiceHandler) CreateCampaign(context.Context, *connect.Request[v1.CreateCampaignRequest]) (*connect.Response[v1.CreateCampaignResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("rootstock.v1.CampaignService.CreateCampaign is not implemented"))
+}
+
+func (UnimplementedCampaignServiceHandler) PublishCampaign(context.Context, *connect.Request[v1.PublishCampaignRequest]) (*connect.Response[v1.PublishCampaignResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("rootstock.v1.CampaignService.PublishCampaign is not implemented"))
+}
+
+func (UnimplementedCampaignServiceHandler) ListCampaigns(context.Context, *connect.Request[v1.ListCampaignsRequest]) (*connect.Response[v1.ListCampaignsResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("rootstock.v1.CampaignService.ListCampaigns is not implemented"))
+}
+
+func (UnimplementedCampaignServiceHandler) GetCampaignDashboard(context.Context, *connect.Request[v1.GetCampaignDashboardRequest]) (*connect.Response[v1.GetCampaignDashboardResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("rootstock.v1.CampaignService.GetCampaignDashboard is not implemented"))
+}
+
+// OrgServiceClient is a client for the rootstock.v1.OrgService service.
+type OrgServiceClient interface {
+	CreateOrg(context.Context, *connect.Request[v1.CreateOrgRequest]) (*connect.Response[v1.CreateOrgResponse], error)
+	NestOrg(context.Context, *connect.Request[v1.NestOrgRequest]) (*connect.Response[v1.NestOrgResponse], error)
+	DefineRole(context.Context, *connect.Request[v1.DefineRoleRequest]) (*connect.Response[v1.DefineRoleResponse], error)
+	AssignRole(context.Context, *connect.Request[v1.AssignRoleRequest]) (*connect.Response[v1.AssignRoleResponse], error)
+	InviteUser(context.Context, *connect.Request[v1.InviteUserRequest]) (*connect.Response[v1.InviteUserResponse], error)
+}
+
+// NewOrgServiceClient constructs a client for the rootstock.v1.OrgService service. By default, it
+// uses the Connect protocol with the binary Protobuf Codec, asks for gzipped responses, and sends
+// uncompressed requests. To use the gRPC or gRPC-Web protocols, supply the connect.WithGRPC() or
+// connect.WithGRPCWeb() options.
+//
+// The URL supplied here should be the base URL for the Connect or gRPC server (for example,
+// http://api.acme.com or https://acme.com/grpc).
+func NewOrgServiceClient(httpClient connect.HTTPClient, baseURL string, opts ...connect.ClientOption) OrgServiceClient {
+	baseURL = strings.TrimRight(baseURL, "/")
+	orgServiceMethods := v1.File_rootstock_v1_rootstock_proto.Services().ByName("OrgService").Methods()
+	return &orgServiceClient{
+		createOrg: connect.NewClient[v1.CreateOrgRequest, v1.CreateOrgResponse](
+			httpClient,
+			baseURL+OrgServiceCreateOrgProcedure,
+			connect.WithSchema(orgServiceMethods.ByName("CreateOrg")),
+			connect.WithClientOptions(opts...),
+		),
+		nestOrg: connect.NewClient[v1.NestOrgRequest, v1.NestOrgResponse](
+			httpClient,
+			baseURL+OrgServiceNestOrgProcedure,
+			connect.WithSchema(orgServiceMethods.ByName("NestOrg")),
+			connect.WithClientOptions(opts...),
+		),
+		defineRole: connect.NewClient[v1.DefineRoleRequest, v1.DefineRoleResponse](
+			httpClient,
+			baseURL+OrgServiceDefineRoleProcedure,
+			connect.WithSchema(orgServiceMethods.ByName("DefineRole")),
+			connect.WithClientOptions(opts...),
+		),
+		assignRole: connect.NewClient[v1.AssignRoleRequest, v1.AssignRoleResponse](
+			httpClient,
+			baseURL+OrgServiceAssignRoleProcedure,
+			connect.WithSchema(orgServiceMethods.ByName("AssignRole")),
+			connect.WithClientOptions(opts...),
+		),
+		inviteUser: connect.NewClient[v1.InviteUserRequest, v1.InviteUserResponse](
+			httpClient,
+			baseURL+OrgServiceInviteUserProcedure,
+			connect.WithSchema(orgServiceMethods.ByName("InviteUser")),
+			connect.WithClientOptions(opts...),
+		),
+	}
+}
+
+// orgServiceClient implements OrgServiceClient.
+type orgServiceClient struct {
+	createOrg  *connect.Client[v1.CreateOrgRequest, v1.CreateOrgResponse]
+	nestOrg    *connect.Client[v1.NestOrgRequest, v1.NestOrgResponse]
+	defineRole *connect.Client[v1.DefineRoleRequest, v1.DefineRoleResponse]
+	assignRole *connect.Client[v1.AssignRoleRequest, v1.AssignRoleResponse]
+	inviteUser *connect.Client[v1.InviteUserRequest, v1.InviteUserResponse]
+}
+
+// CreateOrg calls rootstock.v1.OrgService.CreateOrg.
+func (c *orgServiceClient) CreateOrg(ctx context.Context, req *connect.Request[v1.CreateOrgRequest]) (*connect.Response[v1.CreateOrgResponse], error) {
+	return c.createOrg.CallUnary(ctx, req)
+}
+
+// NestOrg calls rootstock.v1.OrgService.NestOrg.
+func (c *orgServiceClient) NestOrg(ctx context.Context, req *connect.Request[v1.NestOrgRequest]) (*connect.Response[v1.NestOrgResponse], error) {
+	return c.nestOrg.CallUnary(ctx, req)
+}
+
+// DefineRole calls rootstock.v1.OrgService.DefineRole.
+func (c *orgServiceClient) DefineRole(ctx context.Context, req *connect.Request[v1.DefineRoleRequest]) (*connect.Response[v1.DefineRoleResponse], error) {
+	return c.defineRole.CallUnary(ctx, req)
+}
+
+// AssignRole calls rootstock.v1.OrgService.AssignRole.
+func (c *orgServiceClient) AssignRole(ctx context.Context, req *connect.Request[v1.AssignRoleRequest]) (*connect.Response[v1.AssignRoleResponse], error) {
+	return c.assignRole.CallUnary(ctx, req)
+}
+
+// InviteUser calls rootstock.v1.OrgService.InviteUser.
+func (c *orgServiceClient) InviteUser(ctx context.Context, req *connect.Request[v1.InviteUserRequest]) (*connect.Response[v1.InviteUserResponse], error) {
+	return c.inviteUser.CallUnary(ctx, req)
+}
+
+// OrgServiceHandler is an implementation of the rootstock.v1.OrgService service.
+type OrgServiceHandler interface {
+	CreateOrg(context.Context, *connect.Request[v1.CreateOrgRequest]) (*connect.Response[v1.CreateOrgResponse], error)
+	NestOrg(context.Context, *connect.Request[v1.NestOrgRequest]) (*connect.Response[v1.NestOrgResponse], error)
+	DefineRole(context.Context, *connect.Request[v1.DefineRoleRequest]) (*connect.Response[v1.DefineRoleResponse], error)
+	AssignRole(context.Context, *connect.Request[v1.AssignRoleRequest]) (*connect.Response[v1.AssignRoleResponse], error)
+	InviteUser(context.Context, *connect.Request[v1.InviteUserRequest]) (*connect.Response[v1.InviteUserResponse], error)
+}
+
+// NewOrgServiceHandler builds an HTTP handler from the service implementation. It returns the path
+// on which to mount the handler and the handler itself.
+//
+// By default, handlers support the Connect, gRPC, and gRPC-Web protocols with the binary Protobuf
+// and JSON codecs. They also support gzip compression.
+func NewOrgServiceHandler(svc OrgServiceHandler, opts ...connect.HandlerOption) (string, http.Handler) {
+	orgServiceMethods := v1.File_rootstock_v1_rootstock_proto.Services().ByName("OrgService").Methods()
+	orgServiceCreateOrgHandler := connect.NewUnaryHandler(
+		OrgServiceCreateOrgProcedure,
+		svc.CreateOrg,
+		connect.WithSchema(orgServiceMethods.ByName("CreateOrg")),
+		connect.WithHandlerOptions(opts...),
+	)
+	orgServiceNestOrgHandler := connect.NewUnaryHandler(
+		OrgServiceNestOrgProcedure,
+		svc.NestOrg,
+		connect.WithSchema(orgServiceMethods.ByName("NestOrg")),
+		connect.WithHandlerOptions(opts...),
+	)
+	orgServiceDefineRoleHandler := connect.NewUnaryHandler(
+		OrgServiceDefineRoleProcedure,
+		svc.DefineRole,
+		connect.WithSchema(orgServiceMethods.ByName("DefineRole")),
+		connect.WithHandlerOptions(opts...),
+	)
+	orgServiceAssignRoleHandler := connect.NewUnaryHandler(
+		OrgServiceAssignRoleProcedure,
+		svc.AssignRole,
+		connect.WithSchema(orgServiceMethods.ByName("AssignRole")),
+		connect.WithHandlerOptions(opts...),
+	)
+	orgServiceInviteUserHandler := connect.NewUnaryHandler(
+		OrgServiceInviteUserProcedure,
+		svc.InviteUser,
+		connect.WithSchema(orgServiceMethods.ByName("InviteUser")),
+		connect.WithHandlerOptions(opts...),
+	)
+	return "/rootstock.v1.OrgService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.URL.Path {
+		case OrgServiceCreateOrgProcedure:
+			orgServiceCreateOrgHandler.ServeHTTP(w, r)
+		case OrgServiceNestOrgProcedure:
+			orgServiceNestOrgHandler.ServeHTTP(w, r)
+		case OrgServiceDefineRoleProcedure:
+			orgServiceDefineRoleHandler.ServeHTTP(w, r)
+		case OrgServiceAssignRoleProcedure:
+			orgServiceAssignRoleHandler.ServeHTTP(w, r)
+		case OrgServiceInviteUserProcedure:
+			orgServiceInviteUserHandler.ServeHTTP(w, r)
+		default:
+			http.NotFound(w, r)
+		}
+	})
+}
+
+// UnimplementedOrgServiceHandler returns CodeUnimplemented from all methods.
+type UnimplementedOrgServiceHandler struct{}
+
+func (UnimplementedOrgServiceHandler) CreateOrg(context.Context, *connect.Request[v1.CreateOrgRequest]) (*connect.Response[v1.CreateOrgResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("rootstock.v1.OrgService.CreateOrg is not implemented"))
+}
+
+func (UnimplementedOrgServiceHandler) NestOrg(context.Context, *connect.Request[v1.NestOrgRequest]) (*connect.Response[v1.NestOrgResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("rootstock.v1.OrgService.NestOrg is not implemented"))
+}
+
+func (UnimplementedOrgServiceHandler) DefineRole(context.Context, *connect.Request[v1.DefineRoleRequest]) (*connect.Response[v1.DefineRoleResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("rootstock.v1.OrgService.DefineRole is not implemented"))
+}
+
+func (UnimplementedOrgServiceHandler) AssignRole(context.Context, *connect.Request[v1.AssignRoleRequest]) (*connect.Response[v1.AssignRoleResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("rootstock.v1.OrgService.AssignRole is not implemented"))
+}
+
+func (UnimplementedOrgServiceHandler) InviteUser(context.Context, *connect.Request[v1.InviteUserRequest]) (*connect.Response[v1.InviteUserResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("rootstock.v1.OrgService.InviteUser is not implemented"))
 }

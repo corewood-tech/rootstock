@@ -1,4 +1,4 @@
-package flows
+package reading
 
 import (
 	"context"
