@@ -140,9 +140,14 @@ rootstock/
 │   │   └── sql/connect/           # PostgreSQL connection (pgx)
 │   ├── server/                    # Server wiring and middleware
 │   └── proto/rootstock/v1/        # Generated protobuf + Connect code
+├── ui/                            # SvelteKit frontend (static adapter, Tailwind)
+├── e2e/                           # Playwright end-to-end tests
+├── grapher/                       # Dgraph knowledge graphs (spec traceability)
+│   ├── schema/                    # GraphQL schemas (facts, scope, requirements)
+│   └── compose-grapher.yml        # Standalone Dgraph stack
 ├── compose/                       # Podman/Docker Compose orchestration
 ├── build/                         # Container images (dev & prod)
-└── configs/                       # Service configs (Caddyfile)
+└── configs/                       # Service configs (Caddyfile, OTel, Prometheus)
 ```
 
 Each directory maps to a single boundary drawn by volatility. Imports along the pipeline point inward: `handlers/` → `flows/` → `ops/` → `repo/`, never the reverse. Auth is resolved at the handler (edge), not as a separate cross-cutting layer. Observability (`global/`) is injected at construction time and changes independently from business logic.
@@ -151,16 +156,19 @@ Each directory maps to a single boundary drawn by volatility. Imports along the 
 
 | Concern | Technology |
 |---------|------------|
-| Language | Go |
+| Backend | [Go](https://go.dev/) |
+| Frontend | [Svelte 5](https://svelte.dev/) + [SvelteKit](https://svelte.dev/docs/kit) (static adapter) + [Tailwind CSS 4](https://tailwindcss.com/) |
 | RPC | [Connect RPC](https://connectrpc.com/) (protobuf) |
-| Database | PostgreSQL ([pgx](https://github.com/jackc/pgx)) |
+| Database | [PostgreSQL](https://www.postgresql.org/) ([pgx](https://github.com/jackc/pgx)) |
+| Knowledge Graph | [Dgraph](https://dgraph.io/) (spec traceability) |
 | Identity | [Zitadel](https://zitadel.com/) |
 | Authorization | [Open Policy Agent](https://www.openpolicyagent.org/) |
 | Workflow Engine | [DBOS](https://dbos.dev/) |
-| Observability | [OpenTelemetry](https://opentelemetry.io/) → Prometheus, Tempo, Loki, Grafana |
+| Observability | [OpenTelemetry](https://opentelemetry.io/) → [Prometheus](https://prometheus.io/), [Tempo](https://grafana.com/oss/tempo/), [Loki](https://grafana.com/oss/loki/), [Grafana](https://grafana.com/oss/grafana/) |
+| E2E Testing | [Playwright](https://playwright.dev/) |
 | Config | [koanf](https://github.com/knadh/koanf) (YAML → env → flags) |
 | Reverse Proxy | [Caddy](https://caddyserver.com/) |
-| Containers | Podman Compose |
+| Containers | [Podman](https://podman.io/) Compose |
 
 ## Prerequisites
 
@@ -175,9 +183,9 @@ cd rootstock
 make up
 ```
 
-This starts the full stack: web server, databases, identity provider, observability, and reverse proxy.
+This starts the full stack: web server, UI, databases, identity provider, observability, and reverse proxy.
 
-The web server hot reloads on file changes — edit Go code and it rebuilds automatically.
+Both the web server (Go/air) and UI (SvelteKit/vite) hot reload on file changes.
 
 ### Verify
 
@@ -192,6 +200,7 @@ curl -s -X POST http://localhost:8080/rootstock.v1.HealthService/Check \
 
 | Service | URL |
 |---------|-----|
+| App UI | http://localhost:9999/app/en/ |
 | Grafana | http://localhost:9999/grafana/ |
 | Prometheus | http://localhost:9999/prometheus/ |
 
@@ -200,6 +209,14 @@ curl -s -X POST http://localhost:8080/rootstock.v1.HealthService/Check \
 ```bash
 make proto
 ```
+
+### Run E2E Tests
+
+```bash
+make test
+```
+
+Runs [Playwright](https://playwright.dev/) tests in a container against the full stack — hits the UI, fires a health check, then verifies the span metrics incremented in Prometheus.
 
 ### Stop
 

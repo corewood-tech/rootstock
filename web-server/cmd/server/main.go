@@ -21,6 +21,7 @@ import (
 	eventsrepo "rootstock/web-server/repo/events"
 	o11yrepo "rootstock/web-server/repo/observability"
 	sqlconnect "rootstock/web-server/repo/sql/connect"
+	sqlmigrate "rootstock/web-server/repo/sql/migrate"
 	"rootstock/web-server/server"
 
 	"go.opentelemetry.io/contrib/instrumentation/runtime"
@@ -52,6 +53,12 @@ func run() error {
 
 	logger := observability.GetLogger("main")
 
+	// Run database migrations
+	if err := sqlmigrate.Run(cfg.Database.Postgres); err != nil {
+		return fmt.Errorf("run migrations: %w", err)
+	}
+	logger.Info(ctx, "database migrations applied", nil)
+
 	// Database pool
 	pool, err := sqlconnect.OpenPostgres(ctx, cfg.Database.Postgres)
 	if err != nil {
@@ -72,6 +79,15 @@ func run() error {
 		return fmt.Errorf("start runtime metrics: %w", err)
 	}
 
+	// Identity (JWT verification via Zitadel JWKS)
+	// Zitadel resolves instances by Host header — internal requests must
+	// override Host to match the external domain configured in Zitadel.
+	jwksURL := fmt.Sprintf("http://%s:%d/oauth/v2/keys", cfg.Identity.Zitadel.Host, cfg.Identity.Zitadel.Port)
+	jwtVerifier, err := server.NewJWTVerifier(ctx, jwksURL, cfg.Identity.Zitadel.ExternalDomain, cfg.Identity.Zitadel.Issuer)
+	if err != nil {
+		return fmt.Errorf("create jwt verifier: %w", err)
+	}
+
 	// Authorization (OPA)
 	authzRepo := authorization.NewOPARepository()
 	if err := authzRepo.Recompile(ctx); err != nil {
@@ -82,7 +98,7 @@ func run() error {
 	if err != nil {
 		return fmt.Errorf("create otel interceptor: %w", err)
 	}
-	interceptors := connect.WithInterceptors(otelInterceptor, server.AuthorizationInterceptor(authzRepo), server.BinaryOnlyInterceptor())
+	interceptors := connect.WithInterceptors(otelInterceptor, server.AuthorizationInterceptor(jwtVerifier, authzRepo), server.BinaryOnlyInterceptor())
 
 	healthHandler := connecthandlers.NewHealthServiceHandler()
 	path, handler := rootstockv1connect.NewHealthServiceHandler(healthHandler, interceptors)

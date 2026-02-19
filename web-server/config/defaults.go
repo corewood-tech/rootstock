@@ -18,8 +18,10 @@ func defaults() Config {
 		},
 		Identity: IdentityConfig{
 			Zitadel: ZitadelConfig{
-				Host: "localhost",
-				Port: 8085,
+				Host:   "zitadel",
+				Port:   8080,
+				Issuer:         "http://localhost:9999",
+			ExternalDomain: "localhost",
 			},
 		},
 		Authorization: AuthorizationConfig{

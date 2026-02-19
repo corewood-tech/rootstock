@@ -1,0 +1,3 @@
+DROP TABLE IF EXISTS sweepstakes_entries;
+DROP TABLE IF EXISTS badges;
+DROP TABLE IF EXISTS scores;

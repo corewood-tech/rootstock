@@ -47,6 +47,8 @@ type IdentityConfig struct {
 type ZitadelConfig struct {
 	Host           string `koanf:"host"`
 	Port           int    `koanf:"port"`
+	Issuer         string `koanf:"issuer"`
+	ExternalDomain string `koanf:"external_domain"`
 	ServiceUserPAT string `koanf:"service_user_pat"`
 }
 

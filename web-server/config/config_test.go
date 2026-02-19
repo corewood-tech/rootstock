@@ -20,8 +20,8 @@ func TestLoadDefaults(t *testing.T) {
 	if cfg.Server.Port != 8080 {
 		t.Errorf("Server.Port = %d, want %d", cfg.Server.Port, 8080)
 	}
-	if cfg.Database.Postgres.Host != "localhost" {
-		t.Errorf("Database.Postgres.Host = %q, want %q", cfg.Database.Postgres.Host, "localhost")
+	if cfg.Database.Postgres.Host != "app-postgres" {
+		t.Errorf("Database.Postgres.Host = %q, want %q", cfg.Database.Postgres.Host, "app-postgres")
 	}
 	if cfg.Observability.ServiceName != "rootstock" {
 		t.Errorf("Observability.ServiceName = %q, want %q", cfg.Observability.ServiceName, "rootstock")
