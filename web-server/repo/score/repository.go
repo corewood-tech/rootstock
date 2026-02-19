@@ -198,7 +198,8 @@ func (r *pgRepo) doGetScore(ctx context.Context, scitizenID string) (*Score, err
 
 func (r *pgRepo) doAwardBadge(ctx context.Context, scitizenID string, badgeType string) error {
 	_, err := r.pool.Exec(ctx,
-		`INSERT INTO badges (scitizen_id, badge_type) VALUES ($1, $2)`,
+		`INSERT INTO badges (scitizen_id, badge_type) VALUES ($1, $2)
+		 ON CONFLICT (scitizen_id, badge_type) DO NOTHING`,
 		scitizenID, badgeType,
 	)
 	if err != nil {
@@ -230,7 +231,8 @@ func (r *pgRepo) doGetBadges(ctx context.Context, scitizenID string) ([]Badge, e
 
 func (r *pgRepo) doGrantSweepstakes(ctx context.Context, input GrantSweepstakesInput) error {
 	_, err := r.pool.Exec(ctx,
-		`INSERT INTO sweepstakes_entries (scitizen_id, entries, milestone_trigger) VALUES ($1, $2, $3)`,
+		`INSERT INTO sweepstakes_entries (scitizen_id, entries, milestone_trigger) VALUES ($1, $2, $3)
+		 ON CONFLICT (scitizen_id, milestone_trigger) DO NOTHING`,
 		input.ScitizenID, input.Entries, input.MilestoneTrigger,
 	)
 	if err != nil {

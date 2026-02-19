@@ -67,6 +67,23 @@ func toRepoGrantSweepstakesInput(in GrantSweepstakesInput) scorerepo.GrantSweeps
 	}
 }
 
+// GetBadges returns all badges awarded to a scitizen.
+func (o *Ops) GetBadges(ctx context.Context, scitizenID string) ([]Badge, error) {
+	results, err := o.repo.GetBadges(ctx, scitizenID)
+	if err != nil {
+		return nil, err
+	}
+	out := make([]Badge, len(results))
+	for i, b := range results {
+		out[i] = Badge{
+			ID:        b.ID,
+			BadgeType: b.BadgeType,
+			AwardedAt: b.AwardedAt,
+		}
+	}
+	return out, nil
+}
+
 func fromRepoScore(r *scorerepo.Score) *Score {
 	return &Score{
 		ScitizenID:  r.ScitizenID,

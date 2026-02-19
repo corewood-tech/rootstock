@@ -3,9 +3,11 @@ FROM caddy:2-builder AS builder
 RUN apk add --no-cache gcc musl-dev brotli-dev
 
 ENV CGO_ENABLED=1
+ENV XCADDY_SKIP_CLEANUP=0
 
 RUN xcaddy build \
-    --with github.com/dunglas/caddy-cbrotli
+    --with github.com/dunglas/caddy-cbrotli \
+    --with github.com/mholt/caddy-l4
 
 FROM caddy:2-alpine
 

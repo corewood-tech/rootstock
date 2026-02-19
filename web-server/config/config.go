@@ -20,6 +20,7 @@ type Config struct {
 	Authorization AuthorizationConfig `koanf:"authorization"`
 	Observability ObservabilityConfig `koanf:"observability"`
 	Events        EventsConfig        `koanf:"events"`
+	Cert          CertConfig          `koanf:"cert"`
 }
 
 type ServerConfig struct {
@@ -71,6 +72,12 @@ type ObservabilityConfig struct {
 
 type EventsConfig struct {
 	AppName string `koanf:"app_name"`
+}
+
+type CertConfig struct {
+	CACertPath       string `koanf:"ca_cert_path"`
+	CAKeyPath        string `koanf:"ca_key_path"`
+	CertLifetimeDays int    `koanf:"cert_lifetime_days"`
 }
 
 // Load builds the config by layering: defaults → YAML file → env vars → CLI flags.

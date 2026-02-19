@@ -1,0 +1,7 @@
+grapher/
+certs/
+node_modules/
+.svelte-kit/
+.git/
+spec/
+tmp/

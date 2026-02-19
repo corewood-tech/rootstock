@@ -32,3 +32,8 @@ observability:
 
 events:
   app_name: rootstock
+
+cert:
+  ca_cert_path: /certs/ca.crt
+  ca_key_path: /certs/ca.key
+  cert_lifetime_days: 90

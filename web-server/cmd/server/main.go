@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"crypto/tls"
 	"fmt"
 	"net"
 	"net/http"
@@ -9,25 +10,12 @@ import (
 	"os/signal"
 	"syscall"
 
-	"connectrpc.com/connect"
-	"connectrpc.com/otelconnect"
-
 	"rootstock/web-server/config"
-	campaignflows "rootstock/web-server/flows/campaign"
-	orgflows "rootstock/web-server/flows/org"
 	"rootstock/web-server/global/events"
 	"rootstock/web-server/global/observability"
-	connecthandlers "rootstock/web-server/handlers/connect"
-	campaignops "rootstock/web-server/ops/campaign"
-	orgops "rootstock/web-server/ops/org"
-	readingops "rootstock/web-server/ops/reading"
-	"rootstock/web-server/proto/rootstock/v1/rootstockv1connect"
-	"rootstock/web-server/repo/authorization"
-	campaignrepo "rootstock/web-server/repo/campaign"
 	eventsrepo "rootstock/web-server/repo/events"
 	identityrepo "rootstock/web-server/repo/identity"
 	o11yrepo "rootstock/web-server/repo/observability"
-	readingrepo "rootstock/web-server/repo/reading"
 	sqlconnect "rootstock/web-server/repo/sql/connect"
 	sqlmigrate "rootstock/web-server/repo/sql/migrate"
 	"rootstock/web-server/server"
@@ -87,33 +75,6 @@ func run() error {
 		return fmt.Errorf("start runtime metrics: %w", err)
 	}
 
-	// Identity (JWT verification via Zitadel JWKS)
-	// Zitadel resolves instances by Host header — internal requests must
-	// override Host to match the external domain configured in Zitadel.
-	jwksURL := fmt.Sprintf("http://%s:%d/oauth/v2/keys", cfg.Identity.Zitadel.Host, cfg.Identity.Zitadel.Port)
-	jwtVerifier, err := server.NewJWTVerifier(ctx, jwksURL, cfg.Identity.Zitadel.ExternalDomain, cfg.Identity.Zitadel.Issuer)
-	if err != nil {
-		return fmt.Errorf("create jwt verifier: %w", err)
-	}
-
-	// Authorization (OPA)
-	authzRepo := authorization.NewOPARepository()
-	if err := authzRepo.Recompile(ctx); err != nil {
-		return fmt.Errorf("compile authorization policy: %w", err)
-	}
-
-	otelInterceptor, err := otelconnect.NewInterceptor()
-	if err != nil {
-		return fmt.Errorf("create otel interceptor: %w", err)
-	}
-	interceptors := connect.WithInterceptors(otelInterceptor, server.AuthorizationInterceptor(jwtVerifier, authzRepo), server.BinaryOnlyInterceptor())
-
-	// Business repos
-	cRepo := campaignrepo.NewRepository(pool)
-	defer cRepo.Shutdown()
-	rRepo := readingrepo.NewRepository(pool)
-	defer rRepo.Shutdown()
-
 	// Identity repo (Zitadel)
 	iRepo, err := identityrepo.NewRepository(ctx, cfg.Identity.Zitadel)
 	if err != nil {
@@ -121,63 +82,56 @@ func run() error {
 	}
 	defer iRepo.Shutdown()
 
-	// Ops
-	cOps := campaignops.NewOps(cRepo)
-	rOps := readingops.NewOps(rRepo)
-	oOps := orgops.NewOps(iRepo)
-
-	// Campaign flows
-	createCampaignFlow := campaignflows.NewCreateCampaignFlow(cOps)
-	publishCampaignFlow := campaignflows.NewPublishCampaignFlow(cOps)
-	browseCampaignsFlow := campaignflows.NewBrowseCampaignsFlow(cOps)
-	campaignDashboardFlow := campaignflows.NewDashboardFlow(rOps)
-
-	// Org flows
-	createOrgFlow := orgflows.NewCreateOrgFlow(oOps)
-	nestOrgFlow := orgflows.NewNestOrgFlow(oOps)
-	defineRoleFlow := orgflows.NewDefineRoleFlow(oOps)
-	assignRoleFlow := orgflows.NewAssignRoleFlow(oOps)
-	inviteUserFlow := orgflows.NewInviteUserFlow(oOps)
-
-	// Handlers
-	healthHandler := connecthandlers.NewHealthServiceHandler()
-	healthPath, healthH := rootstockv1connect.NewHealthServiceHandler(healthHandler, interceptors)
-
-	campaignHandler := connecthandlers.NewCampaignServiceHandler(
-		createCampaignFlow, publishCampaignFlow, browseCampaignsFlow, campaignDashboardFlow,
-	)
-	campaignPath, campaignH := rootstockv1connect.NewCampaignServiceHandler(campaignHandler, interceptors)
-
-	orgHandler := connecthandlers.NewOrgServiceHandler(
-		createOrgFlow, nestOrgFlow, defineRoleFlow, assignRoleFlow, inviteUserFlow,
-	)
-	orgPath, orgH := rootstockv1connect.NewOrgServiceHandler(orgHandler, interceptors)
-
-	mux := http.NewServeMux()
-	mux.Handle(healthPath, healthH)
-	mux.Handle(campaignPath, campaignH)
-	mux.Handle(orgPath, orgH)
-
-	addr := fmt.Sprintf("%s:%d", cfg.Server.Host, cfg.Server.Port)
-	lis, err := net.Listen("tcp", addr)
+	// RPC server (Connect RPC, JWT auth, human traffic)
+	rpcHandler, rpcCleanup, err := server.NewRPCServer(ctx, cfg, pool, iRepo)
 	if err != nil {
-		return fmt.Errorf("listen on %s: %w", addr, err)
+		return fmt.Errorf("create rpc server: %w", err)
 	}
+	defer rpcCleanup()
 
-	httpServer := &http.Server{Handler: mux}
+	// IoT server (device HTTP, mTLS)
+	iotHandler, tlsCfg, iotCleanup, err := server.NewIoTServer(cfg, pool)
+	if err != nil {
+		return fmt.Errorf("create iot server: %w", err)
+	}
+	defer iotCleanup()
 
-	errChan := make(chan error, 1)
+	errChan := make(chan error, 2)
+
+	// Start RPC listener (port 8080)
+	rpcAddr := fmt.Sprintf("%s:%d", cfg.Server.Host, cfg.Server.Port)
+	rpcLis, err := net.Listen("tcp", rpcAddr)
+	if err != nil {
+		return fmt.Errorf("listen on %s: %w", rpcAddr, err)
+	}
+	rpcServer := &http.Server{Handler: rpcHandler}
 	go func() {
-		logger.Info(ctx, "server listening", map[string]interface{}{"addr": addr})
-		if err := httpServer.Serve(lis); err != nil && err != http.ErrServerClosed {
-			errChan <- fmt.Errorf("serve: %w", err)
+		logger.Info(ctx, "rpc server listening", map[string]interface{}{"addr": rpcAddr})
+		if err := rpcServer.Serve(rpcLis); err != nil && err != http.ErrServerClosed {
+			errChan <- fmt.Errorf("rpc serve: %w", err)
+		}
+	}()
+
+	// Start IoT listener (port 8443, TLS)
+	iotAddr := fmt.Sprintf("%s:8443", cfg.Server.Host)
+	iotLis, err := tls.Listen("tcp", iotAddr, tlsCfg)
+	if err != nil {
+		return fmt.Errorf("listen on %s: %w", iotAddr, err)
+	}
+	iotServer := &http.Server{Handler: iotHandler}
+	go func() {
+		logger.Info(ctx, "iot server listening", map[string]interface{}{"addr": iotAddr})
+		if err := iotServer.Serve(iotLis); err != nil && err != http.ErrServerClosed {
+			errChan <- fmt.Errorf("iot serve: %w", err)
 		}
 	}()
 
 	select {
 	case <-ctx.Done():
-		logger.Info(ctx, "shutting down server...", nil)
-		return httpServer.Close()
+		logger.Info(ctx, "shutting down servers...", nil)
+		rpcServer.Close()
+		iotServer.Close()
+		return nil
 	case err := <-errChan:
 		return err
 	}

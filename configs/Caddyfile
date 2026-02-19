@@ -1,3 +1,15 @@
+{
+	layer4 {
+		:9998 {
+			route {
+				proxy {
+					upstream web-server:8443
+				}
+			}
+		}
+	}
+}
+
 :9999 {
 	# Observability
 	handle /grafana/* {

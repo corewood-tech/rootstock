@@ -12,5 +12,6 @@ type Repository interface {
 	GenerateEnrollmentCode(ctx context.Context, input GenerateCodeInput) (*EnrollmentCode, error)
 	RedeemEnrollmentCode(ctx context.Context, code string) (*EnrollmentCode, error)
 	EnrollInCampaign(ctx context.Context, deviceID string, campaignID string) error
+	UpdateCertSerial(ctx context.Context, id string, serial string) error
 	Shutdown()
 }

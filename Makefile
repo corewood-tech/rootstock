@@ -7,7 +7,7 @@ COMPOSE_FILES := -f $(CURDIR)/compose/compose-data.yml \
 
 E2E_FILES := $(COMPOSE_FILES) -f $(CURDIR)/compose/compose-e2e.yml
 
-.PHONY: up down clean proto recreate build test unit-test tidy go-get
+.PHONY: up down clean proto recreate build test unit-test tidy go-get ca-init
 
 up:
 	podman compose $(COMPOSE_FILES) up -d
@@ -38,3 +38,9 @@ go-get:
 
 test:
 	podman compose $(E2E_FILES) run --rm e2e
+
+ca-init:
+	@mkdir -p certs
+	openssl ecparam -genkey -name prime256v1 -noout -out certs/ca.key
+	openssl req -new -x509 -key certs/ca.key -out certs/ca.crt -days 3650 \
+		-subj "/CN=Rootstock Dev CA"

@@ -8,6 +8,7 @@ services:
     volumes:
       - ../web-server:/src
       - ../proto:/proto
+      - ../certs:/certs:ro
     networks:
       - rootstock
     depends_on:

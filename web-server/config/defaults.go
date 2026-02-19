@@ -40,5 +40,10 @@ func defaults() Config {
 		Events: EventsConfig{
 			AppName: "rootstock",
 		},
+		Cert: CertConfig{
+			CACertPath:       "/certs/ca.crt",
+			CAKeyPath:        "/certs/ca.key",
+			CertLifetimeDays: 90,
+		},
 	}
 }

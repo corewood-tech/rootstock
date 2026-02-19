@@ -12,3 +12,10 @@ type Score struct {
 	Total       float64
 	UpdatedAt   time.Time
 }
+
+// Badge is an awarded badge record.
+type Badge struct {
+	ID        string
+	BadgeType string
+	AwardedAt time.Time
+}

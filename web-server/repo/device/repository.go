@@ -64,36 +64,45 @@ type enrollReq struct {
 	resp       chan response[struct{}]
 }
 
+type updateCertSerialReq struct {
+	ctx    context.Context
+	id     string
+	serial string
+	resp   chan response[struct{}]
+}
+
 type shutdownReq struct {
 	resp chan struct{}
 }
 
 type pgRepo struct {
-	pool            *pgxpool.Pool
-	createCh        chan createReq
-	getCh           chan getReq
-	getCapsCh       chan getCapsReq
-	updateStatusCh  chan updateStatusReq
-	queryByClassCh  chan queryByClassReq
-	genCodeCh       chan genCodeReq
-	redeemCodeCh    chan redeemCodeReq
-	enrollCh        chan enrollReq
-	shutdownCh      chan shutdownReq
+	pool               *pgxpool.Pool
+	createCh           chan createReq
+	getCh              chan getReq
+	getCapsCh          chan getCapsReq
+	updateStatusCh     chan updateStatusReq
+	queryByClassCh     chan queryByClassReq
+	genCodeCh          chan genCodeReq
+	redeemCodeCh       chan redeemCodeReq
+	enrollCh           chan enrollReq
+	updateCertSerialCh chan updateCertSerialReq
+	shutdownCh         chan shutdownReq
 }
 
 // NewRepository creates a device repository backed by Postgres.
 func NewRepository(pool *pgxpool.Pool) Repository {
 	r := &pgRepo{
-		pool:           pool,
-		createCh:       make(chan createReq),
-		getCh:          make(chan getReq),
-		getCapsCh:      make(chan getCapsReq),
-		updateStatusCh: make(chan updateStatusReq),
-		queryByClassCh: make(chan queryByClassReq),
-		genCodeCh:      make(chan genCodeReq),
-		redeemCodeCh:   make(chan redeemCodeReq),
-		enrollCh:       make(chan enrollReq),
-		shutdownCh:     make(chan shutdownReq),
+		pool:               pool,
+		createCh:           make(chan createReq),
+		getCh:              make(chan getReq),
+		getCapsCh:          make(chan getCapsReq),
+		updateStatusCh:     make(chan updateStatusReq),
+		queryByClassCh:     make(chan queryByClassReq),
+		genCodeCh:          make(chan genCodeReq),
+		redeemCodeCh:       make(chan redeemCodeReq),
+		enrollCh:           make(chan enrollReq),
+		updateCertSerialCh: make(chan updateCertSerialReq),
+		shutdownCh:         make(chan shutdownReq),
 	}
 	go r.manage()
 	return r
@@ -125,6 +134,9 @@ func (r *pgRepo) manage() {
 			req.resp <- response[*EnrollmentCode]{val: val, err: err}
 		case req := <-r.enrollCh:
 			err := r.doEnroll(req.ctx, req.deviceID, req.campaignID)
+			req.resp <- response[struct{}]{err: err}
+		case req := <-r.updateCertSerialCh:
+			err := r.doUpdateCertSerial(req.ctx, req.id, req.serial)
 			req.resp <- response[struct{}]{err: err}
 		case req := <-r.shutdownCh:
 			close(req.resp)
@@ -185,6 +197,13 @@ func (r *pgRepo) RedeemEnrollmentCode(ctx context.Context, code string) (*Enroll
 func (r *pgRepo) EnrollInCampaign(ctx context.Context, deviceID string, campaignID string) error {
 	resp := make(chan response[struct{}], 1)
 	r.enrollCh <- enrollReq{ctx: ctx, deviceID: deviceID, campaignID: campaignID, resp: resp}
+	res := <-resp
+	return res.err
+}
+
+func (r *pgRepo) UpdateCertSerial(ctx context.Context, id string, serial string) error {
+	resp := make(chan response[struct{}], 1)
+	r.updateCertSerialCh <- updateCertSerialReq{ctx: ctx, id: id, serial: serial, resp: resp}
 	res := <-resp
 	return res.err
 }
@@ -330,6 +349,20 @@ func (r *pgRepo) doEnroll(ctx context.Context, deviceID string, campaignID strin
 	)
 	if err != nil {
 		return fmt.Errorf("enroll device: %w", err)
+	}
+	return nil
+}
+
+func (r *pgRepo) doUpdateCertSerial(ctx context.Context, id string, serial string) error {
+	tag, err := r.pool.Exec(ctx,
+		`UPDATE devices SET cert_serial = $1 WHERE id = $2`,
+		serial, id,
+	)
+	if err != nil {
+		return fmt.Errorf("update cert serial: %w", err)
+	}
+	if tag.RowsAffected() == 0 {
+		return fmt.Errorf("device %s not found", id)
 	}
 	return nil
 }

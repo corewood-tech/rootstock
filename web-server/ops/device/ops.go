@@ -97,6 +97,11 @@ func (o *Ops) EnrollDeviceInCampaign(ctx context.Context, deviceID string, campa
 	return o.repo.EnrollInCampaign(ctx, deviceID, campaignID)
 }
 
+// UpdateCertSerial records the certificate serial number on a device.
+func (o *Ops) UpdateCertSerial(ctx context.Context, id string, serial string) error {
+	return o.repo.UpdateCertSerial(ctx, id, serial)
+}
+
 func toRepoCreateDeviceInput(in CreateDeviceInput) devicerepo.CreateDeviceInput {
 	return devicerepo.CreateDeviceInput{
 		OwnerID:         in.OwnerID,

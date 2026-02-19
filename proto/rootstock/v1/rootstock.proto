@@ -161,3 +161,72 @@ message InviteUserResponse {
   string user_id = 1;
   string email_code = 2;
 }
+
+// ScoreService provides scitizen contribution scores and gamification.
+service ScoreService {
+  rpc GetContribution(GetContributionRequest) returns (GetContributionResponse);
+}
+
+// DeviceService manages device registry operations for researchers/admins.
+service DeviceService {
+  rpc GetDevice(GetDeviceRequest) returns (GetDeviceResponse);
+  rpc RevokeDevice(RevokeDeviceRequest) returns (RevokeDeviceResponse);
+  rpc ReinstateDevice(ReinstateDeviceRequest) returns (ReinstateDeviceResponse);
+}
+
+// Score messages
+
+message BadgeProto {
+  string id = 1;
+  string badge_type = 2;
+  string awarded_at = 3;
+}
+
+message GetContributionRequest {
+  string scitizen_id = 1;
+}
+
+message GetContributionResponse {
+  string scitizen_id = 1;
+  int32 volume = 2;
+  double quality_rate = 3;
+  double consistency = 4;
+  int32 diversity = 5;
+  double total = 6;
+  string updated_at = 7;
+  repeated BadgeProto badges = 8;
+}
+
+// Device messages
+
+message DeviceProto {
+  string id = 1;
+  string owner_id = 2;
+  string status = 3;
+  string class = 4;
+  string firmware_version = 5;
+  int32 tier = 6;
+  repeated string sensors = 7;
+  optional string cert_serial = 8;
+  string created_at = 9;
+}
+
+message GetDeviceRequest {
+  string device_id = 1;
+}
+
+message GetDeviceResponse {
+  DeviceProto device = 1;
+}
+
+message RevokeDeviceRequest {
+  string device_id = 1;
+}
+
+message RevokeDeviceResponse {}
+
+message ReinstateDeviceRequest {
+  string device_id = 1;
+}
+
+message ReinstateDeviceResponse {}

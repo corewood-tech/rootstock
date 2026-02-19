@@ -27,6 +27,10 @@ const (
 	CampaignServiceName = "rootstock.v1.CampaignService"
 	// OrgServiceName is the fully-qualified name of the OrgService service.
 	OrgServiceName = "rootstock.v1.OrgService"
+	// ScoreServiceName is the fully-qualified name of the ScoreService service.
+	ScoreServiceName = "rootstock.v1.ScoreService"
+	// DeviceServiceName is the fully-qualified name of the DeviceService service.
+	DeviceServiceName = "rootstock.v1.DeviceService"
 )
 
 // These constants are the fully-qualified names of the RPCs defined in this package. They're
@@ -61,6 +65,17 @@ const (
 	OrgServiceAssignRoleProcedure = "/rootstock.v1.OrgService/AssignRole"
 	// OrgServiceInviteUserProcedure is the fully-qualified name of the OrgService's InviteUser RPC.
 	OrgServiceInviteUserProcedure = "/rootstock.v1.OrgService/InviteUser"
+	// ScoreServiceGetContributionProcedure is the fully-qualified name of the ScoreService's
+	// GetContribution RPC.
+	ScoreServiceGetContributionProcedure = "/rootstock.v1.ScoreService/GetContribution"
+	// DeviceServiceGetDeviceProcedure is the fully-qualified name of the DeviceService's GetDevice RPC.
+	DeviceServiceGetDeviceProcedure = "/rootstock.v1.DeviceService/GetDevice"
+	// DeviceServiceRevokeDeviceProcedure is the fully-qualified name of the DeviceService's
+	// RevokeDevice RPC.
+	DeviceServiceRevokeDeviceProcedure = "/rootstock.v1.DeviceService/RevokeDevice"
+	// DeviceServiceReinstateDeviceProcedure is the fully-qualified name of the DeviceService's
+	// ReinstateDevice RPC.
+	DeviceServiceReinstateDeviceProcedure = "/rootstock.v1.DeviceService/ReinstateDevice"
 )
 
 // HealthServiceClient is a client for the rootstock.v1.HealthService service.
@@ -453,4 +468,196 @@ func (UnimplementedOrgServiceHandler) AssignRole(context.Context, *connect.Reque
 
 func (UnimplementedOrgServiceHandler) InviteUser(context.Context, *connect.Request[v1.InviteUserRequest]) (*connect.Response[v1.InviteUserResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("rootstock.v1.OrgService.InviteUser is not implemented"))
+}
+
+// ScoreServiceClient is a client for the rootstock.v1.ScoreService service.
+type ScoreServiceClient interface {
+	GetContribution(context.Context, *connect.Request[v1.GetContributionRequest]) (*connect.Response[v1.GetContributionResponse], error)
+}
+
+// NewScoreServiceClient constructs a client for the rootstock.v1.ScoreService service. By default,
+// it uses the Connect protocol with the binary Protobuf Codec, asks for gzipped responses, and
+// sends uncompressed requests. To use the gRPC or gRPC-Web protocols, supply the connect.WithGRPC()
+// or connect.WithGRPCWeb() options.
+//
+// The URL supplied here should be the base URL for the Connect or gRPC server (for example,
+// http://api.acme.com or https://acme.com/grpc).
+func NewScoreServiceClient(httpClient connect.HTTPClient, baseURL string, opts ...connect.ClientOption) ScoreServiceClient {
+	baseURL = strings.TrimRight(baseURL, "/")
+	scoreServiceMethods := v1.File_rootstock_v1_rootstock_proto.Services().ByName("ScoreService").Methods()
+	return &scoreServiceClient{
+		getContribution: connect.NewClient[v1.GetContributionRequest, v1.GetContributionResponse](
+			httpClient,
+			baseURL+ScoreServiceGetContributionProcedure,
+			connect.WithSchema(scoreServiceMethods.ByName("GetContribution")),
+			connect.WithClientOptions(opts...),
+		),
+	}
+}
+
+// scoreServiceClient implements ScoreServiceClient.
+type scoreServiceClient struct {
+	getContribution *connect.Client[v1.GetContributionRequest, v1.GetContributionResponse]
+}
+
+// GetContribution calls rootstock.v1.ScoreService.GetContribution.
+func (c *scoreServiceClient) GetContribution(ctx context.Context, req *connect.Request[v1.GetContributionRequest]) (*connect.Response[v1.GetContributionResponse], error) {
+	return c.getContribution.CallUnary(ctx, req)
+}
+
+// ScoreServiceHandler is an implementation of the rootstock.v1.ScoreService service.
+type ScoreServiceHandler interface {
+	GetContribution(context.Context, *connect.Request[v1.GetContributionRequest]) (*connect.Response[v1.GetContributionResponse], error)
+}
+
+// NewScoreServiceHandler builds an HTTP handler from the service implementation. It returns the
+// path on which to mount the handler and the handler itself.
+//
+// By default, handlers support the Connect, gRPC, and gRPC-Web protocols with the binary Protobuf
+// and JSON codecs. They also support gzip compression.
+func NewScoreServiceHandler(svc ScoreServiceHandler, opts ...connect.HandlerOption) (string, http.Handler) {
+	scoreServiceMethods := v1.File_rootstock_v1_rootstock_proto.Services().ByName("ScoreService").Methods()
+	scoreServiceGetContributionHandler := connect.NewUnaryHandler(
+		ScoreServiceGetContributionProcedure,
+		svc.GetContribution,
+		connect.WithSchema(scoreServiceMethods.ByName("GetContribution")),
+		connect.WithHandlerOptions(opts...),
+	)
+	return "/rootstock.v1.ScoreService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.URL.Path {
+		case ScoreServiceGetContributionProcedure:
+			scoreServiceGetContributionHandler.ServeHTTP(w, r)
+		default:
+			http.NotFound(w, r)
+		}
+	})
+}
+
+// UnimplementedScoreServiceHandler returns CodeUnimplemented from all methods.
+type UnimplementedScoreServiceHandler struct{}
+
+func (UnimplementedScoreServiceHandler) GetContribution(context.Context, *connect.Request[v1.GetContributionRequest]) (*connect.Response[v1.GetContributionResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("rootstock.v1.ScoreService.GetContribution is not implemented"))
+}
+
+// DeviceServiceClient is a client for the rootstock.v1.DeviceService service.
+type DeviceServiceClient interface {
+	GetDevice(context.Context, *connect.Request[v1.GetDeviceRequest]) (*connect.Response[v1.GetDeviceResponse], error)
+	RevokeDevice(context.Context, *connect.Request[v1.RevokeDeviceRequest]) (*connect.Response[v1.RevokeDeviceResponse], error)
+	ReinstateDevice(context.Context, *connect.Request[v1.ReinstateDeviceRequest]) (*connect.Response[v1.ReinstateDeviceResponse], error)
+}
+
+// NewDeviceServiceClient constructs a client for the rootstock.v1.DeviceService service. By
+// default, it uses the Connect protocol with the binary Protobuf Codec, asks for gzipped responses,
+// and sends uncompressed requests. To use the gRPC or gRPC-Web protocols, supply the
+// connect.WithGRPC() or connect.WithGRPCWeb() options.
+//
+// The URL supplied here should be the base URL for the Connect or gRPC server (for example,
+// http://api.acme.com or https://acme.com/grpc).
+func NewDeviceServiceClient(httpClient connect.HTTPClient, baseURL string, opts ...connect.ClientOption) DeviceServiceClient {
+	baseURL = strings.TrimRight(baseURL, "/")
+	deviceServiceMethods := v1.File_rootstock_v1_rootstock_proto.Services().ByName("DeviceService").Methods()
+	return &deviceServiceClient{
+		getDevice: connect.NewClient[v1.GetDeviceRequest, v1.GetDeviceResponse](
+			httpClient,
+			baseURL+DeviceServiceGetDeviceProcedure,
+			connect.WithSchema(deviceServiceMethods.ByName("GetDevice")),
+			connect.WithClientOptions(opts...),
+		),
+		revokeDevice: connect.NewClient[v1.RevokeDeviceRequest, v1.RevokeDeviceResponse](
+			httpClient,
+			baseURL+DeviceServiceRevokeDeviceProcedure,
+			connect.WithSchema(deviceServiceMethods.ByName("RevokeDevice")),
+			connect.WithClientOptions(opts...),
+		),
+		reinstateDevice: connect.NewClient[v1.ReinstateDeviceRequest, v1.ReinstateDeviceResponse](
+			httpClient,
+			baseURL+DeviceServiceReinstateDeviceProcedure,
+			connect.WithSchema(deviceServiceMethods.ByName("ReinstateDevice")),
+			connect.WithClientOptions(opts...),
+		),
+	}
+}
+
+// deviceServiceClient implements DeviceServiceClient.
+type deviceServiceClient struct {
+	getDevice       *connect.Client[v1.GetDeviceRequest, v1.GetDeviceResponse]
+	revokeDevice    *connect.Client[v1.RevokeDeviceRequest, v1.RevokeDeviceResponse]
+	reinstateDevice *connect.Client[v1.ReinstateDeviceRequest, v1.ReinstateDeviceResponse]
+}
+
+// GetDevice calls rootstock.v1.DeviceService.GetDevice.
+func (c *deviceServiceClient) GetDevice(ctx context.Context, req *connect.Request[v1.GetDeviceRequest]) (*connect.Response[v1.GetDeviceResponse], error) {
+	return c.getDevice.CallUnary(ctx, req)
+}
+
+// RevokeDevice calls rootstock.v1.DeviceService.RevokeDevice.
+func (c *deviceServiceClient) RevokeDevice(ctx context.Context, req *connect.Request[v1.RevokeDeviceRequest]) (*connect.Response[v1.RevokeDeviceResponse], error) {
+	return c.revokeDevice.CallUnary(ctx, req)
+}
+
+// ReinstateDevice calls rootstock.v1.DeviceService.ReinstateDevice.
+func (c *deviceServiceClient) ReinstateDevice(ctx context.Context, req *connect.Request[v1.ReinstateDeviceRequest]) (*connect.Response[v1.ReinstateDeviceResponse], error) {
+	return c.reinstateDevice.CallUnary(ctx, req)
+}
+
+// DeviceServiceHandler is an implementation of the rootstock.v1.DeviceService service.
+type DeviceServiceHandler interface {
+	GetDevice(context.Context, *connect.Request[v1.GetDeviceRequest]) (*connect.Response[v1.GetDeviceResponse], error)
+	RevokeDevice(context.Context, *connect.Request[v1.RevokeDeviceRequest]) (*connect.Response[v1.RevokeDeviceResponse], error)
+	ReinstateDevice(context.Context, *connect.Request[v1.ReinstateDeviceRequest]) (*connect.Response[v1.ReinstateDeviceResponse], error)
+}
+
+// NewDeviceServiceHandler builds an HTTP handler from the service implementation. It returns the
+// path on which to mount the handler and the handler itself.
+//
+// By default, handlers support the Connect, gRPC, and gRPC-Web protocols with the binary Protobuf
+// and JSON codecs. They also support gzip compression.
+func NewDeviceServiceHandler(svc DeviceServiceHandler, opts ...connect.HandlerOption) (string, http.Handler) {
+	deviceServiceMethods := v1.File_rootstock_v1_rootstock_proto.Services().ByName("DeviceService").Methods()
+	deviceServiceGetDeviceHandler := connect.NewUnaryHandler(
+		DeviceServiceGetDeviceProcedure,
+		svc.GetDevice,
+		connect.WithSchema(deviceServiceMethods.ByName("GetDevice")),
+		connect.WithHandlerOptions(opts...),
+	)
+	deviceServiceRevokeDeviceHandler := connect.NewUnaryHandler(
+		DeviceServiceRevokeDeviceProcedure,
+		svc.RevokeDevice,
+		connect.WithSchema(deviceServiceMethods.ByName("RevokeDevice")),
+		connect.WithHandlerOptions(opts...),
+	)
+	deviceServiceReinstateDeviceHandler := connect.NewUnaryHandler(
+		DeviceServiceReinstateDeviceProcedure,
+		svc.ReinstateDevice,
+		connect.WithSchema(deviceServiceMethods.ByName("ReinstateDevice")),
+		connect.WithHandlerOptions(opts...),
+	)
+	return "/rootstock.v1.DeviceService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.URL.Path {
+		case DeviceServiceGetDeviceProcedure:
+			deviceServiceGetDeviceHandler.ServeHTTP(w, r)
+		case DeviceServiceRevokeDeviceProcedure:
+			deviceServiceRevokeDeviceHandler.ServeHTTP(w, r)
+		case DeviceServiceReinstateDeviceProcedure:
+			deviceServiceReinstateDeviceHandler.ServeHTTP(w, r)
+		default:
+			http.NotFound(w, r)
+		}
+	})
+}
+
+// UnimplementedDeviceServiceHandler returns CodeUnimplemented from all methods.
+type UnimplementedDeviceServiceHandler struct{}
+
+func (UnimplementedDeviceServiceHandler) GetDevice(context.Context, *connect.Request[v1.GetDeviceRequest]) (*connect.Response[v1.GetDeviceResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("rootstock.v1.DeviceService.GetDevice is not implemented"))
+}
+
+func (UnimplementedDeviceServiceHandler) RevokeDevice(context.Context, *connect.Request[v1.RevokeDeviceRequest]) (*connect.Response[v1.RevokeDeviceResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("rootstock.v1.DeviceService.RevokeDevice is not implemented"))
+}
+
+func (UnimplementedDeviceServiceHandler) ReinstateDevice(context.Context, *connect.Request[v1.ReinstateDeviceRequest]) (*connect.Response[v1.ReinstateDeviceResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("rootstock.v1.DeviceService.ReinstateDevice is not implemented"))
 }
