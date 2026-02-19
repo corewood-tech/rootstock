@@ -7,39 +7,34 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/jackc/pgx/v5/pgxpool"
-
 	"rootstock/web-server/config"
 	deviceflows "rootstock/web-server/flows/device"
 	httphandlers "rootstock/web-server/handlers/http"
 	certops "rootstock/web-server/ops/cert"
 	deviceops "rootstock/web-server/ops/device"
 	certrepo "rootstock/web-server/repo/cert"
-	devicerepo "rootstock/web-server/repo/device"
 )
 
 // NewIoTServer wires cert repo → cert ops → device flows → HTTP handlers
 // and returns an http.Handler + TLS config + a shutdown function.
-func NewIoTServer(cfg *config.Config, pool *pgxpool.Pool) (http.Handler, *tls.Config, func(), error) {
+// It takes shared device ops to avoid duplicating the device repo.
+func NewIoTServer(cfg *config.Config, dOps *deviceops.Ops) (http.Handler, *tls.Config, func(), error) {
 	// Cert repo (in-process CA)
 	crtRepo, err := certrepo.NewRepository(cfg.Cert)
 	if err != nil {
 		return nil, nil, nil, fmt.Errorf("create cert repo: %w", err)
 	}
 
-	// Device repo
-	dRepo := devicerepo.NewRepository(pool)
-
 	// Ops
 	crtOps := certops.NewOps(crtRepo)
-	dOps := deviceops.NewOps(dRepo)
 
 	// Flows
 	registerDeviceFlow := deviceflows.NewRegisterDeviceFlow(dOps, crtOps)
 	renewCertFlow := deviceflows.NewRenewCertFlow(dOps, crtOps)
+	getCACertFlow := deviceflows.NewGetCACertFlow(crtOps)
 
 	// HTTP handlers
-	deviceHandler := httphandlers.NewDeviceHandler(registerDeviceFlow, renewCertFlow, crtOps)
+	deviceHandler := httphandlers.NewDeviceHandler(registerDeviceFlow, renewCertFlow, getCACertFlow)
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("/enroll", deviceHandler.Enroll)
@@ -56,8 +51,8 @@ func NewIoTServer(cfg *config.Config, pool *pgxpool.Pool) (http.Handler, *tls.Co
 		return nil, nil, nil, fmt.Errorf("failed to add ca cert to pool")
 	}
 
-	// Load server certificate (same CA cert+key used as server identity for device port)
-	serverCert, err := tls.LoadX509KeyPair(cfg.Cert.CACertPath, cfg.Cert.CAKeyPath)
+	// Load server leaf certificate (issued by the CA, with serverAuth EKU)
+	serverCert, err := tls.LoadX509KeyPair(cfg.Cert.ServerCertPath, cfg.Cert.ServerKeyPath)
 	if err != nil {
 		return nil, nil, nil, fmt.Errorf("load server cert: %w", err)
 	}
@@ -70,7 +65,6 @@ func NewIoTServer(cfg *config.Config, pool *pgxpool.Pool) (http.Handler, *tls.Co
 
 	shutdown := func() {
 		crtRepo.Shutdown()
-		dRepo.Shutdown()
 	}
 
 	return mux, tlsConfig, shutdown, nil

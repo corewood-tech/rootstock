@@ -24,8 +24,9 @@ type Config struct {
 }
 
 type ServerConfig struct {
-	Host string `koanf:"host"`
-	Port int    `koanf:"port"`
+	Host    string `koanf:"host"`
+	Port    int    `koanf:"port"`
+	IoTPort int    `koanf:"iot_port"`
 }
 
 type DatabaseConfig struct {
@@ -77,6 +78,8 @@ type EventsConfig struct {
 type CertConfig struct {
 	CACertPath       string `koanf:"ca_cert_path"`
 	CAKeyPath        string `koanf:"ca_key_path"`
+	ServerCertPath   string `koanf:"server_cert_path"`
+	ServerKeyPath    string `koanf:"server_key_path"`
 	CertLifetimeDays int    `koanf:"cert_lifetime_days"`
 }
 

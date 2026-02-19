@@ -98,6 +98,7 @@ func (o *Ops) EnrollDeviceInCampaign(ctx context.Context, deviceID string, campa
 }
 
 // UpdateCertSerial records the certificate serial number on a device.
+// Op #19: FR-013
 func (o *Ops) UpdateCertSerial(ctx context.Context, id string, serial string) error {
 	return o.repo.UpdateCertSerial(ctx, id, serial)
 }

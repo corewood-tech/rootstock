@@ -44,3 +44,11 @@ ca-init:
 	openssl ecparam -genkey -name prime256v1 -noout -out certs/ca.key
 	openssl req -new -x509 -key certs/ca.key -out certs/ca.crt -days 3650 \
 		-subj "/CN=Rootstock Dev CA"
+	openssl ecparam -genkey -name prime256v1 -noout -out certs/server.key
+	openssl req -new -key certs/server.key -out certs/server.csr \
+		-subj "/CN=rootstock-iot"
+	@printf "subjectAltName=DNS:localhost,DNS:web-server\nextendedKeyUsage=serverAuth\n" > certs/server.ext
+	openssl x509 -req -in certs/server.csr -CA certs/ca.crt -CAkey certs/ca.key \
+		-CAcreateserial -out certs/server.crt -days 825 \
+		-extfile certs/server.ext
+	@rm -f certs/server.csr certs/server.ext certs/ca.srl

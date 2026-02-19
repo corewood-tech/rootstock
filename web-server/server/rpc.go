@@ -23,15 +23,14 @@ import (
 	"rootstock/web-server/proto/rootstock/v1/rootstockv1connect"
 	"rootstock/web-server/repo/authorization"
 	campaignrepo "rootstock/web-server/repo/campaign"
-	devicerepo "rootstock/web-server/repo/device"
 	identityrepo "rootstock/web-server/repo/identity"
 	readingrepo "rootstock/web-server/repo/reading"
 	scorerepo "rootstock/web-server/repo/score"
 )
 
 // NewRPCServer wires repos → ops → flows → Connect RPC handlers and returns
-// an http.Handler + a shutdown function.
-func NewRPCServer(ctx context.Context, cfg *config.Config, pool *pgxpool.Pool, iRepo identityrepo.Repository) (http.Handler, func(), error) {
+// an http.Handler + a shutdown function. Device ops are shared with the IoT server.
+func NewRPCServer(ctx context.Context, cfg *config.Config, pool *pgxpool.Pool, iRepo identityrepo.Repository, dOps *deviceops.Ops) (http.Handler, func(), error) {
 	// JWT verification
 	jwksURL := fmt.Sprintf("http://%s:%d/oauth/v2/keys", cfg.Identity.Zitadel.Host, cfg.Identity.Zitadel.Port)
 	jwtVerifier, err := NewJWTVerifier(ctx, jwksURL, cfg.Identity.Zitadel.ExternalDomain, cfg.Identity.Zitadel.Issuer)
@@ -53,13 +52,11 @@ func NewRPCServer(ctx context.Context, cfg *config.Config, pool *pgxpool.Pool, i
 
 	// Business repos
 	cRepo := campaignrepo.NewRepository(pool)
-	dRepo := devicerepo.NewRepository(pool)
 	rRepo := readingrepo.NewRepository(pool)
 	sRepo := scorerepo.NewRepository(pool)
 
 	// Ops
 	cOps := campaignops.NewOps(cRepo)
-	dOps := deviceops.NewOps(dRepo)
 	rOps := readingops.NewOps(rRepo)
 	oOps := orgops.NewOps(iRepo)
 	sOps := scoreops.NewOps(sRepo)
@@ -114,7 +111,6 @@ func NewRPCServer(ctx context.Context, cfg *config.Config, pool *pgxpool.Pool, i
 
 	shutdown := func() {
 		cRepo.Shutdown()
-		dRepo.Shutdown()
 		rRepo.Shutdown()
 		sRepo.Shutdown()
 	}

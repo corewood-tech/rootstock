@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 	"time"
 
-	certops "rootstock/web-server/ops/cert"
 	deviceflows "rootstock/web-server/flows/device"
 )
 
@@ -16,19 +16,19 @@ import (
 type DeviceHandler struct {
 	registerDevice *deviceflows.RegisterDeviceFlow
 	renewCert      *deviceflows.RenewCertFlow
-	certOps        *certops.Ops
+	getCACert      *deviceflows.GetCACertFlow
 }
 
 // NewDeviceHandler creates the handler with all required flows.
 func NewDeviceHandler(
 	registerDevice *deviceflows.RegisterDeviceFlow,
 	renewCert *deviceflows.RenewCertFlow,
-	certOps *certops.Ops,
+	getCACert *deviceflows.GetCACertFlow,
 ) *DeviceHandler {
 	return &DeviceHandler{
 		registerDevice: registerDevice,
 		renewCert:      renewCert,
-		certOps:        certOps,
+		getCACert:      getCACert,
 	}
 }
 
@@ -91,7 +91,7 @@ func (h *DeviceHandler) Enroll(w http.ResponseWriter, r *http.Request) {
 		CSR:            csrDER,
 	})
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		writeFlowError(w, err)
 		return
 	}
 
@@ -157,7 +157,7 @@ func (h *DeviceHandler) Renew(w http.ResponseWriter, r *http.Request) {
 		CSR:      csrDER,
 	})
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		writeFlowError(w, err)
 		return
 	}
 
@@ -179,7 +179,7 @@ func (h *DeviceHandler) GetCACert(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ca, err := h.certOps.GetCACert(r.Context())
+	ca, err := h.getCACert.Run(r.Context())
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -198,4 +198,28 @@ func decodePEMToCSR(data []byte) ([]byte, error) {
 		return nil, fmt.Errorf("expected CERTIFICATE REQUEST, got %s", block.Type)
 	}
 	return block.Bytes, nil
+}
+
+// writeFlowError maps domain errors to appropriate HTTP status codes.
+func writeFlowError(w http.ResponseWriter, err error) {
+	msg := err.Error()
+
+	// "not found" errors from repos (device not found, code not found/expired/used)
+	if strings.Contains(msg, "not found") ||
+		strings.Contains(msg, "expired") ||
+		strings.Contains(msg, "already used") {
+		http.Error(w, msg, http.StatusNotFound)
+		return
+	}
+
+	// CSR/key validation errors from cert repo
+	if strings.Contains(msg, "parse csr") ||
+		strings.Contains(msg, "csr signature") ||
+		strings.Contains(msg, "key too small") ||
+		strings.Contains(msg, "unsupported key type") {
+		http.Error(w, msg, http.StatusBadRequest)
+		return
+	}
+
+	http.Error(w, msg, http.StatusInternalServerError)
 }

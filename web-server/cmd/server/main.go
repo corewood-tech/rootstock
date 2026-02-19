@@ -13,6 +13,8 @@ import (
 	"rootstock/web-server/config"
 	"rootstock/web-server/global/events"
 	"rootstock/web-server/global/observability"
+	deviceops "rootstock/web-server/ops/device"
+	devicerepo "rootstock/web-server/repo/device"
 	eventsrepo "rootstock/web-server/repo/events"
 	identityrepo "rootstock/web-server/repo/identity"
 	o11yrepo "rootstock/web-server/repo/observability"
@@ -82,15 +84,20 @@ func run() error {
 	}
 	defer iRepo.Shutdown()
 
+	// Device repo + ops — shared between RPC and IoT servers
+	dRepo := devicerepo.NewRepository(pool)
+	defer dRepo.Shutdown()
+	dOps := deviceops.NewOps(dRepo)
+
 	// RPC server (Connect RPC, JWT auth, human traffic)
-	rpcHandler, rpcCleanup, err := server.NewRPCServer(ctx, cfg, pool, iRepo)
+	rpcHandler, rpcCleanup, err := server.NewRPCServer(ctx, cfg, pool, iRepo, dOps)
 	if err != nil {
 		return fmt.Errorf("create rpc server: %w", err)
 	}
 	defer rpcCleanup()
 
 	// IoT server (device HTTP, mTLS)
-	iotHandler, tlsCfg, iotCleanup, err := server.NewIoTServer(cfg, pool)
+	iotHandler, tlsCfg, iotCleanup, err := server.NewIoTServer(cfg, dOps)
 	if err != nil {
 		return fmt.Errorf("create iot server: %w", err)
 	}
@@ -98,7 +105,7 @@ func run() error {
 
 	errChan := make(chan error, 2)
 
-	// Start RPC listener (port 8080)
+	// Start RPC listener
 	rpcAddr := fmt.Sprintf("%s:%d", cfg.Server.Host, cfg.Server.Port)
 	rpcLis, err := net.Listen("tcp", rpcAddr)
 	if err != nil {
@@ -112,8 +119,8 @@ func run() error {
 		}
 	}()
 
-	// Start IoT listener (port 8443, TLS)
-	iotAddr := fmt.Sprintf("%s:8443", cfg.Server.Host)
+	// Start IoT listener (TLS)
+	iotAddr := fmt.Sprintf("%s:%d", cfg.Server.Host, cfg.Server.IoTPort)
 	iotLis, err := tls.Listen("tcp", iotAddr, tlsCfg)
 	if err != nil {
 		return fmt.Errorf("listen on %s: %w", iotAddr, err)

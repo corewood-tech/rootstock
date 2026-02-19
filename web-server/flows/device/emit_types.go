@@ -31,3 +31,8 @@ type RenewCertResult struct {
 	NotBefore time.Time
 	NotAfter  time.Time
 }
+
+// CACert is the CA certificate returned by GetCACertFlow.
+type CACert struct {
+	CertPEM []byte
+}

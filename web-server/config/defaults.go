@@ -3,8 +3,9 @@ package config
 func defaults() Config {
 	return Config{
 		Server: ServerConfig{
-			Host: "0.0.0.0",
-			Port: 8080,
+			Host:    "0.0.0.0",
+			Port:    8080,
+			IoTPort: 8443,
 		},
 		Database: DatabaseConfig{
 			Postgres: PostgresConfig{
@@ -43,6 +44,8 @@ func defaults() Config {
 		Cert: CertConfig{
 			CACertPath:       "/certs/ca.crt",
 			CAKeyPath:        "/certs/ca.key",
+			ServerCertPath:   "/certs/server.crt",
+			ServerKeyPath:    "/certs/server.key",
 			CertLifetimeDays: 90,
 		},
 	}
