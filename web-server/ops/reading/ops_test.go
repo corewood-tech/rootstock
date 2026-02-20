@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/oklog/ulid/v2"
 
 	"rootstock/web-server/config"
 	readingrepo "rootstock/web-server/repo/reading"
@@ -45,13 +46,13 @@ func setupTest(t *testing.T) (*Ops, *pgxpool.Pool) {
 func createFixtures(t *testing.T, pool *pgxpool.Pool) (deviceID, campaignID string) {
 	t.Helper()
 	ctx := context.Background()
-	pool.QueryRow(ctx,
-		`INSERT INTO devices (owner_id, class, firmware_version, tier, sensors, status)
-		 VALUES ('user-1', 'sensor', '1.0.0', 1, '{temp}', 'active') RETURNING id`,
-	).Scan(&deviceID)
-	pool.QueryRow(ctx,
-		`INSERT INTO campaigns (org_id, created_by) VALUES ('org-1', 'user-1') RETURNING id`,
-	).Scan(&campaignID)
+	deviceID = ulid.Make().String()
+	pool.Exec(ctx,
+		`INSERT INTO devices (id, owner_id, class, firmware_version, tier, sensors, status)
+		 VALUES ($1, 'user-1', 'sensor', '1.0.0', 1, '{temp}', 'active')`, deviceID)
+	campaignID = ulid.Make().String()
+	pool.Exec(ctx,
+		`INSERT INTO campaigns (id, org_id, created_by) VALUES ($1, 'org-1', 'user-1')`, campaignID)
 	return
 }
 

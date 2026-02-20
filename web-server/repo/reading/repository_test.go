@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/oklog/ulid/v2"
 
 	"rootstock/web-server/config"
 	sqlmigrate "rootstock/web-server/repo/sql/migrate"
@@ -52,17 +53,17 @@ func createFixtures(t *testing.T, pool *pgxpool.Pool) (deviceID, campaignID stri
 	t.Helper()
 	ctx := context.Background()
 
-	err := pool.QueryRow(ctx,
-		`INSERT INTO devices (owner_id, class, firmware_version, tier, sensors, status)
-		 VALUES ('user-1', 'sensor', '1.0.0', 1, '{temp}', 'active') RETURNING id`,
-	).Scan(&deviceID)
+	deviceID = ulid.Make().String()
+	_, err := pool.Exec(ctx,
+		`INSERT INTO devices (id, owner_id, class, firmware_version, tier, sensors, status)
+		 VALUES ($1, 'user-1', 'sensor', '1.0.0', 1, '{temp}', 'active')`, deviceID)
 	if err != nil {
 		t.Fatalf("insert device: %v", err)
 	}
 
-	err = pool.QueryRow(ctx,
-		`INSERT INTO campaigns (org_id, created_by) VALUES ('org-1', 'user-1') RETURNING id`,
-	).Scan(&campaignID)
+	campaignID = ulid.Make().String()
+	_, err = pool.Exec(ctx,
+		`INSERT INTO campaigns (id, org_id, created_by) VALUES ($1, 'org-1', 'user-1')`, campaignID)
 	if err != nil {
 		t.Fatalf("insert campaign: %v", err)
 	}

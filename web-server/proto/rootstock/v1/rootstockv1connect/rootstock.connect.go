@@ -31,6 +31,8 @@ const (
 	ScoreServiceName = "rootstock.v1.ScoreService"
 	// DeviceServiceName is the fully-qualified name of the DeviceService service.
 	DeviceServiceName = "rootstock.v1.DeviceService"
+	// UserServiceName is the fully-qualified name of the UserService service.
+	UserServiceName = "rootstock.v1.UserService"
 	// AdminServiceName is the fully-qualified name of the AdminService service.
 	AdminServiceName = "rootstock.v1.AdminService"
 )
@@ -84,6 +86,11 @@ const (
 	// DeviceServiceEnrollInCampaignProcedure is the fully-qualified name of the DeviceService's
 	// EnrollInCampaign RPC.
 	DeviceServiceEnrollInCampaignProcedure = "/rootstock.v1.DeviceService/EnrollInCampaign"
+	// UserServiceRegisterUserProcedure is the fully-qualified name of the UserService's RegisterUser
+	// RPC.
+	UserServiceRegisterUserProcedure = "/rootstock.v1.UserService/RegisterUser"
+	// UserServiceGetMeProcedure is the fully-qualified name of the UserService's GetMe RPC.
+	UserServiceGetMeProcedure = "/rootstock.v1.UserService/GetMe"
 	// AdminServiceSuspendByClassProcedure is the fully-qualified name of the AdminService's
 	// SuspendByClass RPC.
 	AdminServiceSuspendByClassProcedure = "/rootstock.v1.AdminService/SuspendByClass"
@@ -723,6 +730,102 @@ func (UnimplementedDeviceServiceHandler) ReinstateDevice(context.Context, *conne
 
 func (UnimplementedDeviceServiceHandler) EnrollInCampaign(context.Context, *connect.Request[v1.EnrollInCampaignRequest]) (*connect.Response[v1.EnrollInCampaignResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("rootstock.v1.DeviceService.EnrollInCampaign is not implemented"))
+}
+
+// UserServiceClient is a client for the rootstock.v1.UserService service.
+type UserServiceClient interface {
+	RegisterUser(context.Context, *connect.Request[v1.RegisterUserRequest]) (*connect.Response[v1.RegisterUserResponse], error)
+	GetMe(context.Context, *connect.Request[v1.GetMeRequest]) (*connect.Response[v1.GetMeResponse], error)
+}
+
+// NewUserServiceClient constructs a client for the rootstock.v1.UserService service. By default, it
+// uses the Connect protocol with the binary Protobuf Codec, asks for gzipped responses, and sends
+// uncompressed requests. To use the gRPC or gRPC-Web protocols, supply the connect.WithGRPC() or
+// connect.WithGRPCWeb() options.
+//
+// The URL supplied here should be the base URL for the Connect or gRPC server (for example,
+// http://api.acme.com or https://acme.com/grpc).
+func NewUserServiceClient(httpClient connect.HTTPClient, baseURL string, opts ...connect.ClientOption) UserServiceClient {
+	baseURL = strings.TrimRight(baseURL, "/")
+	userServiceMethods := v1.File_rootstock_v1_rootstock_proto.Services().ByName("UserService").Methods()
+	return &userServiceClient{
+		registerUser: connect.NewClient[v1.RegisterUserRequest, v1.RegisterUserResponse](
+			httpClient,
+			baseURL+UserServiceRegisterUserProcedure,
+			connect.WithSchema(userServiceMethods.ByName("RegisterUser")),
+			connect.WithClientOptions(opts...),
+		),
+		getMe: connect.NewClient[v1.GetMeRequest, v1.GetMeResponse](
+			httpClient,
+			baseURL+UserServiceGetMeProcedure,
+			connect.WithSchema(userServiceMethods.ByName("GetMe")),
+			connect.WithClientOptions(opts...),
+		),
+	}
+}
+
+// userServiceClient implements UserServiceClient.
+type userServiceClient struct {
+	registerUser *connect.Client[v1.RegisterUserRequest, v1.RegisterUserResponse]
+	getMe        *connect.Client[v1.GetMeRequest, v1.GetMeResponse]
+}
+
+// RegisterUser calls rootstock.v1.UserService.RegisterUser.
+func (c *userServiceClient) RegisterUser(ctx context.Context, req *connect.Request[v1.RegisterUserRequest]) (*connect.Response[v1.RegisterUserResponse], error) {
+	return c.registerUser.CallUnary(ctx, req)
+}
+
+// GetMe calls rootstock.v1.UserService.GetMe.
+func (c *userServiceClient) GetMe(ctx context.Context, req *connect.Request[v1.GetMeRequest]) (*connect.Response[v1.GetMeResponse], error) {
+	return c.getMe.CallUnary(ctx, req)
+}
+
+// UserServiceHandler is an implementation of the rootstock.v1.UserService service.
+type UserServiceHandler interface {
+	RegisterUser(context.Context, *connect.Request[v1.RegisterUserRequest]) (*connect.Response[v1.RegisterUserResponse], error)
+	GetMe(context.Context, *connect.Request[v1.GetMeRequest]) (*connect.Response[v1.GetMeResponse], error)
+}
+
+// NewUserServiceHandler builds an HTTP handler from the service implementation. It returns the path
+// on which to mount the handler and the handler itself.
+//
+// By default, handlers support the Connect, gRPC, and gRPC-Web protocols with the binary Protobuf
+// and JSON codecs. They also support gzip compression.
+func NewUserServiceHandler(svc UserServiceHandler, opts ...connect.HandlerOption) (string, http.Handler) {
+	userServiceMethods := v1.File_rootstock_v1_rootstock_proto.Services().ByName("UserService").Methods()
+	userServiceRegisterUserHandler := connect.NewUnaryHandler(
+		UserServiceRegisterUserProcedure,
+		svc.RegisterUser,
+		connect.WithSchema(userServiceMethods.ByName("RegisterUser")),
+		connect.WithHandlerOptions(opts...),
+	)
+	userServiceGetMeHandler := connect.NewUnaryHandler(
+		UserServiceGetMeProcedure,
+		svc.GetMe,
+		connect.WithSchema(userServiceMethods.ByName("GetMe")),
+		connect.WithHandlerOptions(opts...),
+	)
+	return "/rootstock.v1.UserService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.URL.Path {
+		case UserServiceRegisterUserProcedure:
+			userServiceRegisterUserHandler.ServeHTTP(w, r)
+		case UserServiceGetMeProcedure:
+			userServiceGetMeHandler.ServeHTTP(w, r)
+		default:
+			http.NotFound(w, r)
+		}
+	})
+}
+
+// UnimplementedUserServiceHandler returns CodeUnimplemented from all methods.
+type UnimplementedUserServiceHandler struct{}
+
+func (UnimplementedUserServiceHandler) RegisterUser(context.Context, *connect.Request[v1.RegisterUserRequest]) (*connect.Response[v1.RegisterUserResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("rootstock.v1.UserService.RegisterUser is not implemented"))
+}
+
+func (UnimplementedUserServiceHandler) GetMe(context.Context, *connect.Request[v1.GetMeRequest]) (*connect.Response[v1.GetMeResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("rootstock.v1.UserService.GetMe is not implemented"))
 }
 
 // AdminServiceClient is a client for the rootstock.v1.AdminService service.

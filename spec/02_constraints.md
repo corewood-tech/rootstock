@@ -30,6 +30,16 @@
 
 ---
 
+### CON-004: ULID Identifiers
+
+**Description:** All platform-generated identifiers shall be ULIDs (Universally Unique Lexicographically Sortable Identifiers). External identifiers (e.g., Zitadel user IDs, certificate serials) are stored as-is but referenced via foreign key to a ULID primary key.
+
+**Rationale:** ULIDs combine the uniqueness of UUIDs with lexicographic sortability (monotonic within the same millisecond), making them suitable for primary keys in time-ordered tables without index fragmentation. They are 128-bit compatible with UUID storage but encode as 26-character Crockford Base32 strings, making them human-readable in logs and URLs. Application-generated IDs (vs. database-generated `gen_random_uuid()`) keep ID creation in the ops layer where business logic lives, consistent with the clean architecture boundary.
+
+**Fit Criterion:** All primary keys for platform-created entities are ULIDs generated in application code (`github.com/oklog/ulid/v2`). No table uses `gen_random_uuid()` for primary keys. External identifiers (IdP user IDs, certificate serials) are stored as TEXT in reference columns, not as primary keys. (Scale: boolean | Pass/Fail)
+
+---
+
 ## 2b. Implementation Environment of the Current System
 
 ### CON-003: No Shared Context Exists

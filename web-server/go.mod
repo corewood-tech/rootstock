@@ -17,6 +17,7 @@ require (
 	github.com/lestrrat-go/httprc/v3 v3.0.2
 	github.com/lestrrat-go/jwx/v3 v3.0.13
 	github.com/mochi-mqtt/server/v2 v2.7.9
+	github.com/oklog/ulid/v2 v2.1.1
 	github.com/open-policy-agent/opa v1.13.1
 	github.com/spf13/pflag v1.0.10
 	github.com/zitadel/zitadel-go/v3 v3.25.0

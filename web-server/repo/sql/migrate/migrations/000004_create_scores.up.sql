@@ -9,14 +9,14 @@ CREATE TABLE scores (
 );
 
 CREATE TABLE badges (
-    id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id          TEXT PRIMARY KEY,
     scitizen_id TEXT        NOT NULL,
     badge_type  TEXT        NOT NULL,
     awarded_at  TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
 CREATE TABLE sweepstakes_entries (
-    id                  UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id                  TEXT PRIMARY KEY,
     scitizen_id         TEXT        NOT NULL,
     entries             INT         NOT NULL,
     milestone_trigger   TEXT        NOT NULL,

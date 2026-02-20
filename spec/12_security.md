@@ -60,9 +60,9 @@
 
 **Rationale:** 4 spatiotemporal data points uniquely identify 95% of individuals (FACT-009). GDPR treats location data as PII. Contributor identity must be architecturally separable from observation data.
 
-**Fit Criterion:** Database schema physically separates identity tables from observation tables. Join requires explicit authorization. Exported datasets contain zero PII. Consent records are versioned and auditable. (Scale: boolean | Pass/Fail)
+**Fit Criterion:** Database schema physically separates identity tables (`app_users`) from observation tables (`readings`). The `app_users` table stores `idp_id` (Zitadel reference) and platform ULID; observation tables reference users only by ULID. Join requires explicit authorization. Exported datasets contain zero PII. Consent records are versioned and auditable. (Scale: boolean | Pass/Fail)
 
-**Derived from:** BUC-07 | **Cross-ref:** facts:0x30
+**Derived from:** BUC-07 | **Cross-ref:** facts:0x30, FR-011
 
 ---
 

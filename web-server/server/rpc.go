@@ -16,6 +16,7 @@ import (
 	readingflows "rootstock/web-server/flows/reading"
 	scoreflows "rootstock/web-server/flows/score"
 	securityflows "rootstock/web-server/flows/security"
+	userflows "rootstock/web-server/flows/user"
 	connecthandlers "rootstock/web-server/handlers/connect"
 	httphandlers "rootstock/web-server/handlers/http"
 	campaignops "rootstock/web-server/ops/campaign"
@@ -26,6 +27,7 @@ import (
 	orgops "rootstock/web-server/ops/org"
 	readingops "rootstock/web-server/ops/reading"
 	scoreops "rootstock/web-server/ops/score"
+	userops "rootstock/web-server/ops/user"
 	"rootstock/web-server/proto/rootstock/v1/rootstockv1connect"
 	"rootstock/web-server/repo/authorization"
 	campaignrepo "rootstock/web-server/repo/campaign"
@@ -33,6 +35,7 @@ import (
 	notificationrepo "rootstock/web-server/repo/notification"
 	readingrepo "rootstock/web-server/repo/reading"
 	scorerepo "rootstock/web-server/repo/score"
+	userrepo "rootstock/web-server/repo/user"
 )
 
 // NewRPCServer wires repos → ops → flows → Connect RPC handlers and returns
@@ -61,6 +64,7 @@ func NewRPCServer(ctx context.Context, cfg *config.Config, pool *pgxpool.Pool, i
 	cRepo := campaignrepo.NewRepository(pool)
 	rRepo := readingrepo.NewRepository(pool)
 	sRepo := scorerepo.NewRepository(pool)
+	uRepo := userrepo.NewRepository(pool)
 
 	// Notification repo (log-based stub)
 	nRepo := notificationrepo.NewRepository()
@@ -70,6 +74,7 @@ func NewRPCServer(ctx context.Context, cfg *config.Config, pool *pgxpool.Pool, i
 	rOps := readingops.NewOps(rRepo)
 	oOps := orgops.NewOps(iRepo)
 	sOps := scoreops.NewOps(sRepo)
+	uOps := userops.NewOps(uRepo)
 	nOps := notificationops.NewOps(nRepo)
 
 	// Campaign flows
@@ -97,6 +102,10 @@ func NewRPCServer(ctx context.Context, cfg *config.Config, pool *pgxpool.Pool, i
 
 	// Security flows
 	securityResponseFlow := securityflows.NewSecurityResponseFlow(dOps, rOps, nOps)
+
+	// User flows
+	registerUserFlow := userflows.NewRegisterUserFlow(uOps)
+	getUserFlow := userflows.NewGetUserFlow(uOps)
 
 	// Org flows
 	createOrgFlow := orgflows.NewCreateOrgFlow(oOps)
@@ -126,6 +135,9 @@ func NewRPCServer(ctx context.Context, cfg *config.Config, pool *pgxpool.Pool, i
 	deviceHandler := connecthandlers.NewDeviceServiceHandler(getDeviceFlow, revokeDeviceFlow, reinstateDeviceFlow, enrollInCampaignFlow)
 	devicePath, deviceH := rootstockv1connect.NewDeviceServiceHandler(deviceHandler, interceptors)
 
+	userHandler := connecthandlers.NewUserServiceHandler(registerUserFlow, getUserFlow)
+	userPath, userH := rootstockv1connect.NewUserServiceHandler(userHandler, interceptors)
+
 	adminHandler := connecthandlers.NewAdminServiceHandler(securityResponseFlow)
 	adminPath, adminH := rootstockv1connect.NewAdminServiceHandler(adminHandler, interceptors)
 
@@ -135,6 +147,7 @@ func NewRPCServer(ctx context.Context, cfg *config.Config, pool *pgxpool.Pool, i
 	mux.Handle(orgPath, orgH)
 	mux.Handle(scorePath, scoreH)
 	mux.Handle(devicePath, deviceH)
+	mux.Handle(userPath, userH)
 	mux.Handle(adminPath, adminH)
 
 	// Device enrollment (enrollment code auth, not JWT) + public CA cert
@@ -152,6 +165,7 @@ func NewRPCServer(ctx context.Context, cfg *config.Config, pool *pgxpool.Pool, i
 		cRepo.Shutdown()
 		rRepo.Shutdown()
 		sRepo.Shutdown()
+		uRepo.Shutdown()
 		nRepo.Shutdown()
 	}
 

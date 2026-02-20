@@ -62,14 +62,14 @@
 
 **Priority:** Must | **Originator:** Research Institution
 
-**Description:** The platform shall allow organization admins to invite researchers by email. Invited researchers authenticate via Zitadel and are automatically associated with the inviting organization.
+**Description:** The platform shall allow organization admins to invite researchers by email. Invited researchers authenticate via Zitadel and are associated with the inviting organization. The researcher must already have a registered account (FR-011) with `user_type` including `researcher`. The invitation creates the organization association, not the user account.
 
-**Rationale:** Researchers must be invited to an organization to create campaigns. Identity is delegated to Zitadel. Onboarding requires no integration with institutional systems (CON-003).
+**Rationale:** Researchers must be invited to an organization to create campaigns. Registration (FR-011) and org association are separate concerns: a researcher registers once and may be invited to multiple organizations. Onboarding requires no integration with institutional systems (CON-003).
 
-**Fit Criterion:** An invited researcher can authenticate and access their organization within 2 minutes of accepting the invitation, with zero changes to institutional systems. (Scale: minutes | Worst: 5 | Plan: 2 | Best: 1)
+**Fit Criterion:** An invited researcher with an existing account can accept the invitation and access their organization within 2 minutes, with zero changes to institutional systems. A user without `researcher` in their `user_type` cannot be invited. (Scale: minutes | Worst: 5 | Plan: 2 | Best: 1)
 
 **Constrained by:** CON-003 — No Shared Context Exists (0xc)
-**Depends on:** FR-003
+**Depends on:** FR-003, FR-011
 **Cross-ref:** scope:0x28, facts:0xc
 
 ---
@@ -167,18 +167,19 @@
 
 ---
 
-## 6c. Scitizen Registration (BUC-03, scope:0x2a)
+## 6c. User Registration (BUC-03, scope:0x2a)
 
-### FR-011: Scitizen Account Registration (0x24)
+### FR-011: User Account Registration (0x24)
 
-**Priority:** Must | **Originator:** Scitizen
+**Priority:** Must | **Originator:** Scitizen, Researcher
 
-**Description:** The platform shall allow open registration for scitizens. Identity is delegated to Zitadel. Registration requires only email and password (or social login). No institutional affiliation required.
+**Description:** The platform shall allow open self-registration. Authentication is delegated to Zitadel (email/password or social login). On first authenticated access, the platform creates a local `app_users` record with a ULID primary key, the Zitadel user ID stored as `idp_id`, and a `user_type` indicating one or more roles: **scitizen**, **researcher**, or both. The user selects their type during registration. No institutional affiliation is required to register; researchers are associated with organizations separately via FR-004.
 
-**Rationale:** Registration is the prerequisite for device enrollment and campaign participation. First contribution is the retention inflection point (FACT-006) — registration must be minimal friction.
+**Rationale:** Registration is the prerequisite for all platform participation. First contribution is the retention inflection point (FACT-006) — registration must be minimal friction. A local `app_users` table decouples platform identity from the IdP: the ULID PK is the canonical user identifier across all platform tables (`owner_id`, `created_by`, `scitizen_id`), while `idp_id` is a reference column linking to Zitadel. This follows CON-004 (ULID identifiers) and supports SEC-004 (identity separation from observation data). Users may be both researchers and scitizens — the roles are not mutually exclusive.
 
-**Fit Criterion:** A scitizen can complete registration and reach the campaign browse page in under 2 minutes from landing page. (Scale: minutes | Worst: 5 | Plan: 2 | Best: 1)
+**Fit Criterion:** A user can complete registration (including type selection) and reach the campaign browse page in under 2 minutes from landing page. The `app_users` record is created with a ULID PK, `idp_id` referencing Zitadel, and `user_type` reflecting the user's selection. All platform tables reference users by ULID, not by IdP ID. (Scale: minutes | Worst: 5 | Plan: 2 | Best: 1)
 
+**Constrained by:** CON-004 — ULID Identifiers
 **Cross-ref:** scope:0x2a, facts:0xd
 
 ---
@@ -581,7 +582,7 @@
 | FR-008 | Define Campaign Time Window | BUC-02 | Must | Researcher |
 | FR-009 | Publish and Discover Campaigns | BUC-02 | Must | Researcher |
 | FR-010 | Monitor Campaign Data Quality | BUC-02 | Should | Researcher |
-| FR-011 | Scitizen Account Registration | BUC-03 | Must | Scitizen |
+| FR-011 | User Account Registration | BUC-03 | Must | Scitizen, Researcher |
 | FR-012 | Browse Campaigns | BUC-03 | Must | Scitizen |
 | FR-013 | Generate Enrollment Code | BUC-04 | Must | Scitizen |
 | FR-014 | Direct Device Enrollment (Tier 1) | BUC-04 | Must | Scitizen |

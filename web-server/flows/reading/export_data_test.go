@@ -32,7 +32,7 @@ func setupExportTest(t *testing.T) (*ExportDataFlow, *pgxpool.Pool) {
 	}
 
 	ctx := context.Background()
-	pool.Exec(ctx, "TRUNCATE readings CASCADE")
+	pool.Exec(ctx, "TRUNCATE readings, devices, campaigns CASCADE")
 
 	rRepo := readingrepo.NewRepository(pool)
 	rOps := readingops.NewOps(rRepo)
@@ -50,7 +50,8 @@ func TestExportDataPseudonymizes(t *testing.T) {
 	flow, pool := setupExportTest(t)
 	ctx := context.Background()
 
-	// Ensure device exists for FK
+	// Ensure campaign and device exist for FK
+	pool.Exec(ctx, `INSERT INTO campaigns (id, org_id, created_by) VALUES ('camp-exp-1', 'org-1', 'user-1') ON CONFLICT (id) DO NOTHING`)
 	pool.Exec(ctx, `INSERT INTO devices (id, owner_id, status, class, firmware_version, tier, sensors)
 		VALUES ('dev-exp-1', 'sci-1', 'active', 'tier1', '1.0.0', 1, '{"temperature"}')
 		ON CONFLICT (id) DO NOTHING`)
@@ -93,6 +94,7 @@ func TestExportDataPagination(t *testing.T) {
 	flow, pool := setupExportTest(t)
 	ctx := context.Background()
 
+	pool.Exec(ctx, `INSERT INTO campaigns (id, org_id, created_by) VALUES ('camp-exp-2', 'org-1', 'user-1') ON CONFLICT (id) DO NOTHING`)
 	pool.Exec(ctx, `INSERT INTO devices (id, owner_id, status, class, firmware_version, tier, sensors)
 		VALUES ('dev-exp-2', 'sci-1', 'active', 'tier1', '1.0.0', 1, '{"temperature"}')
 		ON CONFLICT (id) DO NOTHING`)

@@ -36,7 +36,7 @@ func setupRefreshScoreTest(t *testing.T) (*RefreshScitizenScoreFlow, *pgxpool.Po
 	}
 
 	ctx := context.Background()
-	pool.Exec(ctx, "TRUNCATE devices, readings, scores, badges, sweepstakes_entries, device_campaigns CASCADE")
+	pool.Exec(ctx, "TRUNCATE devices, readings, scores, badges, sweepstakes_entries, device_campaigns, campaigns CASCADE")
 
 	dRepo := devicerepo.NewRepository(pool)
 	rRepo := readingrepo.NewRepository(pool)
@@ -62,7 +62,8 @@ func TestRefreshScitizenScore(t *testing.T) {
 	flow, pool := setupRefreshScoreTest(t)
 	ctx := context.Background()
 
-	// Insert a device owned by scitizen sci-1
+	// Insert campaign and device owned by scitizen sci-1
+	pool.Exec(ctx, `INSERT INTO campaigns (id, org_id, created_by) VALUES ('camp-1', 'org-1', 'user-1')`)
 	pool.Exec(ctx, `INSERT INTO devices (id, owner_id, status, class, firmware_version, tier, sensors)
 		VALUES ('dev-1', 'sci-1', 'active', 'tier1', '1.0.0', 1, '{"temperature"}')`)
 

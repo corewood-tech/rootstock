@@ -7,6 +7,7 @@ import (
 
 	"connectrpc.com/connect"
 
+	"rootstock/web-server/auth"
 	"rootstock/web-server/repo/authorization"
 )
 
@@ -21,6 +22,9 @@ func AuthorizationInterceptor(verifier *JWTVerifier, authz authorization.Reposit
 			if err != nil {
 				return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("authentication failed: %w", err))
 			}
+
+			// Store subject in context for downstream handlers
+			ctx = auth.ContextWithSubject(ctx, subject)
 
 			input := authorization.AuthzInput{
 				SessionUserID: subject,

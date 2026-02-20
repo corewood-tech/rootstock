@@ -7,6 +7,7 @@ import (
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/oklog/ulid/v2"
 )
 
 type response[T any] struct {
@@ -219,10 +220,10 @@ func (r *pgRepo) Shutdown() {
 func (r *pgRepo) doCreate(ctx context.Context, input CreateDeviceInput) (*Device, error) {
 	var d Device
 	err := r.pool.QueryRow(ctx,
-		`INSERT INTO devices (owner_id, class, firmware_version, tier, sensors)
-		 VALUES ($1, $2, $3, $4, $5)
+		`INSERT INTO devices (id, owner_id, class, firmware_version, tier, sensors)
+		 VALUES ($1, $2, $3, $4, $5, $6)
 		 RETURNING id, owner_id, status, class, firmware_version, tier, sensors, cert_serial, created_at`,
-		input.OwnerID, input.Class, input.FirmwareVersion, input.Tier, input.Sensors,
+		ulid.Make().String(), input.OwnerID, input.Class, input.FirmwareVersion, input.Tier, input.Sensors,
 	).Scan(&d.ID, &d.OwnerID, &d.Status, &d.Class, &d.FirmwareVersion, &d.Tier, &d.Sensors, &d.CertSerial, &d.CreatedAt)
 	if err != nil {
 		return nil, fmt.Errorf("insert device: %w", err)

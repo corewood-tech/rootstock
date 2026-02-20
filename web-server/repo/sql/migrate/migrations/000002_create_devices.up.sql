@@ -1,5 +1,5 @@
 CREATE TABLE devices (
-    id                  UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id                  TEXT PRIMARY KEY,
     owner_id            TEXT        NOT NULL,
     status              TEXT        NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'active', 'suspended', 'revoked')),
     class               TEXT        NOT NULL,
@@ -12,14 +12,14 @@ CREATE TABLE devices (
 
 CREATE TABLE enrollment_codes (
     code        TEXT PRIMARY KEY,
-    device_id   UUID        NOT NULL REFERENCES devices(id) ON DELETE CASCADE,
+    device_id   TEXT        NOT NULL REFERENCES devices(id) ON DELETE CASCADE,
     expires_at  TIMESTAMPTZ NOT NULL,
     used        BOOLEAN     NOT NULL DEFAULT false
 );
 
 CREATE TABLE device_campaigns (
-    device_id   UUID NOT NULL REFERENCES devices(id) ON DELETE CASCADE,
-    campaign_id UUID NOT NULL REFERENCES campaigns(id) ON DELETE CASCADE,
+    device_id   TEXT NOT NULL REFERENCES devices(id) ON DELETE CASCADE,
+    campaign_id TEXT NOT NULL REFERENCES campaigns(id) ON DELETE CASCADE,
     enrolled_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     PRIMARY KEY (device_id, campaign_id)
 );

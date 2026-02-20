@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/oklog/ulid/v2"
 
 	campaignops "rootstock/web-server/ops/campaign"
 	readingops "rootstock/web-server/ops/reading"
@@ -76,11 +77,10 @@ func TestIngestValidReading(t *testing.T) {
 		t.Fatalf("create campaign: %v", err)
 	}
 
-	var deviceID string
-	pool.QueryRow(ctx,
-		`INSERT INTO devices (owner_id, class, firmware_version, tier, sensors, status)
-		 VALUES ('user-1', 'sensor', '1.0.0', 1, '{temp}', 'active') RETURNING id`,
-	).Scan(&deviceID)
+	deviceID := ulid.Make().String()
+	pool.Exec(ctx,
+		`INSERT INTO devices (id, owner_id, class, firmware_version, tier, sensors, status)
+		 VALUES ($1, 'user-1', 'sensor', '1.0.0', 1, '{temp}', 'active')`, deviceID)
 
 	rd, err := flow.Run(ctx, IngestReadingInput{
 		DeviceID:        deviceID,
@@ -118,11 +118,10 @@ func TestIngestOutOfRangeReading(t *testing.T) {
 		Parameters:  []campaignrepo.ParameterInput{{Name: "temp", Unit: "celsius", MinRange: &min, MaxRange: &max}},
 	})
 
-	var deviceID string
-	pool.QueryRow(ctx,
-		`INSERT INTO devices (owner_id, class, firmware_version, tier, sensors, status)
-		 VALUES ('user-1', 'sensor', '1.0.0', 1, '{temp}', 'active') RETURNING id`,
-	).Scan(&deviceID)
+	deviceID := ulid.Make().String()
+	pool.Exec(ctx,
+		`INSERT INTO devices (id, owner_id, class, firmware_version, tier, sensors, status)
+		 VALUES ($1, 'user-1', 'sensor', '1.0.0', 1, '{temp}', 'active')`, deviceID)
 
 	rd, err := flow.Run(ctx, IngestReadingInput{
 		DeviceID:        deviceID,
@@ -160,11 +159,10 @@ func TestIngestOutsideWindowReading(t *testing.T) {
 		WindowEnd:   &end,
 	})
 
-	var deviceID string
-	pool.QueryRow(ctx,
-		`INSERT INTO devices (owner_id, class, firmware_version, tier, sensors, status)
-		 VALUES ('user-1', 'sensor', '1.0.0', 1, '{temp}', 'active') RETURNING id`,
-	).Scan(&deviceID)
+	deviceID := ulid.Make().String()
+	pool.Exec(ctx,
+		`INSERT INTO devices (id, owner_id, class, firmware_version, tier, sensors, status)
+		 VALUES ($1, 'user-1', 'sensor', '1.0.0', 1, '{temp}', 'active')`, deviceID)
 
 	rd, err := flow.Run(ctx, IngestReadingInput{
 		DeviceID:        deviceID,

@@ -6,6 +6,7 @@ import (
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/oklog/ulid/v2"
 )
 
 type response[T any] struct {
@@ -167,10 +168,10 @@ func (r *pgRepo) doPersist(ctx context.Context, input PersistReadingInput) (*Rea
 
 	var rd Reading
 	err := r.pool.QueryRow(ctx,
-		`INSERT INTO readings (device_id, campaign_id, value, timestamp, geolocation, firmware_version, cert_serial)
-		 VALUES ($1, $2, $3, $4, $5::jsonb, $6, $7)
+		`INSERT INTO readings (id, device_id, campaign_id, value, timestamp, geolocation, firmware_version, cert_serial)
+		 VALUES ($1, $2, $3, $4, $5, $6::jsonb, $7, $8)
 		 RETURNING id, device_id, campaign_id, value, timestamp, geolocation::text, firmware_version, cert_serial, ingested_at, status, quarantine_reason`,
-		input.DeviceID, input.CampaignID, input.Value, input.Timestamp, geo, input.FirmwareVersion, input.CertSerial,
+		ulid.Make().String(), input.DeviceID, input.CampaignID, input.Value, input.Timestamp, geo, input.FirmwareVersion, input.CertSerial,
 	).Scan(&rd.ID, &rd.DeviceID, &rd.CampaignID, &rd.Value, &rd.Timestamp, &rd.Geolocation, &rd.FirmwareVersion, &rd.CertSerial, &rd.IngestedAt, &rd.Status, &rd.QuarantineReason)
 	if err != nil {
 		return nil, fmt.Errorf("insert reading: %w", err)

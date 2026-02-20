@@ -2257,6 +2257,242 @@ func (x *EnrollInCampaignResponse) GetReason() string {
 	return ""
 }
 
+type UserProto struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	UserType      string                 `protobuf:"bytes,2,opt,name=user_type,json=userType,proto3" json:"user_type,omitempty"`
+	Status        string                 `protobuf:"bytes,3,opt,name=status,proto3" json:"status,omitempty"`
+	CreatedAt     string                 `protobuf:"bytes,4,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UserProto) Reset() {
+	*x = UserProto{}
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[39]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UserProto) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UserProto) ProtoMessage() {}
+
+func (x *UserProto) ProtoReflect() protoreflect.Message {
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[39]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UserProto.ProtoReflect.Descriptor instead.
+func (*UserProto) Descriptor() ([]byte, []int) {
+	return file_rootstock_v1_rootstock_proto_rawDescGZIP(), []int{39}
+}
+
+func (x *UserProto) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *UserProto) GetUserType() string {
+	if x != nil {
+		return x.UserType
+	}
+	return ""
+}
+
+func (x *UserProto) GetStatus() string {
+	if x != nil {
+		return x.Status
+	}
+	return ""
+}
+
+func (x *UserProto) GetCreatedAt() string {
+	if x != nil {
+		return x.CreatedAt
+	}
+	return ""
+}
+
+type RegisterUserRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	UserType      string                 `protobuf:"bytes,1,opt,name=user_type,json=userType,proto3" json:"user_type,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RegisterUserRequest) Reset() {
+	*x = RegisterUserRequest{}
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[40]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RegisterUserRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RegisterUserRequest) ProtoMessage() {}
+
+func (x *RegisterUserRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[40]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RegisterUserRequest.ProtoReflect.Descriptor instead.
+func (*RegisterUserRequest) Descriptor() ([]byte, []int) {
+	return file_rootstock_v1_rootstock_proto_rawDescGZIP(), []int{40}
+}
+
+func (x *RegisterUserRequest) GetUserType() string {
+	if x != nil {
+		return x.UserType
+	}
+	return ""
+}
+
+type RegisterUserResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	User          *UserProto             `protobuf:"bytes,1,opt,name=user,proto3" json:"user,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RegisterUserResponse) Reset() {
+	*x = RegisterUserResponse{}
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[41]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RegisterUserResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RegisterUserResponse) ProtoMessage() {}
+
+func (x *RegisterUserResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[41]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RegisterUserResponse.ProtoReflect.Descriptor instead.
+func (*RegisterUserResponse) Descriptor() ([]byte, []int) {
+	return file_rootstock_v1_rootstock_proto_rawDescGZIP(), []int{41}
+}
+
+func (x *RegisterUserResponse) GetUser() *UserProto {
+	if x != nil {
+		return x.User
+	}
+	return nil
+}
+
+type GetMeRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetMeRequest) Reset() {
+	*x = GetMeRequest{}
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[42]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetMeRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetMeRequest) ProtoMessage() {}
+
+func (x *GetMeRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[42]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetMeRequest.ProtoReflect.Descriptor instead.
+func (*GetMeRequest) Descriptor() ([]byte, []int) {
+	return file_rootstock_v1_rootstock_proto_rawDescGZIP(), []int{42}
+}
+
+type GetMeResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	User          *UserProto             `protobuf:"bytes,1,opt,name=user,proto3" json:"user,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetMeResponse) Reset() {
+	*x = GetMeResponse{}
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[43]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetMeResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetMeResponse) ProtoMessage() {}
+
+func (x *GetMeResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[43]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetMeResponse.ProtoReflect.Descriptor instead.
+func (*GetMeResponse) Descriptor() ([]byte, []int) {
+	return file_rootstock_v1_rootstock_proto_rawDescGZIP(), []int{43}
+}
+
+func (x *GetMeResponse) GetUser() *UserProto {
+	if x != nil {
+		return x.User
+	}
+	return nil
+}
+
 type SuspendByClassRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	DeviceClass   string                 `protobuf:"bytes,1,opt,name=device_class,json=deviceClass,proto3" json:"device_class,omitempty"`
@@ -2271,7 +2507,7 @@ type SuspendByClassRequest struct {
 
 func (x *SuspendByClassRequest) Reset() {
 	*x = SuspendByClassRequest{}
-	mi := &file_rootstock_v1_rootstock_proto_msgTypes[39]
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[44]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2283,7 +2519,7 @@ func (x *SuspendByClassRequest) String() string {
 func (*SuspendByClassRequest) ProtoMessage() {}
 
 func (x *SuspendByClassRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_rootstock_v1_rootstock_proto_msgTypes[39]
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[44]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2296,7 +2532,7 @@ func (x *SuspendByClassRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SuspendByClassRequest.ProtoReflect.Descriptor instead.
 func (*SuspendByClassRequest) Descriptor() ([]byte, []int) {
-	return file_rootstock_v1_rootstock_proto_rawDescGZIP(), []int{39}
+	return file_rootstock_v1_rootstock_proto_rawDescGZIP(), []int{44}
 }
 
 func (x *SuspendByClassRequest) GetDeviceClass() string {
@@ -2352,7 +2588,7 @@ type SuspendByClassResponse struct {
 
 func (x *SuspendByClassResponse) Reset() {
 	*x = SuspendByClassResponse{}
-	mi := &file_rootstock_v1_rootstock_proto_msgTypes[40]
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[45]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2364,7 +2600,7 @@ func (x *SuspendByClassResponse) String() string {
 func (*SuspendByClassResponse) ProtoMessage() {}
 
 func (x *SuspendByClassResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_rootstock_v1_rootstock_proto_msgTypes[40]
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[45]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2377,7 +2613,7 @@ func (x *SuspendByClassResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SuspendByClassResponse.ProtoReflect.Descriptor instead.
 func (*SuspendByClassResponse) Descriptor() ([]byte, []int) {
-	return file_rootstock_v1_rootstock_proto_rawDescGZIP(), []int{40}
+	return file_rootstock_v1_rootstock_proto_rawDescGZIP(), []int{45}
 }
 
 func (x *SuspendByClassResponse) GetSuspendedCount() int32 {
@@ -2594,7 +2830,20 @@ const file_rootstock_v1_rootstock_proto_rawDesc = "" +
 	"campaignId\"N\n" +
 	"\x18EnrollInCampaignResponse\x12\x1a\n" +
 	"\benrolled\x18\x01 \x01(\bR\benrolled\x12\x16\n" +
-	"\x06reason\x18\x02 \x01(\tR\x06reason\"\xda\x01\n" +
+	"\x06reason\x18\x02 \x01(\tR\x06reason\"o\n" +
+	"\tUserProto\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1b\n" +
+	"\tuser_type\x18\x02 \x01(\tR\buserType\x12\x16\n" +
+	"\x06status\x18\x03 \x01(\tR\x06status\x12\x1d\n" +
+	"\n" +
+	"created_at\x18\x04 \x01(\tR\tcreatedAt\"2\n" +
+	"\x13RegisterUserRequest\x12\x1b\n" +
+	"\tuser_type\x18\x01 \x01(\tR\buserType\"C\n" +
+	"\x14RegisterUserResponse\x12+\n" +
+	"\x04user\x18\x01 \x01(\v2\x17.rootstock.v1.UserProtoR\x04user\"\x0e\n" +
+	"\fGetMeRequest\"<\n" +
+	"\rGetMeResponse\x12+\n" +
+	"\x04user\x18\x01 \x01(\v2\x17.rootstock.v1.UserProtoR\x04user\"\xda\x01\n" +
 	"\x15SuspendByClassRequest\x12!\n" +
 	"\fdevice_class\x18\x01 \x01(\tR\vdeviceClass\x12!\n" +
 	"\ffirmware_min\x18\x02 \x01(\tR\vfirmwareMin\x12!\n" +
@@ -2631,7 +2880,10 @@ const file_rootstock_v1_rootstock_proto_rawDesc = "" +
 	"\tGetDevice\x12\x1e.rootstock.v1.GetDeviceRequest\x1a\x1f.rootstock.v1.GetDeviceResponse\x12U\n" +
 	"\fRevokeDevice\x12!.rootstock.v1.RevokeDeviceRequest\x1a\".rootstock.v1.RevokeDeviceResponse\x12^\n" +
 	"\x0fReinstateDevice\x12$.rootstock.v1.ReinstateDeviceRequest\x1a%.rootstock.v1.ReinstateDeviceResponse\x12a\n" +
-	"\x10EnrollInCampaign\x12%.rootstock.v1.EnrollInCampaignRequest\x1a&.rootstock.v1.EnrollInCampaignResponse2k\n" +
+	"\x10EnrollInCampaign\x12%.rootstock.v1.EnrollInCampaignRequest\x1a&.rootstock.v1.EnrollInCampaignResponse2\xa6\x01\n" +
+	"\vUserService\x12U\n" +
+	"\fRegisterUser\x12!.rootstock.v1.RegisterUserRequest\x1a\".rootstock.v1.RegisterUserResponse\x12@\n" +
+	"\x05GetMe\x12\x1a.rootstock.v1.GetMeRequest\x1a\x1b.rootstock.v1.GetMeResponse2k\n" +
 	"\fAdminService\x12[\n" +
 	"\x0eSuspendByClass\x12#.rootstock.v1.SuspendByClassRequest\x1a$.rootstock.v1.SuspendByClassResponseB5Z3rootstock/web-server/proto/rootstock/v1;rootstockv1b\x06proto3"
 
@@ -2647,7 +2899,7 @@ func file_rootstock_v1_rootstock_proto_rawDescGZIP() []byte {
 	return file_rootstock_v1_rootstock_proto_rawDescData
 }
 
-var file_rootstock_v1_rootstock_proto_msgTypes = make([]protoimpl.MessageInfo, 41)
+var file_rootstock_v1_rootstock_proto_msgTypes = make([]protoimpl.MessageInfo, 46)
 var file_rootstock_v1_rootstock_proto_goTypes = []any{
 	(*CheckRequest)(nil),                 // 0: rootstock.v1.CheckRequest
 	(*CheckResponse)(nil),                // 1: rootstock.v1.CheckResponse
@@ -2688,8 +2940,13 @@ var file_rootstock_v1_rootstock_proto_goTypes = []any{
 	(*ReinstateDeviceResponse)(nil),      // 36: rootstock.v1.ReinstateDeviceResponse
 	(*EnrollInCampaignRequest)(nil),      // 37: rootstock.v1.EnrollInCampaignRequest
 	(*EnrollInCampaignResponse)(nil),     // 38: rootstock.v1.EnrollInCampaignResponse
-	(*SuspendByClassRequest)(nil),        // 39: rootstock.v1.SuspendByClassRequest
-	(*SuspendByClassResponse)(nil),       // 40: rootstock.v1.SuspendByClassResponse
+	(*UserProto)(nil),                    // 39: rootstock.v1.UserProto
+	(*RegisterUserRequest)(nil),          // 40: rootstock.v1.RegisterUserRequest
+	(*RegisterUserResponse)(nil),         // 41: rootstock.v1.RegisterUserResponse
+	(*GetMeRequest)(nil),                 // 42: rootstock.v1.GetMeRequest
+	(*GetMeResponse)(nil),                // 43: rootstock.v1.GetMeResponse
+	(*SuspendByClassRequest)(nil),        // 44: rootstock.v1.SuspendByClassRequest
+	(*SuspendByClassResponse)(nil),       // 45: rootstock.v1.SuspendByClassResponse
 }
 var file_rootstock_v1_rootstock_proto_depIdxs = []int32{
 	2,  // 0: rootstock.v1.CreateCampaignRequest.parameters:type_name -> rootstock.v1.ParameterProto
@@ -2700,45 +2957,51 @@ var file_rootstock_v1_rootstock_proto_depIdxs = []int32{
 	14, // 5: rootstock.v1.ExportCampaignDataResponse.readings:type_name -> rootstock.v1.ExportedReadingProto
 	27, // 6: rootstock.v1.GetContributionResponse.badges:type_name -> rootstock.v1.BadgeProto
 	30, // 7: rootstock.v1.GetDeviceResponse.device:type_name -> rootstock.v1.DeviceProto
-	0,  // 8: rootstock.v1.HealthService.Check:input_type -> rootstock.v1.CheckRequest
-	6,  // 9: rootstock.v1.CampaignService.CreateCampaign:input_type -> rootstock.v1.CreateCampaignRequest
-	8,  // 10: rootstock.v1.CampaignService.PublishCampaign:input_type -> rootstock.v1.PublishCampaignRequest
-	10, // 11: rootstock.v1.CampaignService.ListCampaigns:input_type -> rootstock.v1.ListCampaignsRequest
-	12, // 12: rootstock.v1.CampaignService.GetCampaignDashboard:input_type -> rootstock.v1.GetCampaignDashboardRequest
-	15, // 13: rootstock.v1.CampaignService.ExportCampaignData:input_type -> rootstock.v1.ExportCampaignDataRequest
-	17, // 14: rootstock.v1.OrgService.CreateOrg:input_type -> rootstock.v1.CreateOrgRequest
-	19, // 15: rootstock.v1.OrgService.NestOrg:input_type -> rootstock.v1.NestOrgRequest
-	21, // 16: rootstock.v1.OrgService.DefineRole:input_type -> rootstock.v1.DefineRoleRequest
-	23, // 17: rootstock.v1.OrgService.AssignRole:input_type -> rootstock.v1.AssignRoleRequest
-	25, // 18: rootstock.v1.OrgService.InviteUser:input_type -> rootstock.v1.InviteUserRequest
-	28, // 19: rootstock.v1.ScoreService.GetContribution:input_type -> rootstock.v1.GetContributionRequest
-	31, // 20: rootstock.v1.DeviceService.GetDevice:input_type -> rootstock.v1.GetDeviceRequest
-	33, // 21: rootstock.v1.DeviceService.RevokeDevice:input_type -> rootstock.v1.RevokeDeviceRequest
-	35, // 22: rootstock.v1.DeviceService.ReinstateDevice:input_type -> rootstock.v1.ReinstateDeviceRequest
-	37, // 23: rootstock.v1.DeviceService.EnrollInCampaign:input_type -> rootstock.v1.EnrollInCampaignRequest
-	39, // 24: rootstock.v1.AdminService.SuspendByClass:input_type -> rootstock.v1.SuspendByClassRequest
-	1,  // 25: rootstock.v1.HealthService.Check:output_type -> rootstock.v1.CheckResponse
-	7,  // 26: rootstock.v1.CampaignService.CreateCampaign:output_type -> rootstock.v1.CreateCampaignResponse
-	9,  // 27: rootstock.v1.CampaignService.PublishCampaign:output_type -> rootstock.v1.PublishCampaignResponse
-	11, // 28: rootstock.v1.CampaignService.ListCampaigns:output_type -> rootstock.v1.ListCampaignsResponse
-	13, // 29: rootstock.v1.CampaignService.GetCampaignDashboard:output_type -> rootstock.v1.GetCampaignDashboardResponse
-	16, // 30: rootstock.v1.CampaignService.ExportCampaignData:output_type -> rootstock.v1.ExportCampaignDataResponse
-	18, // 31: rootstock.v1.OrgService.CreateOrg:output_type -> rootstock.v1.CreateOrgResponse
-	20, // 32: rootstock.v1.OrgService.NestOrg:output_type -> rootstock.v1.NestOrgResponse
-	22, // 33: rootstock.v1.OrgService.DefineRole:output_type -> rootstock.v1.DefineRoleResponse
-	24, // 34: rootstock.v1.OrgService.AssignRole:output_type -> rootstock.v1.AssignRoleResponse
-	26, // 35: rootstock.v1.OrgService.InviteUser:output_type -> rootstock.v1.InviteUserResponse
-	29, // 36: rootstock.v1.ScoreService.GetContribution:output_type -> rootstock.v1.GetContributionResponse
-	32, // 37: rootstock.v1.DeviceService.GetDevice:output_type -> rootstock.v1.GetDeviceResponse
-	34, // 38: rootstock.v1.DeviceService.RevokeDevice:output_type -> rootstock.v1.RevokeDeviceResponse
-	36, // 39: rootstock.v1.DeviceService.ReinstateDevice:output_type -> rootstock.v1.ReinstateDeviceResponse
-	38, // 40: rootstock.v1.DeviceService.EnrollInCampaign:output_type -> rootstock.v1.EnrollInCampaignResponse
-	40, // 41: rootstock.v1.AdminService.SuspendByClass:output_type -> rootstock.v1.SuspendByClassResponse
-	25, // [25:42] is the sub-list for method output_type
-	8,  // [8:25] is the sub-list for method input_type
-	8,  // [8:8] is the sub-list for extension type_name
-	8,  // [8:8] is the sub-list for extension extendee
-	0,  // [0:8] is the sub-list for field type_name
+	39, // 8: rootstock.v1.RegisterUserResponse.user:type_name -> rootstock.v1.UserProto
+	39, // 9: rootstock.v1.GetMeResponse.user:type_name -> rootstock.v1.UserProto
+	0,  // 10: rootstock.v1.HealthService.Check:input_type -> rootstock.v1.CheckRequest
+	6,  // 11: rootstock.v1.CampaignService.CreateCampaign:input_type -> rootstock.v1.CreateCampaignRequest
+	8,  // 12: rootstock.v1.CampaignService.PublishCampaign:input_type -> rootstock.v1.PublishCampaignRequest
+	10, // 13: rootstock.v1.CampaignService.ListCampaigns:input_type -> rootstock.v1.ListCampaignsRequest
+	12, // 14: rootstock.v1.CampaignService.GetCampaignDashboard:input_type -> rootstock.v1.GetCampaignDashboardRequest
+	15, // 15: rootstock.v1.CampaignService.ExportCampaignData:input_type -> rootstock.v1.ExportCampaignDataRequest
+	17, // 16: rootstock.v1.OrgService.CreateOrg:input_type -> rootstock.v1.CreateOrgRequest
+	19, // 17: rootstock.v1.OrgService.NestOrg:input_type -> rootstock.v1.NestOrgRequest
+	21, // 18: rootstock.v1.OrgService.DefineRole:input_type -> rootstock.v1.DefineRoleRequest
+	23, // 19: rootstock.v1.OrgService.AssignRole:input_type -> rootstock.v1.AssignRoleRequest
+	25, // 20: rootstock.v1.OrgService.InviteUser:input_type -> rootstock.v1.InviteUserRequest
+	28, // 21: rootstock.v1.ScoreService.GetContribution:input_type -> rootstock.v1.GetContributionRequest
+	31, // 22: rootstock.v1.DeviceService.GetDevice:input_type -> rootstock.v1.GetDeviceRequest
+	33, // 23: rootstock.v1.DeviceService.RevokeDevice:input_type -> rootstock.v1.RevokeDeviceRequest
+	35, // 24: rootstock.v1.DeviceService.ReinstateDevice:input_type -> rootstock.v1.ReinstateDeviceRequest
+	37, // 25: rootstock.v1.DeviceService.EnrollInCampaign:input_type -> rootstock.v1.EnrollInCampaignRequest
+	40, // 26: rootstock.v1.UserService.RegisterUser:input_type -> rootstock.v1.RegisterUserRequest
+	42, // 27: rootstock.v1.UserService.GetMe:input_type -> rootstock.v1.GetMeRequest
+	44, // 28: rootstock.v1.AdminService.SuspendByClass:input_type -> rootstock.v1.SuspendByClassRequest
+	1,  // 29: rootstock.v1.HealthService.Check:output_type -> rootstock.v1.CheckResponse
+	7,  // 30: rootstock.v1.CampaignService.CreateCampaign:output_type -> rootstock.v1.CreateCampaignResponse
+	9,  // 31: rootstock.v1.CampaignService.PublishCampaign:output_type -> rootstock.v1.PublishCampaignResponse
+	11, // 32: rootstock.v1.CampaignService.ListCampaigns:output_type -> rootstock.v1.ListCampaignsResponse
+	13, // 33: rootstock.v1.CampaignService.GetCampaignDashboard:output_type -> rootstock.v1.GetCampaignDashboardResponse
+	16, // 34: rootstock.v1.CampaignService.ExportCampaignData:output_type -> rootstock.v1.ExportCampaignDataResponse
+	18, // 35: rootstock.v1.OrgService.CreateOrg:output_type -> rootstock.v1.CreateOrgResponse
+	20, // 36: rootstock.v1.OrgService.NestOrg:output_type -> rootstock.v1.NestOrgResponse
+	22, // 37: rootstock.v1.OrgService.DefineRole:output_type -> rootstock.v1.DefineRoleResponse
+	24, // 38: rootstock.v1.OrgService.AssignRole:output_type -> rootstock.v1.AssignRoleResponse
+	26, // 39: rootstock.v1.OrgService.InviteUser:output_type -> rootstock.v1.InviteUserResponse
+	29, // 40: rootstock.v1.ScoreService.GetContribution:output_type -> rootstock.v1.GetContributionResponse
+	32, // 41: rootstock.v1.DeviceService.GetDevice:output_type -> rootstock.v1.GetDeviceResponse
+	34, // 42: rootstock.v1.DeviceService.RevokeDevice:output_type -> rootstock.v1.RevokeDeviceResponse
+	36, // 43: rootstock.v1.DeviceService.ReinstateDevice:output_type -> rootstock.v1.ReinstateDeviceResponse
+	38, // 44: rootstock.v1.DeviceService.EnrollInCampaign:output_type -> rootstock.v1.EnrollInCampaignResponse
+	41, // 45: rootstock.v1.UserService.RegisterUser:output_type -> rootstock.v1.RegisterUserResponse
+	43, // 46: rootstock.v1.UserService.GetMe:output_type -> rootstock.v1.GetMeResponse
+	45, // 47: rootstock.v1.AdminService.SuspendByClass:output_type -> rootstock.v1.SuspendByClassResponse
+	29, // [29:48] is the sub-list for method output_type
+	10, // [10:29] is the sub-list for method input_type
+	10, // [10:10] is the sub-list for extension type_name
+	10, // [10:10] is the sub-list for extension extendee
+	0,  // [0:10] is the sub-list for field type_name
 }
 
 func init() { file_rootstock_v1_rootstock_proto_init() }
@@ -2758,9 +3021,9 @@ func file_rootstock_v1_rootstock_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_rootstock_v1_rootstock_proto_rawDesc), len(file_rootstock_v1_rootstock_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   41,
+			NumMessages:   46,
 			NumExtensions: 0,
-			NumServices:   6,
+			NumServices:   7,
 		},
 		GoTypes:           file_rootstock_v1_rootstock_proto_goTypes,
 		DependencyIndexes: file_rootstock_v1_rootstock_proto_depIdxs,

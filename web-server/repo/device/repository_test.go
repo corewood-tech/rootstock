@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/oklog/ulid/v2"
 
 	"rootstock/web-server/config"
 	sqlmigrate "rootstock/web-server/repo/sql/migrate"
@@ -198,10 +199,9 @@ func TestEnrollInCampaign(t *testing.T) {
 	})
 
 	// Create a campaign directly in DB for the FK
-	var campaignID string
-	err := pool.QueryRow(ctx,
-		`INSERT INTO campaigns (org_id, created_by) VALUES ('org-1', 'user-1') RETURNING id`,
-	).Scan(&campaignID)
+	campaignID := ulid.Make().String()
+	_, err := pool.Exec(ctx,
+		`INSERT INTO campaigns (id, org_id, created_by) VALUES ($1, 'org-1', 'user-1')`, campaignID)
 	if err != nil {
 		t.Fatalf("insert campaign: %v", err)
 	}

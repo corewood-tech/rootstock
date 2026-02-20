@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/oklog/ulid/v2"
 
 	"rootstock/web-server/config"
 	deviceops "rootstock/web-server/ops/device"
@@ -60,12 +61,12 @@ func setupSecurityResponseTest(t *testing.T) (*SecurityResponseFlow, *pgxpool.Po
 
 func insertDevice(t *testing.T, pool *pgxpool.Pool, ownerID, class, firmware string) string {
 	t.Helper()
-	var id string
-	err := pool.QueryRow(context.Background(),
-		`INSERT INTO devices (owner_id, status, class, firmware_version, tier, sensors)
-		 VALUES ($1, 'active', $2, $3, 1, '{"temperature"}') RETURNING id`,
-		ownerID, class, firmware,
-	).Scan(&id)
+	id := ulid.Make().String()
+	_, err := pool.Exec(context.Background(),
+		`INSERT INTO devices (id, owner_id, status, class, firmware_version, tier, sensors)
+		 VALUES ($1, $2, 'active', $3, $4, 1, '{"temperature"}')`,
+		id, ownerID, class, firmware,
+	)
 	if err != nil {
 		t.Fatalf("insert device: %v", err)
 	}
@@ -74,10 +75,10 @@ func insertDevice(t *testing.T, pool *pgxpool.Pool, ownerID, class, firmware str
 
 func insertCampaign(t *testing.T, pool *pgxpool.Pool) string {
 	t.Helper()
-	var id string
-	err := pool.QueryRow(context.Background(),
-		`INSERT INTO campaigns (org_id, created_by) VALUES ('org-1', 'user-1') RETURNING id`,
-	).Scan(&id)
+	id := ulid.Make().String()
+	_, err := pool.Exec(context.Background(),
+		`INSERT INTO campaigns (id, org_id, created_by) VALUES ($1, 'org-1', 'user-1')`, id,
+	)
 	if err != nil {
 		t.Fatalf("insert campaign: %v", err)
 	}
@@ -86,12 +87,12 @@ func insertCampaign(t *testing.T, pool *pgxpool.Pool) string {
 
 func insertReading(t *testing.T, pool *pgxpool.Pool, deviceID, campaignID string, ts time.Time) string {
 	t.Helper()
-	var id string
-	err := pool.QueryRow(context.Background(),
-		`INSERT INTO readings (device_id, campaign_id, value, timestamp, firmware_version, cert_serial, status)
-		 VALUES ($1, $2, 22.5, $3, '1.0.0', 'serial-1', 'accepted') RETURNING id`,
-		deviceID, campaignID, ts,
-	).Scan(&id)
+	id := ulid.Make().String()
+	_, err := pool.Exec(context.Background(),
+		`INSERT INTO readings (id, device_id, campaign_id, value, timestamp, firmware_version, cert_serial, status)
+		 VALUES ($1, $2, $3, 22.5, $4, '1.0.0', 'serial-1', 'accepted')`,
+		id, deviceID, campaignID, ts,
+	)
 	if err != nil {
 		t.Fatalf("insert reading: %v", err)
 	}

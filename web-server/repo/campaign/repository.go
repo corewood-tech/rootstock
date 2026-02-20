@@ -6,6 +6,7 @@ import (
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/oklog/ulid/v2"
 )
 
 type response[T any] struct {
@@ -153,11 +154,12 @@ func (r *pgRepo) doCreate(ctx context.Context, input CreateCampaignInput) (*Camp
 	defer tx.Rollback(ctx)
 
 	var c Campaign
+	campaignID := ulid.Make().String()
 	err = tx.QueryRow(ctx,
-		`INSERT INTO campaigns (org_id, window_start, window_end, created_by)
-		 VALUES ($1, $2, $3, $4)
+		`INSERT INTO campaigns (id, org_id, window_start, window_end, created_by)
+		 VALUES ($1, $2, $3, $4, $5)
 		 RETURNING id, org_id, status, window_start, window_end, created_by, created_at`,
-		input.OrgID, input.WindowStart, input.WindowEnd, input.CreatedBy,
+		campaignID, input.OrgID, input.WindowStart, input.WindowEnd, input.CreatedBy,
 	).Scan(&c.ID, &c.OrgID, &c.Status, &c.WindowStart, &c.WindowEnd, &c.CreatedBy, &c.CreatedAt)
 	if err != nil {
 		return nil, fmt.Errorf("insert campaign: %w", err)
@@ -165,9 +167,9 @@ func (r *pgRepo) doCreate(ctx context.Context, input CreateCampaignInput) (*Camp
 
 	for _, p := range input.Parameters {
 		_, err := tx.Exec(ctx,
-			`INSERT INTO campaign_parameters (campaign_id, name, unit, min_range, max_range, precision)
-			 VALUES ($1, $2, $3, $4, $5, $6)`,
-			c.ID, p.Name, p.Unit, p.MinRange, p.MaxRange, p.Precision,
+			`INSERT INTO campaign_parameters (id, campaign_id, name, unit, min_range, max_range, precision)
+			 VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+			ulid.Make().String(), c.ID, p.Name, p.Unit, p.MinRange, p.MaxRange, p.Precision,
 		)
 		if err != nil {
 			return nil, fmt.Errorf("insert parameter: %w", err)
@@ -176,8 +178,8 @@ func (r *pgRepo) doCreate(ctx context.Context, input CreateCampaignInput) (*Camp
 
 	for _, reg := range input.Regions {
 		_, err := tx.Exec(ctx,
-			`INSERT INTO campaign_regions (campaign_id, geometry) VALUES ($1, $2::jsonb)`,
-			c.ID, reg.GeoJSON,
+			`INSERT INTO campaign_regions (id, campaign_id, geometry) VALUES ($1, $2, $3::jsonb)`,
+			ulid.Make().String(), c.ID, reg.GeoJSON,
 		)
 		if err != nil {
 			return nil, fmt.Errorf("insert region: %w", err)
@@ -186,9 +188,9 @@ func (r *pgRepo) doCreate(ctx context.Context, input CreateCampaignInput) (*Camp
 
 	for _, e := range input.Eligibility {
 		_, err := tx.Exec(ctx,
-			`INSERT INTO campaign_eligibility (campaign_id, device_class, tier, required_sensors, firmware_min)
-			 VALUES ($1, $2, $3, $4, $5)`,
-			c.ID, e.DeviceClass, e.Tier, e.RequiredSensors, e.FirmwareMin,
+			`INSERT INTO campaign_eligibility (id, campaign_id, device_class, tier, required_sensors, firmware_min)
+			 VALUES ($1, $2, $3, $4, $5, $6)`,
+			ulid.Make().String(), c.ID, e.DeviceClass, e.Tier, e.RequiredSensors, e.FirmwareMin,
 		)
 		if err != nil {
 			return nil, fmt.Errorf("insert eligibility: %w", err)

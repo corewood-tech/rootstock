@@ -1,7 +1,7 @@
 CREATE TABLE readings (
-    id                  UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    device_id           UUID            NOT NULL REFERENCES devices(id),
-    campaign_id         UUID            NOT NULL REFERENCES campaigns(id),
+    id                  TEXT PRIMARY KEY,
+    device_id           TEXT            NOT NULL REFERENCES devices(id),
+    campaign_id         TEXT            NOT NULL REFERENCES campaigns(id),
     value               DOUBLE PRECISION NOT NULL,
     timestamp           TIMESTAMPTZ     NOT NULL,
     geolocation         JSONB,
