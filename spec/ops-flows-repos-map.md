@@ -4,7 +4,7 @@ ops# ROOTSTOCK — Ops, Flows, Repos Decomposition
 >
 > - **Flows** orchestrate ordering. They compose ops. They never call repos.
 > - **Ops** execute business logic. Each op calls at most ONE repo. This is the clean architecture boundary.
-> - **Repos** hide implementation details. Swapping Zitadel for Keycloak, step-ca for Vault PKI, Postgres for CockroachDB — only the repo changes.
+> - **Repos** hide implementation details. Swapping Zitadel for Keycloak, in-process CA for Vault PKI, Mochi for another broker, Postgres for CockroachDB — only the repo changes.
 >
 > Constraint: each op calls **one** repo or **zero** (pure logic). If an op needs two data sources, it's two ops composed by a flow.
 

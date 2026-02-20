@@ -65,7 +65,7 @@ func (r *mqttRepo) manage() {
 }
 
 func (r *mqttRepo) doPushConfig(input PushConfigInput) error {
-	topic := fmt.Sprintf("rootstock/%s/config", input.DeviceID)
+	topic := fmt.Sprintf("%s/%s/config", TopicPrefix, input.DeviceID)
 	return r.server.Publish(topic, input.Payload, true, 1)
 }
 

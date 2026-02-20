@@ -45,7 +45,7 @@ The open source model shifts cost from licensing to community infrastructure, go
 - **Development:** SoftHSM is free and sufficient for local development and testing (0x13, Smallstep docs).
 - **Production hardware:** YubiHSM 2 costs approximately $650 per unit — a fixed, one-time cost (0x12, Yubico Store, 2026).
 - **Cloud alternative:** AWS CloudHSM costs $876–$1,825/month; Azure and Google Cloud KMS are similarly priced (0x12, AWS/Azure/Google Cloud pricing, 2026).
-- **CA software:** step-ca is free under Apache 2.0 (0x13, Smallstep GitHub).
+- **CA software:** Implemented as in-process CA using Go `crypto/x509` stdlib — no external CA dependency. (Originally planned as step-ca; decision changed to reduce infrastructure.)
 - **Data gap:** No IoT-specific operational cost case studies exist for self-operated CAs (0x13). Operational cost (key ceremony, monitoring, rotation procedures) must be estimated during pilot.
 
 The cost decision is between a ~$650 one-time hardware cost (YubiHSM 2) versus $10,500–$21,900/year for cloud HSM. For a project with CON-001 constraints and no revenue model, hardware HSM is the clear choice for production.
@@ -54,7 +54,7 @@ The cost decision is between a ~$650 one-time hardware cost (YubiHSM 2) versus $
 
 **Evidence:**
 - 0x12 — YubiHSM $650; cloud HSM $876–$1,825/mo ([source](https://aws.amazon.com/cloudhsm/pricing/), 2026)
-- 0x13 — step-ca free (Apache 2.0); no IoT operational cost data ([source](https://smallstep.com/docs/step-ca/), 2026)
+- 0x13 — In-process CA (Go crypto/x509 stdlib); no external CA software cost. HSM integration via PKCS#11 for production key protection
 
 ---
 
@@ -66,15 +66,16 @@ The cost decision is between a ~$650 one-time hardware cost (YubiHSM 2) versus $
 
 **Evidence-Based Pricing:**
 - **Managed MQTT:** At 10,000 messages/second, managed MQTT services (AWS IoT Core, HiveMQ Cloud) cost approximately $26,000/month (0x14, EMQX Open MQTT Benchmarking Comparison, 2023).
-- **Self-hosted MQTT:** Self-hosted brokers reduce cost to the underlying VM/container infrastructure. Mosquitto is single-threaded with a maximum throughput of approximately 37,000 messages/second. EMQX supports 100 million connections but requires horizontal scaling (0x14, EMQX benchmarks, 2023).
+- **Embedded MQTT (current decision):** Mochi MQTT broker embedded in-process — zero additional infrastructure cost. Same binary as the web server. Eliminates the managed vs self-hosted decision entirely. Trade-off: broker scales with the server process, not independently. Acceptable at current target scale (10K msg/s).
+- **Self-hosted MQTT (rejected):** Standalone brokers (EMQX, Mosquitto, VerneMQ) reduce cost to VM/container infrastructure but add operational complexity. Mosquitto is single-threaded (~37K msg/s max). EMQX supports horizontal scaling but requires separate deployment (0x14, EMQX benchmarks, 2023).
 - **Per-device costs:** Industry benchmarks range from $0.01 to $5.00 per device per month depending on the pricing model — messaging at $1 per million messages, storage at $0.30/GB-month (0x17, Monetizely IoT Cost Breakdown, 2024; AWS IoT Core Pricing).
 
-The $26,000/month managed versus VM-only self-hosted differential is the most significant infrastructure cost decision. Given CON-001 (open source) and the implicit budget constraint (Section 2g — platform cost must not become the problem it was designed to solve), self-hosted MQTT is the expected path.
+The $26,000/month managed versus embedded-at-zero-cost differential validates the embedded broker decision. Given CON-001 (open source) and the implicit budget constraint (Section 2g — platform cost must not become the problem it was designed to solve), the embedded Mochi broker eliminates MQTT as an infrastructure cost line entirely.
 
 **Affected Requirements:** PE-001 (Data Ingestion Throughput), PE-002 (Ingestion Latency), PE-004 (Platform Availability), PE-005 (OPA Authorization Latency), FR-023 (Persist Valid Readings with Provenance)
 
 **Evidence:**
-- 0x14 — Managed MQTT ~$26K/mo at 10K msg/s; self-hosted = VM cost ([source](https://www.emqx.com/en/blog/open-mqtt-benchmarking-comparison-mqtt-brokers-in-2023), 2023)
+- 0x14 — Managed MQTT ~$26K/mo at 10K msg/s; embedded Mochi = $0 additional cost ([source](https://www.emqx.com/en/blog/open-mqtt-benchmarking-comparison-mqtt-brokers-in-2023), 2023)
 - 0x17 — Per-device $0.01–$5/mo; $1/1M messages ([source](https://aws.amazon.com/iot-core/pricing/), 2024)
 
 ---

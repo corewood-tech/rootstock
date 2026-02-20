@@ -48,7 +48,7 @@ The following people, organizations, and automated systems interact with Rootsto
 | 0xa | Rootstock CA | Automated | Self-operated certificate authority. Two-tier hierarchy. Issues and renews device certificates for mTLS. |
 | 0xb | Identity Provider (Zitadel) | Automated | External identity provider for human users. Handles authentication, user management, org hierarchy. |
 | 0xc | Policy Engine (OPA) | Automated | Makes all authorization decisions. Evaluates Rego policies against device registry data. 30-second bundle refresh. |
-| 0xd | MQTT Broker | Automated | Routes IoT device telemetry. All connections use mTLS. Auth webhook delegates to OPA via auth service. |
+| 0xd | MQTT Broker | Automated | Routes IoT device telemetry. Embedded in-process (Mochi MQTT). All connections use strict mTLS (`RequireAndVerifyClientCert`). Auth handled by in-process Go hook — mTLS cert verification + topic ACL enforcement. Port 8883. |
 
 ### Data Flows
 

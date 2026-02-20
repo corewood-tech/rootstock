@@ -44,6 +44,12 @@ type getQualityReq struct {
 	resp       chan response[*QualityMetrics]
 }
 
+type getScitizenStatsReq struct {
+	ctx        context.Context
+	scitizenID string
+	resp       chan response[*ScitizenReadingStats]
+}
+
 type shutdownReq struct {
 	resp chan struct{}
 }
@@ -55,6 +61,7 @@ type pgRepo struct {
 	queryCh               chan queryReq
 	quarantineByWindowCh  chan quarantineByWindowReq
 	getQualityCh          chan getQualityReq
+	getScitizenStatsCh    chan getScitizenStatsReq
 	shutdownCh            chan shutdownReq
 }
 
@@ -67,6 +74,7 @@ func NewRepository(pool *pgxpool.Pool) Repository {
 		queryCh:              make(chan queryReq),
 		quarantineByWindowCh: make(chan quarantineByWindowReq),
 		getQualityCh:         make(chan getQualityReq),
+		getScitizenStatsCh:   make(chan getScitizenStatsReq),
 		shutdownCh:           make(chan shutdownReq),
 	}
 	go r.manage()
@@ -91,6 +99,9 @@ func (r *pgRepo) manage() {
 		case req := <-r.getQualityCh:
 			val, err := r.doGetQuality(req.ctx, req.campaignID)
 			req.resp <- response[*QualityMetrics]{val: val, err: err}
+		case req := <-r.getScitizenStatsCh:
+			val, err := r.doGetScitizenReadingStats(req.ctx, req.scitizenID)
+			req.resp <- response[*ScitizenReadingStats]{val: val, err: err}
 		case req := <-r.shutdownCh:
 			close(req.resp)
 			return
@@ -129,6 +140,13 @@ func (r *pgRepo) QuarantineByWindow(ctx context.Context, input QuarantineByWindo
 func (r *pgRepo) GetCampaignQuality(ctx context.Context, campaignID string) (*QualityMetrics, error) {
 	resp := make(chan response[*QualityMetrics], 1)
 	r.getQualityCh <- getQualityReq{ctx: ctx, campaignID: campaignID, resp: resp}
+	res := <-resp
+	return res.val, res.err
+}
+
+func (r *pgRepo) GetScitizenReadingStats(ctx context.Context, scitizenID string) (*ScitizenReadingStats, error) {
+	resp := make(chan response[*ScitizenReadingStats], 1)
+	r.getScitizenStatsCh <- getScitizenStatsReq{ctx: ctx, scitizenID: scitizenID, resp: resp}
 	res := <-resp
 	return res.val, res.err
 }
@@ -211,6 +229,12 @@ func (r *pgRepo) doQuery(ctx context.Context, input QueryReadingsInput) ([]Readi
 	if input.Limit > 0 {
 		query += fmt.Sprintf(" LIMIT $%d", argIdx)
 		args = append(args, input.Limit)
+		argIdx++
+	}
+
+	if input.Offset > 0 {
+		query += fmt.Sprintf(" OFFSET $%d", argIdx)
+		args = append(args, input.Offset)
 	}
 
 	rows, err := r.pool.Query(ctx, query, args...)
@@ -267,4 +291,29 @@ func (r *pgRepo) doGetQuality(ctx context.Context, campaignID string) (*QualityM
 		return nil, fmt.Errorf("get quality: %w", err)
 	}
 	return q, nil
+}
+
+func (r *pgRepo) doGetScitizenReadingStats(ctx context.Context, scitizenID string) (*ScitizenReadingStats, error) {
+	s := &ScitizenReadingStats{}
+	err := r.pool.QueryRow(ctx,
+		`SELECT
+			COALESCE(COUNT(*) FILTER (WHERE r.status = 'accepted'), 0),
+			COALESCE(COUNT(*) FILTER (WHERE r.status = 'accepted')::float / NULLIF(COUNT(*), 0), 0),
+			COALESCE(
+				COUNT(DISTINCT DATE(r.timestamp))::float /
+				GREATEST(EXTRACT(EPOCH FROM (now() - MIN(r.ingested_at))) / 86400, 1),
+			0),
+			COALESCE(COUNT(DISTINCT r.campaign_id), 0)
+		 FROM readings r
+		 JOIN devices d ON d.id = r.device_id
+		 WHERE d.owner_id = $1`,
+		scitizenID,
+	).Scan(&s.Volume, &s.QualityRate, &s.Consistency, &s.Diversity)
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			return s, nil
+		}
+		return nil, fmt.Errorf("get scitizen reading stats: %w", err)
+	}
+	return s, nil
 }

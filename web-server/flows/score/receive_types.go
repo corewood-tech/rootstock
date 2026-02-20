@@ -9,3 +9,8 @@ type UpdateContributionScoreInput struct {
 	Diversity   int
 	Total       float64
 }
+
+// RefreshScitizenScoreInput is the input to the RefreshScitizenScore flow.
+type RefreshScitizenScoreInput struct {
+	DeviceID string
+}

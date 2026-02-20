@@ -55,6 +55,9 @@ const (
 	// CampaignServiceGetCampaignDashboardProcedure is the fully-qualified name of the CampaignService's
 	// GetCampaignDashboard RPC.
 	CampaignServiceGetCampaignDashboardProcedure = "/rootstock.v1.CampaignService/GetCampaignDashboard"
+	// CampaignServiceExportCampaignDataProcedure is the fully-qualified name of the CampaignService's
+	// ExportCampaignData RPC.
+	CampaignServiceExportCampaignDataProcedure = "/rootstock.v1.CampaignService/ExportCampaignData"
 	// OrgServiceCreateOrgProcedure is the fully-qualified name of the OrgService's CreateOrg RPC.
 	OrgServiceCreateOrgProcedure = "/rootstock.v1.OrgService/CreateOrg"
 	// OrgServiceNestOrgProcedure is the fully-qualified name of the OrgService's NestOrg RPC.
@@ -76,6 +79,9 @@ const (
 	// DeviceServiceReinstateDeviceProcedure is the fully-qualified name of the DeviceService's
 	// ReinstateDevice RPC.
 	DeviceServiceReinstateDeviceProcedure = "/rootstock.v1.DeviceService/ReinstateDevice"
+	// DeviceServiceEnrollInCampaignProcedure is the fully-qualified name of the DeviceService's
+	// EnrollInCampaign RPC.
+	DeviceServiceEnrollInCampaignProcedure = "/rootstock.v1.DeviceService/EnrollInCampaign"
 )
 
 // HealthServiceClient is a client for the rootstock.v1.HealthService service.
@@ -154,6 +160,7 @@ type CampaignServiceClient interface {
 	PublishCampaign(context.Context, *connect.Request[v1.PublishCampaignRequest]) (*connect.Response[v1.PublishCampaignResponse], error)
 	ListCampaigns(context.Context, *connect.Request[v1.ListCampaignsRequest]) (*connect.Response[v1.ListCampaignsResponse], error)
 	GetCampaignDashboard(context.Context, *connect.Request[v1.GetCampaignDashboardRequest]) (*connect.Response[v1.GetCampaignDashboardResponse], error)
+	ExportCampaignData(context.Context, *connect.Request[v1.ExportCampaignDataRequest]) (*connect.Response[v1.ExportCampaignDataResponse], error)
 }
 
 // NewCampaignServiceClient constructs a client for the rootstock.v1.CampaignService service. By
@@ -191,6 +198,12 @@ func NewCampaignServiceClient(httpClient connect.HTTPClient, baseURL string, opt
 			connect.WithSchema(campaignServiceMethods.ByName("GetCampaignDashboard")),
 			connect.WithClientOptions(opts...),
 		),
+		exportCampaignData: connect.NewClient[v1.ExportCampaignDataRequest, v1.ExportCampaignDataResponse](
+			httpClient,
+			baseURL+CampaignServiceExportCampaignDataProcedure,
+			connect.WithSchema(campaignServiceMethods.ByName("ExportCampaignData")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
@@ -200,6 +213,7 @@ type campaignServiceClient struct {
 	publishCampaign      *connect.Client[v1.PublishCampaignRequest, v1.PublishCampaignResponse]
 	listCampaigns        *connect.Client[v1.ListCampaignsRequest, v1.ListCampaignsResponse]
 	getCampaignDashboard *connect.Client[v1.GetCampaignDashboardRequest, v1.GetCampaignDashboardResponse]
+	exportCampaignData   *connect.Client[v1.ExportCampaignDataRequest, v1.ExportCampaignDataResponse]
 }
 
 // CreateCampaign calls rootstock.v1.CampaignService.CreateCampaign.
@@ -222,12 +236,18 @@ func (c *campaignServiceClient) GetCampaignDashboard(ctx context.Context, req *c
 	return c.getCampaignDashboard.CallUnary(ctx, req)
 }
 
+// ExportCampaignData calls rootstock.v1.CampaignService.ExportCampaignData.
+func (c *campaignServiceClient) ExportCampaignData(ctx context.Context, req *connect.Request[v1.ExportCampaignDataRequest]) (*connect.Response[v1.ExportCampaignDataResponse], error) {
+	return c.exportCampaignData.CallUnary(ctx, req)
+}
+
 // CampaignServiceHandler is an implementation of the rootstock.v1.CampaignService service.
 type CampaignServiceHandler interface {
 	CreateCampaign(context.Context, *connect.Request[v1.CreateCampaignRequest]) (*connect.Response[v1.CreateCampaignResponse], error)
 	PublishCampaign(context.Context, *connect.Request[v1.PublishCampaignRequest]) (*connect.Response[v1.PublishCampaignResponse], error)
 	ListCampaigns(context.Context, *connect.Request[v1.ListCampaignsRequest]) (*connect.Response[v1.ListCampaignsResponse], error)
 	GetCampaignDashboard(context.Context, *connect.Request[v1.GetCampaignDashboardRequest]) (*connect.Response[v1.GetCampaignDashboardResponse], error)
+	ExportCampaignData(context.Context, *connect.Request[v1.ExportCampaignDataRequest]) (*connect.Response[v1.ExportCampaignDataResponse], error)
 }
 
 // NewCampaignServiceHandler builds an HTTP handler from the service implementation. It returns the
@@ -261,6 +281,12 @@ func NewCampaignServiceHandler(svc CampaignServiceHandler, opts ...connect.Handl
 		connect.WithSchema(campaignServiceMethods.ByName("GetCampaignDashboard")),
 		connect.WithHandlerOptions(opts...),
 	)
+	campaignServiceExportCampaignDataHandler := connect.NewUnaryHandler(
+		CampaignServiceExportCampaignDataProcedure,
+		svc.ExportCampaignData,
+		connect.WithSchema(campaignServiceMethods.ByName("ExportCampaignData")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/rootstock.v1.CampaignService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case CampaignServiceCreateCampaignProcedure:
@@ -271,6 +297,8 @@ func NewCampaignServiceHandler(svc CampaignServiceHandler, opts ...connect.Handl
 			campaignServiceListCampaignsHandler.ServeHTTP(w, r)
 		case CampaignServiceGetCampaignDashboardProcedure:
 			campaignServiceGetCampaignDashboardHandler.ServeHTTP(w, r)
+		case CampaignServiceExportCampaignDataProcedure:
+			campaignServiceExportCampaignDataHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -294,6 +322,10 @@ func (UnimplementedCampaignServiceHandler) ListCampaigns(context.Context, *conne
 
 func (UnimplementedCampaignServiceHandler) GetCampaignDashboard(context.Context, *connect.Request[v1.GetCampaignDashboardRequest]) (*connect.Response[v1.GetCampaignDashboardResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("rootstock.v1.CampaignService.GetCampaignDashboard is not implemented"))
+}
+
+func (UnimplementedCampaignServiceHandler) ExportCampaignData(context.Context, *connect.Request[v1.ExportCampaignDataRequest]) (*connect.Response[v1.ExportCampaignDataResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("rootstock.v1.CampaignService.ExportCampaignData is not implemented"))
 }
 
 // OrgServiceClient is a client for the rootstock.v1.OrgService service.
@@ -545,6 +577,7 @@ type DeviceServiceClient interface {
 	GetDevice(context.Context, *connect.Request[v1.GetDeviceRequest]) (*connect.Response[v1.GetDeviceResponse], error)
 	RevokeDevice(context.Context, *connect.Request[v1.RevokeDeviceRequest]) (*connect.Response[v1.RevokeDeviceResponse], error)
 	ReinstateDevice(context.Context, *connect.Request[v1.ReinstateDeviceRequest]) (*connect.Response[v1.ReinstateDeviceResponse], error)
+	EnrollInCampaign(context.Context, *connect.Request[v1.EnrollInCampaignRequest]) (*connect.Response[v1.EnrollInCampaignResponse], error)
 }
 
 // NewDeviceServiceClient constructs a client for the rootstock.v1.DeviceService service. By
@@ -576,14 +609,21 @@ func NewDeviceServiceClient(httpClient connect.HTTPClient, baseURL string, opts 
 			connect.WithSchema(deviceServiceMethods.ByName("ReinstateDevice")),
 			connect.WithClientOptions(opts...),
 		),
+		enrollInCampaign: connect.NewClient[v1.EnrollInCampaignRequest, v1.EnrollInCampaignResponse](
+			httpClient,
+			baseURL+DeviceServiceEnrollInCampaignProcedure,
+			connect.WithSchema(deviceServiceMethods.ByName("EnrollInCampaign")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
 // deviceServiceClient implements DeviceServiceClient.
 type deviceServiceClient struct {
-	getDevice       *connect.Client[v1.GetDeviceRequest, v1.GetDeviceResponse]
-	revokeDevice    *connect.Client[v1.RevokeDeviceRequest, v1.RevokeDeviceResponse]
-	reinstateDevice *connect.Client[v1.ReinstateDeviceRequest, v1.ReinstateDeviceResponse]
+	getDevice        *connect.Client[v1.GetDeviceRequest, v1.GetDeviceResponse]
+	revokeDevice     *connect.Client[v1.RevokeDeviceRequest, v1.RevokeDeviceResponse]
+	reinstateDevice  *connect.Client[v1.ReinstateDeviceRequest, v1.ReinstateDeviceResponse]
+	enrollInCampaign *connect.Client[v1.EnrollInCampaignRequest, v1.EnrollInCampaignResponse]
 }
 
 // GetDevice calls rootstock.v1.DeviceService.GetDevice.
@@ -601,11 +641,17 @@ func (c *deviceServiceClient) ReinstateDevice(ctx context.Context, req *connect.
 	return c.reinstateDevice.CallUnary(ctx, req)
 }
 
+// EnrollInCampaign calls rootstock.v1.DeviceService.EnrollInCampaign.
+func (c *deviceServiceClient) EnrollInCampaign(ctx context.Context, req *connect.Request[v1.EnrollInCampaignRequest]) (*connect.Response[v1.EnrollInCampaignResponse], error) {
+	return c.enrollInCampaign.CallUnary(ctx, req)
+}
+
 // DeviceServiceHandler is an implementation of the rootstock.v1.DeviceService service.
 type DeviceServiceHandler interface {
 	GetDevice(context.Context, *connect.Request[v1.GetDeviceRequest]) (*connect.Response[v1.GetDeviceResponse], error)
 	RevokeDevice(context.Context, *connect.Request[v1.RevokeDeviceRequest]) (*connect.Response[v1.RevokeDeviceResponse], error)
 	ReinstateDevice(context.Context, *connect.Request[v1.ReinstateDeviceRequest]) (*connect.Response[v1.ReinstateDeviceResponse], error)
+	EnrollInCampaign(context.Context, *connect.Request[v1.EnrollInCampaignRequest]) (*connect.Response[v1.EnrollInCampaignResponse], error)
 }
 
 // NewDeviceServiceHandler builds an HTTP handler from the service implementation. It returns the
@@ -633,6 +679,12 @@ func NewDeviceServiceHandler(svc DeviceServiceHandler, opts ...connect.HandlerOp
 		connect.WithSchema(deviceServiceMethods.ByName("ReinstateDevice")),
 		connect.WithHandlerOptions(opts...),
 	)
+	deviceServiceEnrollInCampaignHandler := connect.NewUnaryHandler(
+		DeviceServiceEnrollInCampaignProcedure,
+		svc.EnrollInCampaign,
+		connect.WithSchema(deviceServiceMethods.ByName("EnrollInCampaign")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/rootstock.v1.DeviceService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case DeviceServiceGetDeviceProcedure:
@@ -641,6 +693,8 @@ func NewDeviceServiceHandler(svc DeviceServiceHandler, opts ...connect.HandlerOp
 			deviceServiceRevokeDeviceHandler.ServeHTTP(w, r)
 		case DeviceServiceReinstateDeviceProcedure:
 			deviceServiceReinstateDeviceHandler.ServeHTTP(w, r)
+		case DeviceServiceEnrollInCampaignProcedure:
+			deviceServiceEnrollInCampaignHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -660,4 +714,8 @@ func (UnimplementedDeviceServiceHandler) RevokeDevice(context.Context, *connect.
 
 func (UnimplementedDeviceServiceHandler) ReinstateDevice(context.Context, *connect.Request[v1.ReinstateDeviceRequest]) (*connect.Response[v1.ReinstateDeviceResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("rootstock.v1.DeviceService.ReinstateDevice is not implemented"))
+}
+
+func (UnimplementedDeviceServiceHandler) EnrollInCampaign(context.Context, *connect.Request[v1.EnrollInCampaignRequest]) (*connect.Response[v1.EnrollInCampaignResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("rootstock.v1.DeviceService.EnrollInCampaign is not implemented"))
 }

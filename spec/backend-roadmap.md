@@ -20,7 +20,8 @@
 | **Infra** | Postgres (app + Zitadel), Zitadel + Login v2, Caddy, OTel Collector, Prometheus, Tempo, Loki, Grafana, in-process CA | Running |
 | **Migrations** | 5 migration pairs (campaigns, devices, readings, scores, unique constraints) | Complete |
 | **Tests** | Unit tests across all repos, ops, flows (17 packages) | Complete |
-| **Not yet built** | MQTTRepo (embedded Mochi), MQTT server/auth, EnrollInCampaign flow, ExportData flow, SecurityResponse flow, NotificationRepo, AdminService | Planned |
+| **Recently built** | MQTT pipeline (inline subscriptions, telemetry + renewal callbacks), EnrollInCampaign flow, MQTTOps (PushDeviceConfig), RefreshScitizenScoreFlow (score trigger after accepted reading), ExportData flow + PseudonymizeExport pure op, ExportCampaignData RPC, MQTT grace period (custom TLS verify + ACL restriction for expired certs), Offset pagination for QueryReadings, HMAC export config | Complete |
+| **Not yet built** | SecurityResponse flow, NotificationRepo, Notify op, AdminService | Planned |
 
 ---
 

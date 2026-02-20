@@ -9,5 +9,6 @@ type Repository interface {
 	Query(ctx context.Context, input QueryReadingsInput) ([]Reading, error)
 	QuarantineByWindow(ctx context.Context, input QuarantineByWindowInput) (int64, error)
 	GetCampaignQuality(ctx context.Context, campaignID string) (*QualityMetrics, error)
+	GetScitizenReadingStats(ctx context.Context, scitizenID string) (*ScitizenReadingStats, error)
 	Shutdown()
 }

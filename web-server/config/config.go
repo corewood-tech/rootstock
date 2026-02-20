@@ -22,6 +22,7 @@ type Config struct {
 	Events        EventsConfig        `koanf:"events"`
 	Cert          CertConfig          `koanf:"cert"`
 	MQTT          MQTTConfig          `koanf:"mqtt"`
+	Export        ExportConfig        `koanf:"export"`
 }
 
 type ServerConfig struct {
@@ -82,8 +83,13 @@ type CertConfig struct {
 }
 
 type MQTTConfig struct {
-	Port       int      `koanf:"port"`
-	ServerSANs []string `koanf:"server_sans"`
+	Port            int      `koanf:"port"`
+	ServerSANs      []string `koanf:"server_sans"`
+	GracePeriodDays int      `koanf:"grace_period_days"`
+}
+
+type ExportConfig struct {
+	HMACSecret string `koanf:"hmac_secret"`
 }
 
 // Load builds the config by layering: defaults → YAML file → env vars → CLI flags.

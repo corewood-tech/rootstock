@@ -16,3 +16,20 @@ type Reading struct {
 	Status           string
 	QuarantineReason *string
 }
+
+// ExportDataResult is the result of ExportDataFlow.
+type ExportDataResult struct {
+	Readings []ExportedReading
+}
+
+// ExportedReading is a pseudonymized reading for export.
+type ExportedReading struct {
+	PseudoDeviceID  string
+	CampaignID      string
+	Value           float64
+	Timestamp       time.Time
+	Geolocation     *string
+	FirmwareVersion string
+	IngestedAt      time.Time
+	Status          string
+}

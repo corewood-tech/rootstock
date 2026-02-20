@@ -7,6 +7,7 @@ import (
 	"connectrpc.com/connect"
 
 	campaignflows "rootstock/web-server/flows/campaign"
+	readingflows "rootstock/web-server/flows/reading"
 	rootstockv1 "rootstock/web-server/proto/rootstock/v1"
 )
 
@@ -16,6 +17,8 @@ type CampaignServiceHandler struct {
 	publishCampaign   *campaignflows.PublishCampaignFlow
 	browseCampaigns   *campaignflows.BrowseCampaignsFlow
 	campaignDashboard *campaignflows.DashboardFlow
+	exportData        *readingflows.ExportDataFlow
+	hmacSecret        string
 }
 
 // NewCampaignServiceHandler creates the handler with all required flows.
@@ -24,12 +27,16 @@ func NewCampaignServiceHandler(
 	publishCampaign *campaignflows.PublishCampaignFlow,
 	browseCampaigns *campaignflows.BrowseCampaignsFlow,
 	campaignDashboard *campaignflows.DashboardFlow,
+	exportData *readingflows.ExportDataFlow,
+	hmacSecret string,
 ) *CampaignServiceHandler {
 	return &CampaignServiceHandler{
 		createCampaign:    createCampaign,
 		publishCampaign:   publishCampaign,
 		browseCampaigns:   browseCampaigns,
 		campaignDashboard: campaignDashboard,
+		exportData:        exportData,
+		hmacSecret:        hmacSecret,
 	}
 }
 
@@ -133,6 +140,43 @@ func (h *CampaignServiceHandler) GetCampaignDashboard(
 		CampaignId:      dashboard.CampaignID,
 		AcceptedCount:   int32(dashboard.AcceptedCount),
 		QuarantineCount: int32(dashboard.QuarantineCount),
+	}), nil
+}
+
+func (h *CampaignServiceHandler) ExportCampaignData(
+	ctx context.Context,
+	req *connect.Request[rootstockv1.ExportCampaignDataRequest],
+) (*connect.Response[rootstockv1.ExportCampaignDataResponse], error) {
+	msg := req.Msg
+
+	result, err := h.exportData.Run(ctx, readingflows.ExportDataInput{
+		CampaignID: msg.GetCampaignId(),
+		Secret:     h.hmacSecret,
+		Limit:      int(msg.GetLimit()),
+		Offset:     int(msg.GetOffset()),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	readings := make([]*rootstockv1.ExportedReadingProto, len(result.Readings))
+	for i, r := range result.Readings {
+		readings[i] = &rootstockv1.ExportedReadingProto{
+			PseudoDeviceId:  r.PseudoDeviceID,
+			CampaignId:      r.CampaignID,
+			Value:           r.Value,
+			Timestamp:       r.Timestamp.Format(time.RFC3339),
+			FirmwareVersion: r.FirmwareVersion,
+			IngestedAt:      r.IngestedAt.Format(time.RFC3339),
+			Status:          r.Status,
+		}
+		if r.Geolocation != nil {
+			readings[i].Geolocation = r.Geolocation
+		}
+	}
+
+	return connect.NewResponse(&rootstockv1.ExportCampaignDataResponse{
+		Readings: readings,
 	}), nil
 }
 

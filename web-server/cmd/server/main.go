@@ -14,10 +14,12 @@ import (
 	"rootstock/web-server/global/observability"
 	certops "rootstock/web-server/ops/cert"
 	deviceops "rootstock/web-server/ops/device"
+	mqttops "rootstock/web-server/ops/mqtt"
 	certrepo "rootstock/web-server/repo/cert"
 	devicerepo "rootstock/web-server/repo/device"
 	eventsrepo "rootstock/web-server/repo/events"
 	identityrepo "rootstock/web-server/repo/identity"
+	mqttrepo "rootstock/web-server/repo/mqtt"
 	o11yrepo "rootstock/web-server/repo/observability"
 	sqlconnect "rootstock/web-server/repo/sql/connect"
 	sqlmigrate "rootstock/web-server/repo/sql/migrate"
@@ -98,19 +100,29 @@ func run() error {
 	defer crtRepo.Shutdown()
 	crtOps := certops.NewOps(crtRepo)
 
-	// RPC server (Connect RPC + /enroll + /ca)
-	rpcHandler, rpcCleanup, err := server.NewRPCServer(ctx, cfg, pool, iRepo, dOps, crtOps)
-	if err != nil {
-		return fmt.Errorf("create rpc server: %w", err)
-	}
-	defer rpcCleanup()
-
 	// MQTT server (embedded Mochi broker, mTLS on port 8883)
 	mqttServer, mqttCleanup, err := server.NewMQTTServer(cfg)
 	if err != nil {
 		return fmt.Errorf("create mqtt server: %w", err)
 	}
 	defer mqttCleanup()
+
+	// MQTT repo + ops (wraps broker's inline client)
+	mRepo := mqttrepo.NewRepository(mqttServer)
+	defer mRepo.Shutdown()
+	mOps := mqttops.NewOps(mRepo)
+
+	// RPC server (Connect RPC + /enroll + /ca, returns MQTTFlows for subscription wiring)
+	rpcHandler, mqttFlows, rpcCleanup, err := server.NewRPCServer(ctx, cfg, pool, iRepo, dOps, crtOps, mOps)
+	if err != nil {
+		return fmt.Errorf("create rpc server: %w", err)
+	}
+	defer rpcCleanup()
+
+	// MQTT subscriptions (telemetry + renewal callbacks wired to flows)
+	if err := server.SetupMQTTSubscriptions(ctx, mqttServer, mqttFlows); err != nil {
+		return fmt.Errorf("setup mqtt subscriptions: %w", err)
+	}
 
 	errChan := make(chan error, 2)
 

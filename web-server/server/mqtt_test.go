@@ -44,11 +44,18 @@ func writeTestCA(t *testing.T, dir string) (*x509.Certificate, *ecdsa.PrivateKey
 	caCert, _ := x509.ParseCertificate(caDER)
 
 	certPEM := pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: caDER})
-	os.WriteFile(filepath.Join(dir, "ca.crt"), certPEM, 0644)
+	if err := os.WriteFile(filepath.Join(dir, "ca.crt"), certPEM, 0644); err != nil {
+		t.Fatalf("write ca cert: %v", err)
+	}
 
-	keyDER, _ := x509.MarshalECPrivateKey(caKey)
+	keyDER, err := x509.MarshalECPrivateKey(caKey)
+	if err != nil {
+		t.Fatalf("marshal ca key: %v", err)
+	}
 	keyPEM := pem.EncodeToMemory(&pem.Block{Type: "EC PRIVATE KEY", Bytes: keyDER})
-	os.WriteFile(filepath.Join(dir, "ca.key"), keyPEM, 0600)
+	if err := os.WriteFile(filepath.Join(dir, "ca.key"), keyPEM, 0600); err != nil {
+		t.Fatalf("write ca key: %v", err)
+	}
 
 	return caCert, caKey
 }

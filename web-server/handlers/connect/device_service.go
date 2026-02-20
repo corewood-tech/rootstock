@@ -12,9 +12,10 @@ import (
 
 // DeviceServiceHandler implements the DeviceService Connect RPC interface.
 type DeviceServiceHandler struct {
-	getDevice        *deviceflows.GetDeviceFlow
-	revokeDevice     *deviceflows.RevokeDeviceFlow
-	reinstateDevice  *deviceflows.ReinstateDeviceFlow
+	getDevice         *deviceflows.GetDeviceFlow
+	revokeDevice      *deviceflows.RevokeDeviceFlow
+	reinstateDevice   *deviceflows.ReinstateDeviceFlow
+	enrollInCampaign  *deviceflows.EnrollInCampaignFlow
 }
 
 // NewDeviceServiceHandler creates the handler with all required flows.
@@ -22,11 +23,13 @@ func NewDeviceServiceHandler(
 	getDevice *deviceflows.GetDeviceFlow,
 	revokeDevice *deviceflows.RevokeDeviceFlow,
 	reinstateDevice *deviceflows.ReinstateDeviceFlow,
+	enrollInCampaign *deviceflows.EnrollInCampaignFlow,
 ) *DeviceServiceHandler {
 	return &DeviceServiceHandler{
-		getDevice:       getDevice,
-		revokeDevice:    revokeDevice,
-		reinstateDevice: reinstateDevice,
+		getDevice:        getDevice,
+		revokeDevice:     revokeDevice,
+		reinstateDevice:  reinstateDevice,
+		enrollInCampaign: enrollInCampaign,
 	}
 }
 
@@ -68,6 +71,23 @@ func (h *DeviceServiceHandler) ReinstateDevice(
 		return nil, err
 	}
 	return connect.NewResponse(&rootstockv1.ReinstateDeviceResponse{}), nil
+}
+
+func (h *DeviceServiceHandler) EnrollInCampaign(
+	ctx context.Context,
+	req *connect.Request[rootstockv1.EnrollInCampaignRequest],
+) (*connect.Response[rootstockv1.EnrollInCampaignResponse], error) {
+	result, err := h.enrollInCampaign.Run(ctx, deviceflows.EnrollInCampaignInput{
+		DeviceID:   req.Msg.GetDeviceId(),
+		CampaignID: req.Msg.GetCampaignId(),
+	})
+	if err != nil {
+		return nil, err
+	}
+	return connect.NewResponse(&rootstockv1.EnrollInCampaignResponse{
+		Enrolled: result.Enrolled,
+		Reason:   result.Reason,
+	}), nil
 }
 
 func deviceToProto(d *deviceflows.Device) *rootstockv1.DeviceProto {

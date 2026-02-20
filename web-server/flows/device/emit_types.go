@@ -36,3 +36,14 @@ type RenewCertResult struct {
 type CACert struct {
 	CertPEM []byte
 }
+
+// EnrollInCampaignResult is the result of the EnrollInCampaign flow.
+type EnrollInCampaignResult struct {
+	Enrolled bool
+	Reason   string
+}
+
+// DeviceConfigPayload is the config pushed to a device after enrollment.
+type DeviceConfigPayload struct {
+	CampaignID string `json:"campaign_id"`
+}

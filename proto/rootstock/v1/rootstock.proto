@@ -20,6 +20,7 @@ service CampaignService {
   rpc PublishCampaign(PublishCampaignRequest) returns (PublishCampaignResponse);
   rpc ListCampaigns(ListCampaignsRequest) returns (ListCampaignsResponse);
   rpc GetCampaignDashboard(GetCampaignDashboardRequest) returns (GetCampaignDashboardResponse);
+  rpc ExportCampaignData(ExportCampaignDataRequest) returns (ExportCampaignDataResponse);
 }
 
 // Campaign messages
@@ -93,6 +94,27 @@ message GetCampaignDashboardResponse {
   string campaign_id = 1;
   int32 accepted_count = 2;
   int32 quarantine_count = 3;
+}
+
+message ExportedReadingProto {
+  string pseudo_device_id = 1;
+  string campaign_id = 2;
+  double value = 3;
+  string timestamp = 4;
+  optional string geolocation = 5;
+  string firmware_version = 6;
+  string ingested_at = 7;
+  string status = 8;
+}
+
+message ExportCampaignDataRequest {
+  string campaign_id = 1;
+  int32 limit = 2;
+  int32 offset = 3;
+}
+
+message ExportCampaignDataResponse {
+  repeated ExportedReadingProto readings = 1;
 }
 
 // OrgService manages organizations, roles, and user invitations.
@@ -172,6 +194,7 @@ service DeviceService {
   rpc GetDevice(GetDeviceRequest) returns (GetDeviceResponse);
   rpc RevokeDevice(RevokeDeviceRequest) returns (RevokeDeviceResponse);
   rpc ReinstateDevice(ReinstateDeviceRequest) returns (ReinstateDeviceResponse);
+  rpc EnrollInCampaign(EnrollInCampaignRequest) returns (EnrollInCampaignResponse);
 }
 
 // Score messages
@@ -230,3 +253,13 @@ message ReinstateDeviceRequest {
 }
 
 message ReinstateDeviceResponse {}
+
+message EnrollInCampaignRequest {
+  string device_id = 1;
+  string campaign_id = 2;
+}
+
+message EnrollInCampaignResponse {
+  bool enrolled = 1;
+  string reason = 2;
+}

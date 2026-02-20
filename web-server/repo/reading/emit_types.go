@@ -23,3 +23,11 @@ type QualityMetrics struct {
 	AcceptedCount   int
 	QuarantineCount int
 }
+
+// ScitizenReadingStats holds aggregated reading statistics for a scitizen.
+type ScitizenReadingStats struct {
+	Volume      int
+	QualityRate float64
+	Consistency float64
+	Diversity   int
+}

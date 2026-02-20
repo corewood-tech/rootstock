@@ -1,4 +1,5 @@
 package mqtt
 
-// No emit types — publish operations are fire-and-forget from the caller's perspective.
-// The broker handles delivery guarantees (QoS).
+// TopicPrefix is the root namespace for all Rootstock MQTT topics.
+// Topic format: {TopicPrefix}/{device-id}/{subtopic}
+const TopicPrefix = "rootstock"

@@ -26,3 +26,9 @@ type RenewCertInput struct {
 	DeviceID string // from mTLS cert CN
 	CSR      []byte // DER-encoded PKCS#10
 }
+
+// EnrollInCampaignInput is what callers send to EnrollInCampaignFlow.
+type EnrollInCampaignInput struct {
+	DeviceID   string
+	CampaignID string
+}

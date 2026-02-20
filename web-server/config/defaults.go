@@ -46,8 +46,12 @@ func defaults() Config {
 			CertLifetimeDays: 90,
 		},
 		MQTT: MQTTConfig{
-			Port:       8883,
-			ServerSANs: []string{"localhost", "web-server"},
+			Port:            8883,
+			ServerSANs:      []string{"localhost", "web-server"},
+			GracePeriodDays: 7,
+		},
+		Export: ExportConfig{
+			HMACSecret: "dev-hmac-secret-change-in-prod",
 		},
 	}
 }

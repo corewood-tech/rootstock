@@ -66,6 +66,20 @@ func (o *Ops) GetCampaignQuality(ctx context.Context, campaignID string) (*Quali
 	}, nil
 }
 
+// GetScitizenReadingStats returns aggregated reading stats for a scitizen across all their devices.
+func (o *Ops) GetScitizenReadingStats(ctx context.Context, scitizenID string) (*ScitizenReadingStats, error) {
+	result, err := o.repo.GetScitizenReadingStats(ctx, scitizenID)
+	if err != nil {
+		return nil, err
+	}
+	return &ScitizenReadingStats{
+		Volume:      result.Volume,
+		QualityRate: result.QualityRate,
+		Consistency: result.Consistency,
+		Diversity:   result.Diversity,
+	}, nil
+}
+
 func toRepoPersistInput(in PersistReadingInput) readingrepo.PersistReadingInput {
 	return readingrepo.PersistReadingInput{
 		DeviceID:        in.DeviceID,
@@ -86,6 +100,7 @@ func toRepoQueryInput(in QueryReadingsInput) readingrepo.QueryReadingsInput {
 		Since:      in.Since,
 		Until:      in.Until,
 		Limit:      in.Limit,
+		Offset:     in.Offset,
 	}
 }
 

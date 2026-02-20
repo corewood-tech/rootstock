@@ -49,7 +49,8 @@ func NewMQTTServer(cfg *config.Config) (*mochi.Server, func(), error) {
 
 	// Add mTLS auth hook
 	if err := server.AddHook(&MQTTAuthHook{}, &MQTTAuthHookConfig{
-		CACertPool: caCertPool,
+		CACertPool:      caCertPool,
+		GracePeriodDays: cfg.MQTT.GracePeriodDays,
 	}); err != nil {
 		return nil, nil, fmt.Errorf("add mqtt auth hook: %w", err)
 	}
@@ -60,11 +61,54 @@ func NewMQTTServer(cfg *config.Config) (*mochi.Server, func(), error) {
 		return nil, nil, fmt.Errorf("generate mqtt server cert: %w", err)
 	}
 
-	// TLS listener with strict mTLS (RequireAndVerifyClientCert)
+	// TLS listener with mTLS + grace period for expired certs.
+	// RequireAnyClientCert ensures a cert is presented but skips Go's built-in
+	// expiry check. VerifyPeerCertificate does full chain validation with a
+	// relaxed expiry window so devices with recently-expired certs can still
+	// connect to renew.
+	gracePeriodDays := cfg.MQTT.GracePeriodDays
 	tlsCfg := &tls.Config{
 		Certificates: []tls.Certificate{serverCert},
 		ClientCAs:    caCertPool,
-		ClientAuth:   tls.RequireAndVerifyClientCert,
+		ClientAuth:   tls.RequireAnyClientCert,
+		VerifyPeerCertificate: func(rawCerts [][]byte, _ [][]*x509.Certificate) error {
+			if len(rawCerts) == 0 {
+				return fmt.Errorf("no client certificate")
+			}
+			cert, err := x509.ParseCertificate(rawCerts[0])
+			if err != nil {
+				return fmt.Errorf("parse client cert: %w", err)
+			}
+
+			// Beyond grace period → reject
+			now := time.Now()
+			graceCutoff := cert.NotAfter.Add(time.Duration(gracePeriodDays) * 24 * time.Hour)
+			if now.After(graceCutoff) {
+				return fmt.Errorf("certificate expired beyond grace period")
+			}
+
+			// Verify chain with time clamped to just before expiry
+			// (bypasses Go's expiry check while still validating chain + signature)
+			verifyTime := now
+			if now.After(cert.NotAfter) {
+				verifyTime = cert.NotAfter.Add(-time.Second)
+			}
+
+			intermediates := x509.NewCertPool()
+			for _, raw := range rawCerts[1:] {
+				if ic, err := x509.ParseCertificate(raw); err == nil {
+					intermediates.AddCert(ic)
+				}
+			}
+
+			_, err = cert.Verify(x509.VerifyOptions{
+				Roots:         caCertPool,
+				Intermediates: intermediates,
+				CurrentTime:   verifyTime,
+				KeyUsages:     []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth},
+			})
+			return err
+		},
 	}
 
 	tcp := listeners.NewTCP(listeners.Config{
@@ -128,6 +172,10 @@ func loadCA(certPath, keyPath string) (*x509.Certificate, crypto.Signer, []byte,
 // the CA for the MQTT TLS listener. Valid for 24 hours — the broker restarts
 // will generate a new one.
 func generateServerCert(caCert *x509.Certificate, caSigner crypto.Signer, sans []string) (tls.Certificate, error) {
+	if len(sans) == 0 {
+		return tls.Certificate{}, fmt.Errorf("server_sans must not be empty")
+	}
+
 	serverKey, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
 	if err != nil {
 		return tls.Certificate{}, fmt.Errorf("generate server key: %w", err)

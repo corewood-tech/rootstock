@@ -12,3 +12,11 @@ type IngestReadingInput struct {
 	FirmwareVersion string
 	CertSerial      string
 }
+
+// ExportDataInput is what callers send to ExportDataFlow.
+type ExportDataInput struct {
+	CampaignID string
+	Secret     string
+	Limit      int
+	Offset     int
+}

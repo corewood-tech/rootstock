@@ -21,6 +21,7 @@ type QueryReadingsInput struct {
 	Since      *time.Time
 	Until      *time.Time
 	Limit      int
+	Offset     int
 }
 
 // QuarantineByWindowInput is what the QuarantineByWindow op sends.
