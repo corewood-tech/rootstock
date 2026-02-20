@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"crypto/tls"
 	"fmt"
 	"net"
 	"net/http"
@@ -13,7 +12,9 @@ import (
 	"rootstock/web-server/config"
 	"rootstock/web-server/global/events"
 	"rootstock/web-server/global/observability"
+	certops "rootstock/web-server/ops/cert"
 	deviceops "rootstock/web-server/ops/device"
+	certrepo "rootstock/web-server/repo/cert"
 	devicerepo "rootstock/web-server/repo/device"
 	eventsrepo "rootstock/web-server/repo/events"
 	identityrepo "rootstock/web-server/repo/identity"
@@ -84,24 +85,32 @@ func run() error {
 	}
 	defer iRepo.Shutdown()
 
-	// Device repo + ops — shared between RPC and IoT servers
+	// Device repo + ops
 	dRepo := devicerepo.NewRepository(pool)
 	defer dRepo.Shutdown()
 	dOps := deviceops.NewOps(dRepo)
 
-	// RPC server (Connect RPC, JWT auth, human traffic)
-	rpcHandler, rpcCleanup, err := server.NewRPCServer(ctx, cfg, pool, iRepo, dOps)
+	// Cert repo + ops (in-process CA, shared with RPC server for /enroll)
+	crtRepo, err := certrepo.NewRepository(cfg.Cert)
+	if err != nil {
+		return fmt.Errorf("create cert repo: %w", err)
+	}
+	defer crtRepo.Shutdown()
+	crtOps := certops.NewOps(crtRepo)
+
+	// RPC server (Connect RPC + /enroll + /ca)
+	rpcHandler, rpcCleanup, err := server.NewRPCServer(ctx, cfg, pool, iRepo, dOps, crtOps)
 	if err != nil {
 		return fmt.Errorf("create rpc server: %w", err)
 	}
 	defer rpcCleanup()
 
-	// IoT server (device HTTP, mTLS)
-	iotHandler, tlsCfg, iotCleanup, err := server.NewIoTServer(cfg, dOps)
+	// MQTT server (embedded Mochi broker, mTLS on port 8883)
+	mqttServer, mqttCleanup, err := server.NewMQTTServer(cfg)
 	if err != nil {
-		return fmt.Errorf("create iot server: %w", err)
+		return fmt.Errorf("create mqtt server: %w", err)
 	}
-	defer iotCleanup()
+	defer mqttCleanup()
 
 	errChan := make(chan error, 2)
 
@@ -119,17 +128,11 @@ func run() error {
 		}
 	}()
 
-	// Start IoT listener (TLS)
-	iotAddr := fmt.Sprintf("%s:%d", cfg.Server.Host, cfg.Server.IoTPort)
-	iotLis, err := tls.Listen("tcp", iotAddr, tlsCfg)
-	if err != nil {
-		return fmt.Errorf("listen on %s: %w", iotAddr, err)
-	}
-	iotServer := &http.Server{Handler: iotHandler}
+	// Start MQTT broker
 	go func() {
-		logger.Info(ctx, "iot server listening", map[string]interface{}{"addr": iotAddr})
-		if err := iotServer.Serve(iotLis); err != nil && err != http.ErrServerClosed {
-			errChan <- fmt.Errorf("iot serve: %w", err)
+		logger.Info(ctx, "mqtt server starting", map[string]interface{}{"port": cfg.MQTT.Port})
+		if err := mqttServer.Serve(); err != nil {
+			errChan <- fmt.Errorf("mqtt serve: %w", err)
 		}
 	}()
 
@@ -137,7 +140,7 @@ func run() error {
 	case <-ctx.Done():
 		logger.Info(ctx, "shutting down servers...", nil)
 		rpcServer.Close()
-		iotServer.Close()
+		mqttServer.Close()
 		return nil
 	case err := <-errChan:
 		return err

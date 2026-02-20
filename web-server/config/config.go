@@ -21,12 +21,12 @@ type Config struct {
 	Observability ObservabilityConfig `koanf:"observability"`
 	Events        EventsConfig        `koanf:"events"`
 	Cert          CertConfig          `koanf:"cert"`
+	MQTT          MQTTConfig          `koanf:"mqtt"`
 }
 
 type ServerConfig struct {
-	Host    string `koanf:"host"`
-	Port    int    `koanf:"port"`
-	IoTPort int    `koanf:"iot_port"`
+	Host string `koanf:"host"`
+	Port int    `koanf:"port"`
 }
 
 type DatabaseConfig struct {
@@ -78,9 +78,12 @@ type EventsConfig struct {
 type CertConfig struct {
 	CACertPath       string `koanf:"ca_cert_path"`
 	CAKeyPath        string `koanf:"ca_key_path"`
-	ServerCertPath   string `koanf:"server_cert_path"`
-	ServerKeyPath    string `koanf:"server_key_path"`
 	CertLifetimeDays int    `koanf:"cert_lifetime_days"`
+}
+
+type MQTTConfig struct {
+	Port       int      `koanf:"port"`
+	ServerSANs []string `koanf:"server_sans"`
 }
 
 // Load builds the config by layering: defaults → YAML file → env vars → CLI flags.

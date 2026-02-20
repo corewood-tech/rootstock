@@ -8,17 +8,19 @@
 
 | Layer | What's built | Status |
 |-------|-------------|--------|
-| **Config** | Multi-source loading (YAML, env, flags) | Complete |
+| **Config** | Multi-source loading (YAML, env, flags), CertConfig | Complete |
 | **Globals** | O11y (OTel-backed), Events (DBOS-backed), Auth (OPA-backed) | Complete |
-| **Repos** | AuthorizationRepo (OPA), ObservabilityRepo (OTel), EventsRepo (DBOS), SQL pool (pgx) | Complete |
+| **Repos** | AuthorizationRepo (OPA), ObservabilityRepo (OTel), EventsRepo (DBOS), SQL pool (pgx), IdentityRepo (Zitadel), CampaignRepo, DeviceRepo, ReadingRepo, ScoreRepo, CertRepo (in-process CA) | Complete |
+| **Ops** | Org (5), Campaign (5), Device (8 + UpdateCertSerial), Cert (2), Reading (6), Score (4), Pure (ValidateReading, MatchEligibility) | Complete |
+| **Flows** | OnboardInstitution (5 sub-flows), CreateCampaign, PublishCampaign, BrowseCampaigns, CampaignDashboard, RegisterDevice, RenewCert, GetDevice, RevokeDevice, ReinstateDevice, GetCACert, IngestReading, UpdateContributionScore, GetContribution | Complete |
 | **Interceptors** | AuthorizationInterceptor, BinaryOnlyInterceptor, OTel auto-instrumentation | Complete |
-| **Handlers** | HealthService.Check | Complete |
-| **Proto** | HealthService only | Scaffolded |
-| **Infra** | Postgres (app + Zitadel), Zitadel + Login v2, Caddy, OTel Collector, Prometheus, Tempo, Loki, Grafana | Running |
-| **Flows** | — | Not started |
-| **Ops** | — | Not started |
-| **Business repos** | — | Not started |
-| **Migrations** | — | Not started |
+| **Handlers** | HealthService, OrgService, CampaignService, ScoreService, DeviceService (Connect RPC), EnrollHandler (/enroll, /ca — HTTP) | Complete |
+| **Proto** | HealthService, OrgService, CampaignService, ScoreService, DeviceService | Complete |
+| **Server** | `server/rpc.go` (Connect RPC wiring), main.go decomposed | Complete |
+| **Infra** | Postgres (app + Zitadel), Zitadel + Login v2, Caddy, OTel Collector, Prometheus, Tempo, Loki, Grafana, in-process CA | Running |
+| **Migrations** | 5 migration pairs (campaigns, devices, readings, scores, unique constraints) | Complete |
+| **Tests** | Unit tests across all repos, ops, flows (17 packages) | Complete |
+| **Not yet built** | MQTTRepo (embedded Mochi), MQTT server/auth, EnrollInCampaign flow, ExportData flow, SecurityResponse flow, NotificationRepo, AdminService | Planned |
 
 ---
 
@@ -266,17 +268,16 @@ Scitizen registers → browses campaigns → sees published campaigns from Phase
 
 **BUCs:** BUC-04 | **FRs:** FR-013–016 (4 Must)
 
-### 3.1 — Infrastructure: step-ca
+### 3.1 — Infrastructure: In-Process CA
 
-New compose file `compose-ca.yml` (added to `COMPOSE_FILES`):
-- step-ca container with SoftHSM (dev)
-- Root CA + Issuing CA hierarchy
-- ACME or custom enrollment endpoint
+**Decision (implemented):** In-process CA using Go's `crypto/x509` stdlib instead of step-ca. The cert repo wraps the crypto implementation the same way the identity repo wraps Zitadel. No external container dependency. `make ca-init` generates dev CA + server leaf cert.
 
 ### 3.2 — CertRepo
 
-New repo at `repo/cert/`. Wraps step-ca's signing API:
-- `IssueCert(ctx, CSR) → Certificate` — submit CSR, get signed cert back
+New repo at `repo/cert/`. In-process X.509 CA:
+- `IssueCert(ctx, IssueCertInput) → IssuedCert` — parse CSR, validate key, sign with CA, return cert PEM
+- `GetCACert(ctx) → CACert` — return CA cert PEM for device bootstrapping
+- Channel-based concurrency; CA key exclusively owned by manage() goroutine
 
 ### 3.3 — DeviceRepo Implementation
 
@@ -305,23 +306,29 @@ Postgres queries for device registry CRUD:
 RedeemEnrollmentCode → IssueCert → CreateDevice → UpdateDeviceStatus(pending→active)
 ```
 
-### 3.7 — Proto: EnrollmentService
+### 3.7 — Proto: DeviceService (admin ops) + HTTP Enrollment
 
 ```protobuf
-service EnrollmentService {
-  rpc GenerateCode(GenerateCodeRequest) returns (GenerateCodeResponse);
-  rpc Enroll(EnrollRequest) returns (EnrollResponse);          // Tier 1 + Tier 2
-  rpc Renew(RenewRequest) returns (RenewResponse);             // Phase 8
+service DeviceService {
+  rpc GetDevice(GetDeviceRequest) returns (GetDeviceResponse);
+  rpc RevokeDevice(RevokeDeviceRequest) returns (RevokeDeviceResponse);
+  rpc ReinstateDevice(ReinstateDeviceRequest) returns (ReinstateDeviceResponse);
 }
 ```
 
-### 3.8 — Handler: EnrollmentServiceHandler
+Enrollment is NOT a Connect RPC call — it's a plain HTTP POST on the same port (8080). Devices don't have JWT tokens. Auth is via enrollment code in the request body.
 
-Maps `Enroll` RPC → RegisterDevice flow. `GenerateCode` is a separate RPC called from the UI before device enrollment begins.
+- `POST /enroll` — enrollment code + CSR → cert PEM. No mTLS required.
+- `GET /ca` — public, returns CA cert PEM for device bootstrapping.
+
+### 3.8 — Handler: DeviceServiceHandler + EnrollHandler
+
+- `DeviceServiceHandler` — Connect RPC handler for admin ops (GetDevice, Revoke, Reinstate). JWT auth.
+- `EnrollHandler` — plain HTTP handler for `/enroll` and `/ca`. Mounted on the same mux as Connect RPC.
 
 ### 3.9 — E2E Test
 
-Scitizen generates enrollment code → simulated device calls `/enroll` with code + CSR → receives cert → device appears in registry as active.
+Scitizen generates enrollment code → simulated device calls `POST /enroll` with code + CSR → receives cert → device appears in registry as active.
 
 **Deliverable:** Devices can be registered with real certificates. Foundation for ingestion.
 
@@ -333,17 +340,25 @@ Scitizen generates enrollment code → simulated device calls `/enroll` with cod
 
 **BUCs:** BUC-05 | **FRs:** FR-017–019 (3 Must)
 
-### 4.1 — Infrastructure: MQTT Broker
+### 4.1 — Infrastructure: Embedded MQTT Broker (Mochi MQTT)
 
-New compose file `compose-mqtt.yml` (added to `COMPOSE_FILES`):
-- EMQX container with mTLS enabled
-- Auth webhook pointing to web-server
-- Topic ACL structure: `rootstock/{device-id}/data/{campaign-id}`
+**Decision:** Embed the MQTT broker in-process using [Mochi MQTT](https://github.com/mochi-mqtt/server/v2) (`github.com/mochi-mqtt/server/v2`). Same rationale as in-process CA — no external container dependency. No compose-mqtt.yml. No auth webhook service.
+
+- MQTT listener on port 8883 with strict mTLS (`RequireAndVerifyClientCert`)
+- Auth hook is a Go struct implementing `mqtt.Hook` — extracts device ID from mTLS cert CN, enforces topic ACLs in-process
+- InlineClient enabled for server-side publish (config push) and subscribe (telemetry consumption)
+- Topic structure: `rootstock/{device-id}/data/{campaign-id}`, `rootstock/{device-id}/config`, `rootstock/{device-id}/renew`, `rootstock/{device-id}/cert`
+
+Two ports total for the platform:
+- **Port 8080**: Connect RPC (JWT) + `/enroll` (enrollment code) + `/ca` (public)
+- **Port 8883**: MQTT (mTLS) — all post-enrollment device traffic
 
 ### 4.2 — MQTTRepo
 
-New repo at `repo/mqtt/`. Wraps EMQX management API:
-- `PushDeviceConfig(ctx, deviceID, config)` — publish retained message to `rootstock/{device-id}/config`
+New repo at `repo/mqtt/`. Wraps embedded Mochi server's inline client:
+- `PushDeviceConfig(ctx, deviceID, config)` — `server.Publish("rootstock/{device-id}/config", payload, true, 1)` (retained message)
+- `PublishToDevice(ctx, topic, payload)` — generic device publish (e.g., renewal cert response)
+- Channel-based concurrency (same pattern as all repos)
 
 ### 4.3 — Pure Logic: MatchEligibility
 
@@ -369,21 +384,21 @@ service DeviceService {
 }
 ```
 
-### 4.6 — OPA Policy: Device Authorization
+### 4.6 — MQTT Auth Hook (replaces OPA webhook + Auth Service)
 
-- Device status check (active → allow, suspended/revoked → deny)
-- Campaign enrollment check (device enrolled in campaign → allow publish to topic)
-- Topic ACL (device can only publish to `rootstock/{own-device-id}/*`)
+In-process Go hook implementing `mqtt.Hook`:
+- `OnConnectAuthenticate` — extracts device ID from mTLS cert CN, verifies against CA cert pool
+- `OnACLCheck` — enforces topic ACLs: device can only publish/subscribe to `rootstock/{own-device-id}/*`
+- Device status check (active → allow, suspended/revoked → deny) via device ops lookup
+- Campaign enrollment check (device enrolled in campaign → allow publish to campaign topic)
 
-### 4.7 — Auth Service (MQTT Webhook)
+No separate auth service. No webhook. The hook is a Go struct with direct access to device ops.
 
-Thin glue between EMQX auth webhook format and OPA query format. Can be a separate small Go binary or an endpoint on the web-server.
+### 4.7 — E2E Test
 
-### 4.8 — E2E Test
+Scitizen enrolls device in campaign → device appears in campaign's enrolled devices → config retained message published via embedded broker.
 
-Scitizen enrolls device in campaign → device appears in campaign's enrolled devices → config retained message published.
-
-**Deliverable:** Devices enrolled in campaigns. MQTT infrastructure ready. OPA enforcing device authorization.
+**Deliverable:** Devices enrolled in campaigns. MQTT broker embedded and operational. Auth enforced in-process.
 
 ---
 
@@ -424,15 +439,19 @@ GetCampaignRules → ValidateReading(pure) → PersistReading → [QuarantineRea
 
 Hot path. GetCampaignRules should be cached (campaign rules don't change mid-window). ValidateReading is pure — no I/O.
 
-### 5.5 — MQTT Consumer
+### 5.5 — MQTT Inline Subscription (replaces separate consumer)
 
-Subscribes to `rootstock/+/data/+` topics. For each message:
-1. Extract device ID and campaign ID from topic
-2. Deserialize reading (protobuf)
-3. Call IngestReading flow
-4. ACK or NACK
+**Decision:** No separate MQTT consumer process. The embedded Mochi broker's InlineClient subscribes to `rootstock/+/data/+`. The callback runs in-process:
 
-This is a new component — either part of web-server or a separate consumer process. Decision: separate process keeps the hot path isolated from the RPC server.
+```go
+server.Subscribe("rootstock/+/data/+", 1, func(cl *mqtt.Client, sub packets.Subscription, pk packets.Packet) {
+    // Extract device ID and campaign ID from topic path segments
+    // Deserialize reading from pk.Payload (protobuf)
+    // Call IngestReading flow directly
+})
+```
+
+This is the hot path. The callback must be non-blocking for sustained 10K msg/sec. Heavy work (DB persist, score update) runs in goroutines.
 
 ### 5.6 — HTTP/2 Ingestion Endpoint (Dual Protocol)
 
@@ -442,7 +461,7 @@ service IngestionService {
 }
 ```
 
-Same IngestReading flow behind both MQTT and HTTP/2 paths (OP-002).
+Same IngestReading flow behind both MQTT and HTTP/2 paths (OP-002). HTTP/2 path uses Connect RPC on port 8080 with device cert auth (or JWT — TBD).
 
 ### 5.7 — E2E Test
 
@@ -542,10 +561,14 @@ Device submits readings → score updates within 15 min → badges awarded at mi
 ### 8.1 — RenewCert Flow
 
 ```
-IssueCert → UpdateDeviceStatus (update cert serial + expiry)
+IssueCert → UpdateCertSerial
 ```
 
-Both ops already exist from Phase 3. New flow, no new ops.
+Both ops already exist from Phase 3. New flow, no new ops. **Renewal happens over MQTT**, not HTTP:
+1. Device publishes CSR to `rootstock/{device-id}/renew` (already mTLS-authenticated)
+2. MQTT inline subscription calls RenewCert flow
+3. Server publishes new cert PEM to `rootstock/{device-id}/cert`
+4. Device stores new cert, reconnects
 
 ### 8.2 — RevokeDevice Flow
 
@@ -553,17 +576,17 @@ Both ops already exist from Phase 3. New flow, no new ops.
 UpdateDeviceStatus(→revoked)
 ```
 
-Single op, already exists. OPA denies within 30s.
+Single op, already exists. Auth hook denies revoked devices on next MQTT connect/action.
 
 ### 8.3 — Grace Period Logic
 
-In the EnrollmentServiceHandler (or a flow guard):
-- Expired ≤7 days → allow Renew RPC only
-- Expired >7 days → reject, must re-enroll
+In the MQTT auth hook's `OnConnectAuthenticate`:
+- Expired ≤7 days → allow connection, restrict to `rootstock/{device-id}/renew` topic only
+- Expired >7 days → reject connection, must re-enroll via HTTP `/enroll`
 
 ### 8.4 — E2E Test
 
-Device with expiring cert → calls `/renew` → gets new cert. Revoked device → denied all actions.
+Device with expiring cert → publishes to `rootstock/{id}/renew` → receives new cert on `rootstock/{id}/cert`. Revoked device → MQTT connection rejected.
 
 **Deliverable:** Full certificate lifecycle. No new ops needed — pure flow composition.
 
@@ -619,9 +642,9 @@ Bulk suspend by class → affected devices denied → data flagged → reinstate
 | **0** | — | CampaignRepo, DeviceRepo, ReadingRepo, ScoreRepo (interfaces) | — | — | — | Migrations |
 | **1** | 01, 02 | IdentityRepo, CampaignRepo (impl) | 10 | 4 | OrgService, CampaignService | — |
 | **2** | 03 | — | — | — | — | Zitadel config |
-| **3** | 04 | CertRepo, DeviceRepo (impl) | 9 | 1 | EnrollmentService | step-ca |
-| **4** | 05 | MQTTRepo | 1 pure | 1 | DeviceService | EMQX |
-| **5** | 06 | ReadingRepo (impl) | 7 | 1 | IngestionService | MQTT consumer |
+| **3** | 04 | CertRepo (in-process CA), DeviceRepo (impl) | 9 | 1 | DeviceService + HTTP /enroll | — (in-process CA) |
+| **4** | 05 | MQTTRepo (embedded Mochi) | 1 pure | 1 | (extend DeviceService) | — (embedded broker) |
+| **5** | 06 | ReadingRepo (impl) | 7 | 1 | IngestionService | MQTT inline subscription |
 | **6** | 07 | — | — | 2 | (extend CampaignService) | — |
 | **7** | 10 | ScoreRepo (impl) | 4 | 1 | ScoreService | — |
 | **8** | 08 | — | — | 2 | (extend EnrollmentService) | — |

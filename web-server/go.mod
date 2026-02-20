@@ -16,6 +16,7 @@ require (
 	github.com/knadh/koanf/v2 v2.3.2
 	github.com/lestrrat-go/httprc/v3 v3.0.2
 	github.com/lestrrat-go/jwx/v3 v3.0.13
+	github.com/mochi-mqtt/server/v2 v2.7.9
 	github.com/open-policy-agent/opa v1.13.1
 	github.com/spf13/pflag v1.0.10
 	github.com/zitadel/zitadel-go/v3 v3.25.0
@@ -75,6 +76,7 @@ require (
 	github.com/prometheus/procfs v0.17.0 // indirect
 	github.com/rcrowley/go-metrics v0.0.0-20250401214520-65e299d6c5c9 // indirect
 	github.com/robfig/cron/v3 v3.0.1 // indirect
+	github.com/rs/xid v1.4.0 // indirect
 	github.com/segmentio/asm v1.2.1 // indirect
 	github.com/sirupsen/logrus v1.9.4 // indirect
 	github.com/tchap/go-patricia/v2 v2.3.3 // indirect
@@ -102,5 +104,6 @@ require (
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20260128011058-8636f8732409 // indirect
 	google.golang.org/grpc v1.78.0 // indirect
 	gopkg.in/ini.v1 v1.67.1 // indirect
+	gopkg.in/yaml.v3 v3.0.1 // indirect
 	sigs.k8s.io/yaml v1.6.0 // indirect
 )

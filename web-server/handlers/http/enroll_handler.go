@@ -12,22 +12,20 @@ import (
 	deviceflows "rootstock/web-server/flows/device"
 )
 
-// DeviceHandler serves device enrollment and certificate endpoints.
-type DeviceHandler struct {
+// EnrollHandler serves device enrollment and CA cert endpoints on the RPC port.
+// No mTLS — enrollment uses enrollment code auth, CA cert is public.
+type EnrollHandler struct {
 	registerDevice *deviceflows.RegisterDeviceFlow
-	renewCert      *deviceflows.RenewCertFlow
 	getCACert      *deviceflows.GetCACertFlow
 }
 
-// NewDeviceHandler creates the handler with all required flows.
-func NewDeviceHandler(
+// NewEnrollHandler creates the handler with required flows.
+func NewEnrollHandler(
 	registerDevice *deviceflows.RegisterDeviceFlow,
-	renewCert *deviceflows.RenewCertFlow,
 	getCACert *deviceflows.GetCACertFlow,
-) *DeviceHandler {
-	return &DeviceHandler{
+) *EnrollHandler {
+	return &EnrollHandler{
 		registerDevice: registerDevice,
-		renewCert:      renewCert,
 		getCACert:      getCACert,
 	}
 }
@@ -45,19 +43,8 @@ type enrollResponse struct {
 	NotAfter  string `json:"not_after"`
 }
 
-type renewRequest struct {
-	CSR string `json:"csr"` // PEM-encoded CSR
-}
-
-type renewResponse struct {
-	CertPEM   string `json:"cert_pem"`
-	Serial    string `json:"serial"`
-	NotBefore string `json:"not_before"`
-	NotAfter  string `json:"not_after"`
-}
-
 // Enroll handles POST /enroll — no mTLS required, auth is via enrollment code.
-func (h *DeviceHandler) Enroll(w http.ResponseWriter, r *http.Request) {
+func (h *EnrollHandler) Enroll(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
 		return
@@ -107,73 +94,8 @@ func (h *DeviceHandler) Enroll(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(resp)
 }
 
-// Renew handles POST /renew — mTLS required, device ID from cert CN.
-func (h *DeviceHandler) Renew(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-
-	// Extract device ID from mTLS peer certificate
-	if r.TLS == nil || len(r.TLS.PeerCertificates) == 0 {
-		http.Error(w, "client certificate required", http.StatusUnauthorized)
-		return
-	}
-
-	peerCert := r.TLS.PeerCertificates[0]
-	deviceID := peerCert.Subject.CommonName
-
-	// Grace period: accept certs expired <= 7 days
-	if time.Now().After(peerCert.NotAfter.Add(7 * 24 * time.Hour)) {
-		http.Error(w, "client certificate expired beyond grace period", http.StatusUnauthorized)
-		return
-	}
-
-	body, err := io.ReadAll(r.Body)
-	if err != nil {
-		http.Error(w, "read body: "+err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	var req renewRequest
-	if err := json.Unmarshal(body, &req); err != nil {
-		http.Error(w, "invalid json: "+err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	if req.CSR == "" {
-		http.Error(w, "csr is required", http.StatusBadRequest)
-		return
-	}
-
-	csrDER, err := decodePEMToCSR([]byte(req.CSR))
-	if err != nil {
-		http.Error(w, "invalid csr: "+err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	result, err := h.renewCert.Run(r.Context(), deviceflows.RenewCertInput{
-		DeviceID: deviceID,
-		CSR:      csrDER,
-	})
-	if err != nil {
-		writeFlowError(w, err)
-		return
-	}
-
-	resp := renewResponse{
-		CertPEM:   string(result.CertPEM),
-		Serial:    result.Serial,
-		NotBefore: result.NotBefore.Format(time.RFC3339),
-		NotAfter:  result.NotAfter.Format(time.RFC3339),
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(resp)
-}
-
 // GetCACert handles GET /ca — public, returns CA cert PEM.
-func (h *DeviceHandler) GetCACert(w http.ResponseWriter, r *http.Request) {
+func (h *EnrollHandler) GetCACert(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
 		return
@@ -204,7 +126,6 @@ func decodePEMToCSR(data []byte) ([]byte, error) {
 func writeFlowError(w http.ResponseWriter, err error) {
 	msg := err.Error()
 
-	// "not found" errors from repos (device not found, code not found/expired/used)
 	if strings.Contains(msg, "not found") ||
 		strings.Contains(msg, "expired") ||
 		strings.Contains(msg, "already used") {
@@ -212,7 +133,6 @@ func writeFlowError(w http.ResponseWriter, err error) {
 		return
 	}
 
-	// CSR/key validation errors from cert repo
 	if strings.Contains(msg, "parse csr") ||
 		strings.Contains(msg, "csr signature") ||
 		strings.Contains(msg, "key too small") ||

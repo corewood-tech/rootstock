@@ -20,10 +20,10 @@ Each repo wraps exactly one implementation detail. The thing behind it can chang
 | **AuthRepo** | OPA | Policy engine changes, query format changes |
 | **CampaignRepo** | Postgres (campaign tables) | Campaign schema evolves, query patterns change |
 | **DeviceRepo** | Postgres (device registry) | Device schema evolves, enrollment model changes |
-| **CertRepo** | step-ca | CA software changes, signing protocol changes, HSM config changes |
+| **CertRepo** | In-process CA (Go `crypto/x509`) | CA implementation changes, signing logic changes, key storage changes |
 | **ReadingRepo** | Postgres/TimescaleDB (readings) | Storage engine changes, partitioning strategy changes |
 | **ScoreRepo** | Postgres (scores/badges) | Gamification data model changes |
-| **MQTTRepo** | EMQX API | Broker software changes, publish API changes |
+| **MQTTRepo** | Embedded Mochi MQTT inline client | Broker software changes, publish API changes |
 | **NotificationRepo** | Email/push provider | Notification channel changes (email → push → SMS) |
 
 ---
@@ -369,8 +369,8 @@ Which ops appear in multiple flows? This drives architecture decisions — highl
 
 | Merge | Pro | Con | Verdict |
 |-------|-----|-----|---------|
-| Cert → Device | Only 1 op. IssueCert always called in device flows | CertRepo (step-ca) changes independently from DeviceRepo (Postgres). Merging means CA software swap touches device code | **No** — different volatility |
-| MQTT → Device | PushDeviceConfig only used in device enrollment flows | MQTTRepo (EMQX API) changes independently. Broker swap touches device code | **No** — different volatility |
+| Cert → Device | Only 1 op. IssueCert always called in device flows | CertRepo (in-process CA) changes independently from DeviceRepo (Postgres). Merging means CA implementation swap touches device code | **No** — different volatility |
+| MQTT → Device | PushDeviceConfig only used in device enrollment flows | MQTTRepo (Mochi inline client) changes independently. Broker swap touches device code | **No** — different volatility |
 | Notification → Score | Notifications triggered by engagement events | Notification channel changes (email→push) shouldn't touch score logic | **No** — different volatility |
 | Org → Campaign | Both serve researcher persona | Adding org hierarchy levels doesn't affect campaign parameters. Different change reasons | **No** — different volatility |
 | Reading → Campaign | IngestReading needs campaign rules | Campaign rules are READ by readings, not owned. CampaignRepo owns rules. ReadingRepo owns readings. Clean boundary | **No** — different data ownership |
@@ -418,9 +418,9 @@ Each repo owns specific tables. No table is shared across repos.
 
 No local tables — org hierarchy, users, roles, grants all managed by Zitadel. IdentityRepo wraps Zitadel's gRPC/REST API.
 
-### CertRepo (step-ca)
+### CertRepo (In-process CA)
 
-No local tables — cert issuance handled by step-ca. CertRepo wraps step-ca's signing API via PKCS#11/HSM.
+No local tables — cert issuance handled by in-process CA using Go `crypto/x509`. CertRepo wraps the signing logic with channel-based concurrency. CA key stored in file (dev) / HSM via PKCS#11 (prod).
 
 ### AuthRepo (OPA)
 

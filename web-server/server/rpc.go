@@ -15,7 +15,9 @@ import (
 	orgflows "rootstock/web-server/flows/org"
 	scoreflows "rootstock/web-server/flows/score"
 	connecthandlers "rootstock/web-server/handlers/connect"
+	httphandlers "rootstock/web-server/handlers/http"
 	campaignops "rootstock/web-server/ops/campaign"
+	certops "rootstock/web-server/ops/cert"
 	deviceops "rootstock/web-server/ops/device"
 	orgops "rootstock/web-server/ops/org"
 	readingops "rootstock/web-server/ops/reading"
@@ -30,7 +32,7 @@ import (
 
 // NewRPCServer wires repos → ops → flows → Connect RPC handlers and returns
 // an http.Handler + a shutdown function. Device ops are shared with the IoT server.
-func NewRPCServer(ctx context.Context, cfg *config.Config, pool *pgxpool.Pool, iRepo identityrepo.Repository, dOps *deviceops.Ops) (http.Handler, func(), error) {
+func NewRPCServer(ctx context.Context, cfg *config.Config, pool *pgxpool.Pool, iRepo identityrepo.Repository, dOps *deviceops.Ops, crtOps *certops.Ops) (http.Handler, func(), error) {
 	// JWT verification
 	jwksURL := fmt.Sprintf("http://%s:%d/oauth/v2/keys", cfg.Identity.Zitadel.Host, cfg.Identity.Zitadel.Port)
 	jwtVerifier, err := NewJWTVerifier(ctx, jwksURL, cfg.Identity.Zitadel.ExternalDomain, cfg.Identity.Zitadel.Issuer)
@@ -71,6 +73,8 @@ func NewRPCServer(ctx context.Context, cfg *config.Config, pool *pgxpool.Pool, i
 	getDeviceFlow := deviceflows.NewGetDeviceFlow(dOps)
 	revokeDeviceFlow := deviceflows.NewRevokeDeviceFlow(dOps)
 	reinstateDeviceFlow := deviceflows.NewReinstateDeviceFlow(dOps)
+	registerDeviceFlow := deviceflows.NewRegisterDeviceFlow(dOps, crtOps)
+	getCACertFlow := deviceflows.NewGetCACertFlow(crtOps)
 
 	// Score flows
 	getContributionFlow := scoreflows.NewGetContributionFlow(sOps)
@@ -108,6 +112,11 @@ func NewRPCServer(ctx context.Context, cfg *config.Config, pool *pgxpool.Pool, i
 	mux.Handle(orgPath, orgH)
 	mux.Handle(scorePath, scoreH)
 	mux.Handle(devicePath, deviceH)
+
+	// Device enrollment (enrollment code auth, not JWT) + public CA cert
+	enrollHandler := httphandlers.NewEnrollHandler(registerDeviceFlow, getCACertFlow)
+	mux.HandleFunc("/enroll", enrollHandler.Enroll)
+	mux.HandleFunc("/ca", enrollHandler.GetCACert)
 
 	shutdown := func() {
 		cRepo.Shutdown()

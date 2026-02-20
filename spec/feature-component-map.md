@@ -17,9 +17,8 @@ Each component exists because it changes independently from the others. If two t
 | **Campaign Service** | Campaign rules change independently from device management | Campaign parameters, regions, windows evolve; device handling doesn't care |
 | **Device Registry** | Device lifecycle changes independently from campaigns | Enrollment, status, cert tracking evolve; campaign logic doesn't care |
 | **Enrollment Service** | Enrollment protocol changes independently from registry storage | Enrollment code format, CSR handling, tier support evolve; registry schema doesn't care |
-| **Certificate Authority** | Crypto changes independently from enrollment logic | Key algorithms, cert lifetime, HSM config change; enrollment flow doesn't care |
-| **MQTT Broker** | Telemetry transport changes independently from validation | Broker software, QoS settings, topic structure change; validation pipeline doesn't care |
-| **Auth Service (MQTT webhook)** | Broker auth format changes independently from policy logic | Webhook shape changes per broker vendor; OPA policy doesn't care |
+| **Certificate Authority** | Crypto changes independently from enrollment logic | Key algorithms, cert lifetime change; enrollment flow doesn't care. In-process CA using Go `crypto/x509` stdlib, wrapped by CertRepo |
+| **MQTT Broker** | Telemetry transport changes independently from validation | Embedded Mochi MQTT broker (in-process). Topic structure, QoS settings change; validation pipeline doesn't care. Port 8883 with strict mTLS |
 | **Validation Pipeline** | Validation rules change independently from ingestion transport | Range checks, anomaly thresholds, rate limits change; MQTT/HTTP transport doesn't care |
 | **Data Store** | Storage engine changes independently from business logic | Schema, indexes, partitioning change; domain logic uses repos |
 | **Score Engine** | Gamification rules change independently from data collection | Score formula, badge criteria, sweepstakes rules change; ingestion doesn't care |
@@ -87,10 +86,10 @@ Each component exists because it changes independently from the others. If two t
 |------|-----------|-------------|
 | Scitizen initiates enrollment | **UI** | Generates enrollment code request |
 | Generate enrollment code | **Enrollment Service** | 6-8 alphanumeric, no ambiguous chars, 15-min TTL, one-time use. Persisted with pending device ID |
-| **Tier 1 (direct):** Device calls `/enroll` | **Enrollment Service** | Device presents enrollment code + locally-generated CSR over HTTPS |
+| **Tier 1 (direct):** Device calls `POST /enroll` on port 8080 | **Enrollment Service** | Device presents enrollment code + locally-generated CSR over HTTPS. Same port as Connect RPC. |
 | **Tier 2 (proxy):** Companion app mediates | **Enrollment Service** | Companion app gets CSR from device over BLE/WiFi, submits to `/enroll`. Private key never leaves device |
 | Validate code + CSR | **Enrollment Service** | Code valid? Not expired? Not used? CSR well-formed? |
-| Issue certificate | **Certificate Authority** (step-ca) | Signs CSR. CN = device-id. 90-day lifetime. No metadata in cert |
+| Issue certificate | **Certificate Authority** (in-process CA) | Signs CSR using Go `crypto/x509`. CN = device-id. 90-day lifetime. No metadata in cert |
 | Return cert to device | **Enrollment Service** | Direct: HTTPS response. Proxy: companion app pushes cert back to device |
 | Create registry entry | **Device Registry** → **Data Store** | device ID, owner ID, status (pending → active), device class, firmware version, tier, sensor capabilities, cert serial |
 | Sync to OPA | **Auth (OPA)** | Bundle refresh picks up new device within 30s |
@@ -108,7 +107,7 @@ Each component exists because it changes independently from the others. If two t
 | Eligibility check | **Campaign Service** | Checks device class, tier, sensor capabilities, firmware version against campaign criteria. Rejects ineligible with reason |
 | Enroll device in campaign | **Device Registry** → **Data Store** | Adds campaign association to device record |
 | OPA picks up enrollment | **Auth (OPA)** | Bundle refresh (≤30s) — device now allowed to publish to campaign topic |
-| Push campaign config to device | **MQTT Broker** | Retained message on `rootstock/{device-id}/config` with campaign parameters (sampling rate, etc.) |
+| Push campaign config to device | **MQTT Broker** (embedded Mochi) | `server.Publish()` retained message on `rootstock/{device-id}/config` with campaign parameters (sampling rate, etc.) |
 | Multi-campaign support | **Device Registry** | Device can be enrolled in N campaigns simultaneously. Topic routing associates readings with correct campaign |
 
 ---
@@ -118,11 +117,11 @@ Each component exists because it changes independently from the others. If two t
 
 | Step | Component | What it does |
 |------|-----------|-------------|
-| Device connects | **MQTT Broker** or **HTTP/2 Gateway** | mTLS handshake. Platform verifies device cert against CA chain. Extracts device ID from CN |
-| Authenticate (mTLS) | TLS layer (**MQTT Broker** / **Proxy**) | Reject: no cert, expired cert, self-signed, wrong CA. Structured diagnostic log on failure |
-| Authorize (OPA) | **Auth Service** → **Auth (OPA)** | On every MQTT connect/publish/subscribe or HTTP request: check device status (active?), campaign enrollment, topic ACL |
-| Topic ACL enforcement | **Auth (OPA)** | Device can only publish to `rootstock/{its-own-device-id}/*`. Cross-device publishing denied + logged |
-| Receive telemetry | **MQTT Broker** / **HTTP/2 Gateway** | Raw reading: value, timestamp, geolocation, device ID, campaign ID |
+| Device connects | **MQTT Broker** (embedded Mochi, port 8883) | mTLS handshake (`RequireAndVerifyClientCert`). Platform verifies device cert against CA chain. Extracts device ID from CN |
+| Authenticate (mTLS) | MQTT auth hook (in-process Go) | Reject: no cert, expired cert, self-signed, wrong CA. Structured diagnostic log on failure |
+| Authorize (ACL) | MQTT auth hook → `OnACLCheck` | On every MQTT publish/subscribe: check device status (active?), campaign enrollment, topic ACL. Device can only access `rootstock/{own-device-id}/*` |
+| Topic ACL enforcement | MQTT auth hook | Cross-device publishing denied + logged. In-process check, no external service |
+| Receive telemetry | **MQTT Broker** inline subscription on `rootstock/+/data/+` | Raw reading: value, timestamp, geolocation, device ID, campaign ID. Callback calls IngestReading flow directly |
 | Validate reading | **Validation Pipeline** | Schema (correct fields/types), parameter range (within campaign bounds), rate limit (per device), geolocation (within campaign region), timestamp (within campaign window). Reject with specific reason |
 | Anomaly flagging | **Validation Pipeline** | Readings outside 3σ of campaign rolling average → quarantined for review, not deleted |
 | Persist with provenance | **Data Store** | Reading + device ID, timestamp, geolocation, firmware version, cert serial, campaign ID, ingestion timestamp |
@@ -153,12 +152,13 @@ Each component exists because it changes independently from the others. If two t
 
 | Step | Component | What it does |
 |------|-----------|-------------|
-| Renewal trigger (day 60 of 90) | Device-initiated | Device presents current cert via mTLS + new CSR to `POST /renew` |
-| Validate renewal | **Enrollment Service** | Cert valid? Cert matches device in registry? CSR well-formed? |
-| Issue new cert | **Certificate Authority** | Signs new CSR. Fresh 90-day window |
+| Renewal trigger (day 60 of 90) | Device-initiated | Device publishes new CSR to `rootstock/{device-id}/renew` via MQTT (already mTLS-authenticated) |
+| Validate renewal | MQTT inline subscription → **RenewCert flow** | Cert matches device in registry? CSR well-formed? |
+| Issue new cert | **Certificate Authority** (in-process CA) | Signs new CSR. Fresh 90-day window |
+| Return cert to device | **MQTT Broker** | `server.Publish("rootstock/{device-id}/cert", certPEM, false, 1)` |
 | Update registry | **Device Registry** → **Data Store** | New cert serial, new expiry |
-| Grace period (days 90-97) | **Enrollment Service** | Expired ≤7 days: `/renew` only. Expired >7 days: denied, must re-enroll |
-| Revocation | **Device Registry** → **Auth (OPA)** | Set device status to `revoked` in registry. OPA denies all actions within 30s (bundle refresh). No CRL/OCSP needed |
+| Grace period (days 90-97) | MQTT auth hook | Expired ≤7 days: allow connection, restrict to `/renew` topic only. Expired >7 days: reject connection, must re-enroll via HTTP `/enroll` |
+| Revocation | **Device Registry** → MQTT auth hook | Set device status to `revoked` in registry. Auth hook denies on next MQTT connect/action. No CRL/OCSP needed |
 
 ---
 
@@ -201,9 +201,11 @@ Each component exists because it changes independently from the others. If two t
                                     └──────┬───────┘
                                            │ authn
 ┌────────┐    ┌───────┐    ┌───────────────┼───────────────────┐
-│   UI   │───▸│ Proxy │───▸│          RPC Handlers             │
-│(Svelte)│    │(Caddy)│    │  (Connect RPC, proto-only)        │
-└────────┘    └───┬───┘    └───────────┬───────────────────────┘
+│   UI   │───▸│ Proxy │───▸│    Port 8080: RPC Handlers        │
+│(Svelte)│    │(Caddy)│    │  Connect RPC (JWT, proto-only)    │
+└────────┘    └───┬───┘    │  + /enroll (enrollment code auth) │
+                  │        │  + /ca (public)                    │
+                  │        └───────────┬───────────────────────┘
                   │                    │
                   │              ┌─────┴──────┐
                   │              │ Auth (OPA) │◂──── OPA Bundle ◂── Device Registry
@@ -230,34 +232,28 @@ Each component exists because it changes independently from the others. If two t
                   │              └────────────┘
                   │
            ┌──────┴──────────────────────────────────┐
-           │        Device Data Path                  │
+           │   Port 8883: Embedded MQTT Broker        │
+           │   (Mochi MQTT, strict mTLS)              │
            │                                          │
-  ┌────────▼─────┐     ┌──────────────┐     ┌────────┴──────┐
-  │ MQTT Broker  │     │ Auth Service  │     │ HTTP/2 Gateway│
-  │   (EMQX)    │────▸│ (webhook→OPA) │◂────│               │
-  └──────┬───────┘     └──────────────┘     └───────┬───────┘
-         │                                          │
-         └────────────────┬─────────────────────────┘
-                          │
-                    ┌─────▼──────────┐
-                    │  Validation    │
-                    │  Pipeline      │
-                    └─────┬──────────┘
-                          │
-                    ┌─────▼──────┐
-                    │ Data Store  │
-                    └────────────┘
-
-  ┌──────────────┐          ┌──────────────┐
-  │ Enrollment   │─────────▸│     CA       │
-  │  Service     │          │  (step-ca)   │
-  │ /enroll      │          └──────────────┘
-  │ /renew       │
-  └──────┬───────┘
-         │
-  ┌──────▼───────┐
-  │Device Registry│
-  └──────────────┘
+           │  ┌─────────────────┐  ┌────────────────┐│
+           │  │  Auth Hook      │  │ Inline Client  ││
+           │  │  (mTLS + ACL)   │  │ (subscribe +   ││
+           │  │  in-process     │  │  publish)      ││
+           │  └─────────────────┘  └───────┬────────┘│
+           └───────────────────────────────┼─────────┘
+                                           │
+                    ┌──────────────────────┼──────────────┐
+                    │                      │              │
+              ┌─────▼──────────┐    ┌──────▼─────┐  ┌────▼──────┐
+              │  Validation    │    │ RenewCert  │  │  Config   │
+              │  Pipeline      │    │  Flow      │  │  Push     │
+              │  (IngestReading│    └──────┬─────┘  └───────────┘
+              │   Flow)        │           │
+              └─────┬──────────┘     ┌─────▼──────┐
+                    │                │ Cert Ops   │
+              ┌─────▼──────┐        │ (in-process │
+              │ Data Store  │        │  CA)       │
+              └────────────┘        └────────────┘
 ```
 
 ---
@@ -269,11 +265,11 @@ Each component exists because it changes independently from the others. If two t
 | 1. Institutional Onboarding | FR-001–004 | UI, Proxy, RPC Handler, Identity, Auth, Data Store | 4 Must |
 | 2. Campaign Management | FR-005–010 | UI, Proxy, RPC Handler, Identity, Auth, Campaign Service, Data Store | 5 Must, 1 Should |
 | 3. Scitizen Registration | FR-011–012 | UI, Identity, RPC Handler, Campaign Service, Data Store | 2 Must |
-| 4. Device Registration | FR-013–016 | UI, Enrollment Service, CA, Device Registry, Data Store, Auth | 4 Must |
-| 5. Campaign Enrollment | FR-017–019 | UI, RPC Handler, Campaign Service, Device Registry, Auth, MQTT Broker | 3 Must |
-| 6. Data Ingestion | FR-020–025 | MQTT Broker, HTTP/2 Gateway, Auth Service, Auth, Validation Pipeline, Data Store | 5 Must, 1 Should |
+| 4. Device Registration | FR-013–016 | UI, RPC Handler (`/enroll`), In-process CA, Device Registry, Data Store, Auth | 4 Must |
+| 5. Campaign Enrollment | FR-017–019 | UI, RPC Handler, Campaign Service, Device Registry, Auth, MQTTRepo | 3 Must |
+| 6. Data Ingestion | FR-020–025 | Embedded MQTT Broker, Auth Hook (mTLS + ACL), Inline Subscription, Validation Pipeline, Data Store | 5 Must, 1 Should |
 | 7. Data Export | FR-026–027 | UI, RPC Handler, Auth, Campaign Service, Data Store | 2 Must |
-| 8. Certificate Lifecycle | FR-028–030 | Enrollment Service, CA, Device Registry, Auth | 3 Must |
+| 8. Certificate Lifecycle | FR-028–030 | MQTT (renewal topic), In-process CA, Device Registry, Auth Hook | 3 Must |
 | 9. Security Response | FR-031–033 | Device Registry, Auth, Notification, Validation Pipeline, Data Store | 1 Must, 2 Should |
 | 10. Recognition | FR-034–036 | Score Engine, UI, Data Store | 1 Must, 2 Should |
 
@@ -297,12 +293,12 @@ Each component exists because it changes independently from the others. If two t
 | US-002 (campaign creation < 15 min) | UI, Campaign Service | Guided form, sensible defaults |
 | US-003 (contribution feedback) | UI, Score Engine | Dashboard loads < 3s |
 | US-004 (actionable errors) | All user-facing components | Structured error responses |
-| SEC-001 (mTLS everywhere) | MQTT Broker, HTTP/2 Gateway, Enrollment Service | TLS termination config |
-| SEC-002 (private key on device) | Enrollment Service, Companion App | CSR-only protocol |
+| SEC-001 (mTLS everywhere) | Embedded MQTT Broker (strict mTLS on port 8883), In-process CA | TLS termination config |
+| SEC-002 (private key on device) | `/enroll` handler (port 8080), Companion App | CSR-only protocol |
 | SEC-003 (RBAC via OPA) | Auth (OPA) | Rego policies with >90% test coverage |
 | SEC-004 (identity separation) | Data Store, Campaign Service (export) | Schema-level separation, pseudonymization |
 | SEC-005 (HSM for CA keys) | Certificate Authority | PKCS#11, SoftHSM (dev) / YubiHSM (prod) |
-| SEC-006 (connection diagnostics) | MQTT Broker, Auth Service, Enrollment Service | Structured logs with specific failure reasons |
+| SEC-006 (connection diagnostics) | Embedded MQTT Broker (auth hook logs), `/enroll` handler | Structured logs with specific failure reasons |
 | OP-001 (container deployment) | All | OCI images, compose for full stack |
-| OP-002 (dual protocol) | MQTT Broker, HTTP/2 Gateway | Same validation pipeline behind both |
-| OP-003 (graceful degradation) | MQTT Broker, Device Registry | LWT, auto-reconnect, no re-enrollment |
+| OP-002 (dual protocol) | Embedded MQTT Broker (inline subscription), RPC Handlers | Same validation pipeline behind both ingestion paths |
+| OP-003 (graceful degradation) | Embedded MQTT Broker, Device Registry | LWT, auto-reconnect, no re-enrollment |

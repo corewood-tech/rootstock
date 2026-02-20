@@ -1,15 +1,3 @@
-{
-	layer4 {
-		:9998 {
-			route {
-				proxy {
-					upstream web-server:8443
-				}
-			}
-		}
-	}
-}
-
 :9999 {
 	# Observability
 	handle /grafana/* {
@@ -26,6 +14,14 @@
 
 	# Connect RPC
 	handle /rootstock.v1.* {
+		reverse_proxy web-server:8080
+	}
+
+	# Device enrollment + CA cert (plain HTTP on same port as RPC)
+	handle /enroll {
+		reverse_proxy web-server:8080
+	}
+	handle /ca {
 		reverse_proxy web-server:8080
 	}
 

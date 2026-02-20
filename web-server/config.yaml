@@ -1,7 +1,6 @@
 server:
   host: 0.0.0.0
   port: 8080
-  iot_port: 8443
 
 database:
   postgres:
@@ -37,6 +36,10 @@ events:
 cert:
   ca_cert_path: /certs/ca.crt
   ca_key_path: /certs/ca.key
-  server_cert_path: /certs/server.crt
-  server_key_path: /certs/server.key
   cert_lifetime_days: 90
+
+mqtt:
+  port: 8883
+  server_sans:
+    - localhost
+    - web-server
