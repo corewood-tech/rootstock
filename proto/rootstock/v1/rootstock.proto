@@ -263,3 +263,25 @@ message EnrollInCampaignResponse {
   bool enrolled = 1;
   string reason = 2;
 }
+
+// AdminService provides platform administration operations.
+service AdminService {
+  rpc SuspendByClass(SuspendByClassRequest) returns (SuspendByClassResponse);
+}
+
+// Admin messages
+
+message SuspendByClassRequest {
+  string device_class = 1;
+  string firmware_min = 2;
+  string firmware_max = 3;
+  string window_start = 4;
+  string window_end = 5;
+  string reason = 6;
+}
+
+message SuspendByClassResponse {
+  int32 suspended_count = 1;
+  int64 quarantined_readings = 2;
+  int32 notified_scitizens = 3;
+}

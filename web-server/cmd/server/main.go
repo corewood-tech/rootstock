@@ -22,7 +22,6 @@ import (
 	mqttrepo "rootstock/web-server/repo/mqtt"
 	o11yrepo "rootstock/web-server/repo/observability"
 	sqlconnect "rootstock/web-server/repo/sql/connect"
-	sqlmigrate "rootstock/web-server/repo/sql/migrate"
 	"rootstock/web-server/server"
 
 	"go.opentelemetry.io/contrib/instrumentation/runtime"
@@ -53,12 +52,6 @@ func run() error {
 	defer observability.Shutdown(ctx)
 
 	logger := observability.GetLogger("main")
-
-	// Run database migrations
-	if err := sqlmigrate.Run(cfg.Database.Postgres); err != nil {
-		return fmt.Errorf("run migrations: %w", err)
-	}
-	logger.Info(ctx, "database migrations applied", nil)
 
 	// Database pool
 	pool, err := sqlconnect.OpenPostgres(ctx, cfg.Database.Postgres)

@@ -31,6 +31,8 @@ const (
 	ScoreServiceName = "rootstock.v1.ScoreService"
 	// DeviceServiceName is the fully-qualified name of the DeviceService service.
 	DeviceServiceName = "rootstock.v1.DeviceService"
+	// AdminServiceName is the fully-qualified name of the AdminService service.
+	AdminServiceName = "rootstock.v1.AdminService"
 )
 
 // These constants are the fully-qualified names of the RPCs defined in this package. They're
@@ -82,6 +84,9 @@ const (
 	// DeviceServiceEnrollInCampaignProcedure is the fully-qualified name of the DeviceService's
 	// EnrollInCampaign RPC.
 	DeviceServiceEnrollInCampaignProcedure = "/rootstock.v1.DeviceService/EnrollInCampaign"
+	// AdminServiceSuspendByClassProcedure is the fully-qualified name of the AdminService's
+	// SuspendByClass RPC.
+	AdminServiceSuspendByClassProcedure = "/rootstock.v1.AdminService/SuspendByClass"
 )
 
 // HealthServiceClient is a client for the rootstock.v1.HealthService service.
@@ -718,4 +723,74 @@ func (UnimplementedDeviceServiceHandler) ReinstateDevice(context.Context, *conne
 
 func (UnimplementedDeviceServiceHandler) EnrollInCampaign(context.Context, *connect.Request[v1.EnrollInCampaignRequest]) (*connect.Response[v1.EnrollInCampaignResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("rootstock.v1.DeviceService.EnrollInCampaign is not implemented"))
+}
+
+// AdminServiceClient is a client for the rootstock.v1.AdminService service.
+type AdminServiceClient interface {
+	SuspendByClass(context.Context, *connect.Request[v1.SuspendByClassRequest]) (*connect.Response[v1.SuspendByClassResponse], error)
+}
+
+// NewAdminServiceClient constructs a client for the rootstock.v1.AdminService service. By default,
+// it uses the Connect protocol with the binary Protobuf Codec, asks for gzipped responses, and
+// sends uncompressed requests. To use the gRPC or gRPC-Web protocols, supply the connect.WithGRPC()
+// or connect.WithGRPCWeb() options.
+//
+// The URL supplied here should be the base URL for the Connect or gRPC server (for example,
+// http://api.acme.com or https://acme.com/grpc).
+func NewAdminServiceClient(httpClient connect.HTTPClient, baseURL string, opts ...connect.ClientOption) AdminServiceClient {
+	baseURL = strings.TrimRight(baseURL, "/")
+	adminServiceMethods := v1.File_rootstock_v1_rootstock_proto.Services().ByName("AdminService").Methods()
+	return &adminServiceClient{
+		suspendByClass: connect.NewClient[v1.SuspendByClassRequest, v1.SuspendByClassResponse](
+			httpClient,
+			baseURL+AdminServiceSuspendByClassProcedure,
+			connect.WithSchema(adminServiceMethods.ByName("SuspendByClass")),
+			connect.WithClientOptions(opts...),
+		),
+	}
+}
+
+// adminServiceClient implements AdminServiceClient.
+type adminServiceClient struct {
+	suspendByClass *connect.Client[v1.SuspendByClassRequest, v1.SuspendByClassResponse]
+}
+
+// SuspendByClass calls rootstock.v1.AdminService.SuspendByClass.
+func (c *adminServiceClient) SuspendByClass(ctx context.Context, req *connect.Request[v1.SuspendByClassRequest]) (*connect.Response[v1.SuspendByClassResponse], error) {
+	return c.suspendByClass.CallUnary(ctx, req)
+}
+
+// AdminServiceHandler is an implementation of the rootstock.v1.AdminService service.
+type AdminServiceHandler interface {
+	SuspendByClass(context.Context, *connect.Request[v1.SuspendByClassRequest]) (*connect.Response[v1.SuspendByClassResponse], error)
+}
+
+// NewAdminServiceHandler builds an HTTP handler from the service implementation. It returns the
+// path on which to mount the handler and the handler itself.
+//
+// By default, handlers support the Connect, gRPC, and gRPC-Web protocols with the binary Protobuf
+// and JSON codecs. They also support gzip compression.
+func NewAdminServiceHandler(svc AdminServiceHandler, opts ...connect.HandlerOption) (string, http.Handler) {
+	adminServiceMethods := v1.File_rootstock_v1_rootstock_proto.Services().ByName("AdminService").Methods()
+	adminServiceSuspendByClassHandler := connect.NewUnaryHandler(
+		AdminServiceSuspendByClassProcedure,
+		svc.SuspendByClass,
+		connect.WithSchema(adminServiceMethods.ByName("SuspendByClass")),
+		connect.WithHandlerOptions(opts...),
+	)
+	return "/rootstock.v1.AdminService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.URL.Path {
+		case AdminServiceSuspendByClassProcedure:
+			adminServiceSuspendByClassHandler.ServeHTTP(w, r)
+		default:
+			http.NotFound(w, r)
+		}
+	})
+}
+
+// UnimplementedAdminServiceHandler returns CodeUnimplemented from all methods.
+type UnimplementedAdminServiceHandler struct{}
+
+func (UnimplementedAdminServiceHandler) SuspendByClass(context.Context, *connect.Request[v1.SuspendByClassRequest]) (*connect.Response[v1.SuspendByClassResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("rootstock.v1.AdminService.SuspendByClass is not implemented"))
 }

@@ -21,7 +21,7 @@
 | **Migrations** | 5 migration pairs (campaigns, devices, readings, scores, unique constraints) | Complete |
 | **Tests** | Unit tests across all repos, ops, flows (17 packages) | Complete |
 | **Recently built** | MQTT pipeline (inline subscriptions, telemetry + renewal callbacks), EnrollInCampaign flow, MQTTOps (PushDeviceConfig), RefreshScitizenScoreFlow (score trigger after accepted reading), ExportData flow + PseudonymizeExport pure op, ExportCampaignData RPC, MQTT grace period (custom TLS verify + ACL restriction for expired certs), Offset pagination for QueryReadings, HMAC export config | Complete |
-| **Not yet built** | SecurityResponse flow, NotificationRepo, Notify op, AdminService | Planned |
+| **Phase 9** | SecurityResponse flow, NotificationRepo (log stub), NotificationOps, AdminService (SuspendByClass RPC) | Complete |
 
 ---
 
