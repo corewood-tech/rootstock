@@ -1,0 +1,116 @@
+# Rootstock Runtime Graph Schema
+# Single Dgraph cluster for campaign state machines, anomaly models,
+# and device-campaign relationship graph.
+
+# ============================================================
+# Campaign Lifecycle State Machine
+# ============================================================
+# States are nodes. Transitions are edges with guard predicates.
+# Query: "given current state + event, what transitions are valid?"
+
+state_name: string @index(exact) .
+state_description: string .
+
+event_name: string @index(exact) .
+event_description: string .
+
+guard: string .                         # Rego-style or Go-evaluable guard expression
+side_effect: string .                   # action to trigger on transition (e.g., "notify_enrolled_devices")
+
+transition_from: uid @reverse .
+transition_to: uid @reverse .
+transition_event: uid @reverse .
+
+# Campaign instance state (one per campaign)
+campaign_ref: string @index(exact) .    # campaign ULID from Postgres
+current_state: uid @reverse .
+state_entered_at: dateTime .
+
+type CampaignState {
+    state_name
+    state_description
+}
+
+type CampaignEvent {
+    event_name
+    event_description
+}
+
+type Transition {
+    transition_from
+    transition_to
+    transition_event
+    guard
+    side_effect
+}
+
+type CampaignInstance {
+    campaign_ref
+    current_state
+    state_entered_at
+}
+
+# ============================================================
+# Anomaly Detection Models
+# ============================================================
+# Rolling statistics per campaign per parameter.
+# Updated on every accepted reading. Queried on every ingestion
+# to check if new reading is within bounds.
+
+parameter_name: string @index(exact) .
+sample_count: int .
+rolling_mean: float .
+rolling_m2: float .                     # Welford's online variance (sum of squared diffs)
+rolling_min: float .
+rolling_max: float .
+last_updated: dateTime .
+
+# Bounds (configurable per campaign parameter)
+bound_stddev_multiplier: float .        # default 3.0
+bound_hard_min: float .
+bound_hard_max: float .
+
+baseline_for: uid @reverse .            # links to CampaignInstance
+
+type AnomalyBaseline {
+    campaign_ref
+    parameter_name
+    sample_count
+    rolling_mean
+    rolling_m2
+    rolling_min
+    rolling_max
+    last_updated
+    bound_stddev_multiplier
+    bound_hard_min
+    bound_hard_max
+    baseline_for
+}
+
+# ============================================================
+# Device–Campaign Relationship Graph
+# ============================================================
+# Bipartite graph: devices ↔ campaigns.
+# Enables traversals like "all campaigns sharing devices with campaign X"
+# and "all devices a scitizen has across campaigns."
+
+device_ref: string @index(exact) .      # device ID from Postgres
+owner_ref: string @index(exact) .       # scitizen ULID from Postgres
+enrolled_in: [uid] @reverse .           # device → campaign instances
+enrolled_at: dateTime .
+withdrawn_at: dateTime .
+enrollment_status: string @index(exact) .  # active, withdrawn, suspended
+
+type DeviceNode {
+    device_ref
+    owner_ref
+    enrolled_in
+}
+
+type Enrollment {
+    device_ref
+    campaign_ref
+    enrolled_at
+    withdrawn_at
+    enrollment_status
+}

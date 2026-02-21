@@ -11,6 +11,11 @@ E2E_FILES := $(COMPOSE_FILES) -f $(CURDIR)/compose/compose-e2e.yml
 
 up:
 	podman compose $(COMPOSE_FILES) up -d
+	@printf "Waiting for Zitadel PAT..."
+	@until podman exec compose_zitadel-login_1 cat /zitadel-data/login-client.pat >/dev/null 2>&1; do printf "."; sleep 2; done
+	@echo " ready"
+	@ROOTSTOCK_IDENTITY_ZITADEL_SERVICE_USER_PAT=$$(podman exec compose_zitadel-login_1 cat /zitadel-data/login-client.pat | tr -d '\r\n') \
+		podman compose $(COMPOSE_FILES) up -d web-server
 
 down:
 	podman compose $(COMPOSE_FILES) down

@@ -23,6 +23,7 @@ type Config struct {
 	Cert          CertConfig          `koanf:"cert"`
 	MQTT          MQTTConfig          `koanf:"mqtt"`
 	Export        ExportConfig        `koanf:"export"`
+	SMTP          SMTPConfig          `koanf:"smtp"`
 }
 
 type ServerConfig struct {
@@ -32,6 +33,11 @@ type ServerConfig struct {
 
 type DatabaseConfig struct {
 	Postgres PostgresConfig `koanf:"postgres"`
+	Dgraph   DgraphConfig   `koanf:"dgraph"`
+}
+
+type DgraphConfig struct {
+	AlphaAddr string `koanf:"alpha_addr"`
 }
 
 type PostgresConfig struct {
@@ -90,6 +96,12 @@ type MQTTConfig struct {
 
 type ExportConfig struct {
 	HMACSecret string `koanf:"hmac_secret"`
+}
+
+type SMTPConfig struct {
+	Host string `koanf:"host"`
+	Port int    `koanf:"port"`
+	From string `koanf:"from"`
 }
 
 // Load builds the config by layering: defaults → YAML file → env vars → CLI flags.

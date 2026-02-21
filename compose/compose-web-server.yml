@@ -6,6 +6,8 @@ services:
     ports:
       - "8080:8080"
       - "8883:8883"
+    environment:
+      - ROOTSTOCK_IDENTITY_ZITADEL_SERVICE_USER_PAT
     volumes:
       - ../web-server:/src
       - ../proto:/proto
@@ -14,6 +16,8 @@ services:
       - rootstock
     depends_on:
       app-postgres:
+        condition: service_healthy
+      zitadel:
         condition: service_healthy
       otel-collector:
         condition: service_started

@@ -15,6 +15,9 @@ func defaults() Config {
 				DBName:   "rootstock",
 				SSLMode:  "disable",
 			},
+			Dgraph: DgraphConfig{
+				AlphaAddr: "dgraph-alpha:9080",
+			},
 		},
 		Identity: IdentityConfig{
 			Zitadel: ZitadelConfig{
@@ -52,6 +55,11 @@ func defaults() Config {
 		},
 		Export: ExportConfig{
 			HMACSecret: "dev-hmac-secret-change-in-prod",
+		},
+		SMTP: SMTPConfig{
+			Host: "maildev",
+			Port: 1025,
+			From: "noreply@rootstock.local",
 		},
 	}
 }

@@ -1,0 +1,143 @@
+# Campaign Lifecycle State Machine — Seed Data
+# Load via: curl -s http://dgraph-alpha:8080/mutate?commitNow=true -H "Content-Type: application/rdf" --data-binary @campaign_lifecycle.rdf
+#
+# States: draft → published → active → completed
+#                                ↓
+#                            cancelled
+#                                ↑
+#              draft → cancelled (also valid)
+#              published → cancelled
+#              active → suspended → active (reinstatement)
+#              completed → archived
+
+# --- States ---
+_:draft        <dgraph.type>       "CampaignState" .
+_:draft        <state_name>        "draft" .
+_:draft        <state_description> "Campaign created but not yet visible to scitizens." .
+
+_:published    <dgraph.type>       "CampaignState" .
+_:published    <state_name>        "published" .
+_:published    <state_description> "Campaign visible and discoverable. Devices can enroll." .
+
+_:active       <dgraph.type>       "CampaignState" .
+_:active       <state_name>        "active" .
+_:active       <state_description> "Campaign window is open. Devices are submitting readings." .
+
+_:suspended    <dgraph.type>       "CampaignState" .
+_:suspended    <state_name>        "suspended" .
+_:suspended    <state_description> "Campaign temporarily halted. No new readings accepted." .
+
+_:completed    <dgraph.type>       "CampaignState" .
+_:completed    <state_name>        "completed" .
+_:completed    <state_description> "Campaign window closed. Data collection finished." .
+
+_:cancelled    <dgraph.type>       "CampaignState" .
+_:cancelled    <state_name>        "cancelled" .
+_:cancelled    <state_description> "Campaign cancelled by researcher. No further activity." .
+
+_:archived     <dgraph.type>       "CampaignState" .
+_:archived     <state_name>        "archived" .
+_:archived     <state_description> "Campaign data archived. Read-only access for export." .
+
+# --- Events ---
+_:evt_publish   <dgraph.type>       "CampaignEvent" .
+_:evt_publish   <event_name>        "publish" .
+_:evt_publish   <event_description> "Researcher publishes the campaign for discovery." .
+
+_:evt_activate  <dgraph.type>       "CampaignEvent" .
+_:evt_activate  <event_name>        "activate" .
+_:evt_activate  <event_description> "Campaign window opens (automatic or manual)." .
+
+_:evt_suspend   <dgraph.type>       "CampaignEvent" .
+_:evt_suspend   <event_name>        "suspend" .
+_:evt_suspend   <event_description> "Researcher or admin suspends the campaign." .
+
+_:evt_resume    <dgraph.type>       "CampaignEvent" .
+_:evt_resume    <event_name>        "resume" .
+_:evt_resume    <event_description> "Researcher resumes a suspended campaign." .
+
+_:evt_complete  <dgraph.type>       "CampaignEvent" .
+_:evt_complete  <event_name>        "complete" .
+_:evt_complete  <event_description> "Campaign window closes (automatic or manual)." .
+
+_:evt_cancel    <dgraph.type>       "CampaignEvent" .
+_:evt_cancel    <event_name>        "cancel" .
+_:evt_cancel    <event_description> "Researcher cancels the campaign." .
+
+_:evt_archive   <dgraph.type>       "CampaignEvent" .
+_:evt_archive   <event_name>        "archive" .
+_:evt_archive   <event_description> "Researcher archives a completed campaign." .
+
+# --- Transitions ---
+
+# draft → published (publish)
+_:t1 <dgraph.type>       "Transition" .
+_:t1 <transition_from>   _:draft .
+_:t1 <transition_to>     _:published .
+_:t1 <transition_event>  _:evt_publish .
+_:t1 <guard>             "has_parameters AND has_window" .
+_:t1 <side_effect>       "" .
+
+# published → active (activate)
+_:t2 <dgraph.type>       "Transition" .
+_:t2 <transition_from>   _:published .
+_:t2 <transition_to>     _:active .
+_:t2 <transition_event>  _:evt_activate .
+_:t2 <guard>             "window_start_reached" .
+_:t2 <side_effect>       "push_config_to_enrolled_devices" .
+
+# active → completed (complete)
+_:t3 <dgraph.type>       "Transition" .
+_:t3 <transition_from>   _:active .
+_:t3 <transition_to>     _:completed .
+_:t3 <transition_event>  _:evt_complete .
+_:t3 <guard>             "window_end_reached" .
+_:t3 <side_effect>       "notify_enrolled_scitizens" .
+
+# active → suspended (suspend)
+_:t4 <dgraph.type>       "Transition" .
+_:t4 <transition_from>   _:active .
+_:t4 <transition_to>     _:suspended .
+_:t4 <transition_event>  _:evt_suspend .
+_:t4 <guard>             "" .
+_:t4 <side_effect>       "pause_ingestion,notify_enrolled_scitizens" .
+
+# suspended → active (resume)
+_:t5 <dgraph.type>       "Transition" .
+_:t5 <transition_from>   _:suspended .
+_:t5 <transition_to>     _:active .
+_:t5 <transition_event>  _:evt_resume .
+_:t5 <guard>             "within_window" .
+_:t5 <side_effect>       "resume_ingestion,notify_enrolled_scitizens" .
+
+# draft → cancelled (cancel)
+_:t6 <dgraph.type>       "Transition" .
+_:t6 <transition_from>   _:draft .
+_:t6 <transition_to>     _:cancelled .
+_:t6 <transition_event>  _:evt_cancel .
+_:t6 <guard>             "" .
+_:t6 <side_effect>       "" .
+
+# published → cancelled (cancel)
+_:t7 <dgraph.type>       "Transition" .
+_:t7 <transition_from>   _:published .
+_:t7 <transition_to>     _:cancelled .
+_:t7 <transition_event>  _:evt_cancel .
+_:t7 <guard>             "" .
+_:t7 <side_effect>       "notify_enrolled_scitizens" .
+
+# active → cancelled (cancel)
+_:t8 <dgraph.type>       "Transition" .
+_:t8 <transition_from>   _:active .
+_:t8 <transition_to>     _:cancelled .
+_:t8 <transition_event>  _:evt_cancel .
+_:t8 <guard>             "" .
+_:t8 <side_effect>       "stop_ingestion,notify_enrolled_scitizens" .
+
+# completed → archived (archive)
+_:t9 <dgraph.type>       "Transition" .
+_:t9 <transition_from>   _:completed .
+_:t9 <transition_to>     _:archived .
+_:t9 <transition_event>  _:evt_archive .
+_:t9 <guard>             "" .
+_:t9 <side_effect>       "" .

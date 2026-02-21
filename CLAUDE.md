@@ -7,6 +7,9 @@
 - Consistency is one of the most important design principles of this project. Verify all changes against design principles.
 - USE THE MAKEFILE for everything we need to do, do not do one-off podman commands. Most of the time you should not need to touch runtime, everything hot reloads.
 
+## Data Privacy
+- NEVER store private/personal data in the app database. The IdP (Zitadel) is the sole authority for user PII (name, email, address, etc.). The app DB stores only internal references (idp_id) and application state (user_type, status).
+
 ## Go Concurrency
 - Never use `sync.Mutex` or `sync.RWMutex`. Use goroutines and channels for all concurrency.
 

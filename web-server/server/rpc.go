@@ -66,8 +66,8 @@ func NewRPCServer(ctx context.Context, cfg *config.Config, pool *pgxpool.Pool, i
 	sRepo := scorerepo.NewRepository(pool)
 	uRepo := userrepo.NewRepository(pool)
 
-	// Notification repo (log-based stub)
-	nRepo := notificationrepo.NewRepository()
+	// Notification repo (SMTP)
+	nRepo := notificationrepo.NewRepository(cfg.SMTP.Host, cfg.SMTP.Port, cfg.SMTP.From)
 
 	// Ops
 	cOps := campaignops.NewOps(cRepo)

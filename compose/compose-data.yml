@@ -18,7 +18,7 @@ services:
 
   app-postgres:
     restart: unless-stopped
-    image: postgres:17
+    image: timescale/timescaledb:latest-pg17
     environment:
       PGUSER: rootstock
       POSTGRES_USER: rootstock
@@ -35,6 +35,47 @@ services:
     volumes:
       - app-postgres-data:/var/lib/postgresql/data:rw
 
+  dgraph-zero:
+    restart: unless-stopped
+    image: dgraph/dgraph:v24.0.5
+    command: dgraph zero --my=dgraph-zero:5080
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:6080/health || exit 1"]
+      interval: 10s
+      timeout: 30s
+      retries: 5
+      start_period: 20s
+    networks:
+      - rootstock
+    volumes:
+      - dgraph-zero-data:/dgraph
+
+  dgraph-alpha:
+    restart: unless-stopped
+    image: dgraph/dgraph:v24.0.5
+    command: dgraph alpha --my=dgraph-alpha:7080 --zero=dgraph-zero:5080 --security whitelist=0.0.0.0/0
+    depends_on:
+      dgraph-zero:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:8080/health || exit 1"]
+      interval: 10s
+      timeout: 30s
+      retries: 5
+      start_period: 20s
+    networks:
+      - rootstock
+    volumes:
+      - dgraph-alpha-data:/dgraph
+
+  maildev:
+    restart: unless-stopped
+    image: maildev/maildev:2.2.1
+    environment:
+      MAILDEV_BASE_PATHNAME: /maildev
+    networks:
+      - rootstock
+
 networks:
   rootstock:
     name: rootstock
@@ -42,3 +83,5 @@ networks:
 volumes:
   zitadel-postgres-data:
   app-postgres-data:
+  dgraph-zero-data:
+  dgraph-alpha-data:

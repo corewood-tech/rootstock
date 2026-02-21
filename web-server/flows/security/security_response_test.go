@@ -41,7 +41,7 @@ func setupSecurityResponseTest(t *testing.T) (*SecurityResponseFlow, *pgxpool.Po
 
 	dRepo := devicerepo.NewRepository(pool)
 	rRepo := readingrepo.NewRepository(pool)
-	nRepo := notificationrepo.NewRepository()
+	nRepo := notificationrepo.NewRepository("maildev", 1025, "noreply@rootstock.local")
 
 	dOps := deviceops.NewOps(dRepo)
 	rOps := readingops.NewOps(rRepo)
@@ -103,8 +103,8 @@ func TestSecurityResponse(t *testing.T) {
 	flow, pool := setupSecurityResponseTest(t)
 	ctx := context.Background()
 
-	dev1 := insertDevice(t, pool, "sci-1", "tier1", "1.0.0")
-	dev2 := insertDevice(t, pool, "sci-2", "tier1", "1.0.0")
+	dev1 := insertDevice(t, pool, "sci-1@test.local", "tier1", "1.0.0")
+	dev2 := insertDevice(t, pool, "sci-2@test.local", "tier1", "1.0.0")
 	campID := insertCampaign(t, pool)
 
 	windowStart := time.Now().Add(-24 * time.Hour)
@@ -186,8 +186,8 @@ func TestSecurityResponseDeduplicatesOwners(t *testing.T) {
 	ctx := context.Background()
 
 	// Two devices owned by the same scitizen
-	insertDevice(t, pool, "sci-4", "tier1", "1.0.0")
-	insertDevice(t, pool, "sci-4", "tier1", "1.0.0")
+	insertDevice(t, pool, "sci-4@test.local", "tier1", "1.0.0")
+	insertDevice(t, pool, "sci-4@test.local", "tier1", "1.0.0")
 
 	result, err := flow.Run(ctx, SecurityResponseInput{
 		Class:       "tier1",
