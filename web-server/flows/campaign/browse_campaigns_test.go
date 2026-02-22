@@ -35,7 +35,7 @@ func setupBrowseCampaignsTest(t *testing.T) (*CreateCampaignFlow, *BrowseCampaig
 
 	cRepo := campaignrepo.NewRepository(pool)
 	cOps := campaignops.NewOps(cRepo)
-	createFlow := NewCreateCampaignFlow(cOps)
+	createFlow := NewCreateCampaignFlow(cOps, nil)
 	browseFlow := NewBrowseCampaignsFlow(cOps)
 
 	t.Cleanup(func() {

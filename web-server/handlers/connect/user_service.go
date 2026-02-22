@@ -14,18 +14,27 @@ import (
 
 // UserServiceHandler implements the UserService Connect RPC interface.
 type UserServiceHandler struct {
-	registerUser *userflows.RegisterUserFlow
-	getUser      *userflows.GetUserFlow
+	registerUser       *userflows.RegisterUserFlow
+	getUser            *userflows.GetUserFlow
+	login              *userflows.LoginFlow
+	logout             *userflows.LogoutFlow
+	registerResearcher *userflows.RegisterResearcherFlow
 }
 
 // NewUserServiceHandler creates the handler with all required flows.
 func NewUserServiceHandler(
 	registerUser *userflows.RegisterUserFlow,
 	getUser *userflows.GetUserFlow,
+	login *userflows.LoginFlow,
+	logout *userflows.LogoutFlow,
+	registerResearcher *userflows.RegisterResearcherFlow,
 ) *UserServiceHandler {
 	return &UserServiceHandler{
-		registerUser: registerUser,
-		getUser:      getUser,
+		registerUser:       registerUser,
+		getUser:            getUser,
+		login:              login,
+		logout:             logout,
+		registerResearcher: registerResearcher,
 	}
 }
 
@@ -73,7 +82,80 @@ func (h *UserServiceHandler) GetMe(
 	}), nil
 }
 
+func (h *UserServiceHandler) Login(
+	ctx context.Context,
+	req *connect.Request[rootstockv1.LoginRequest],
+) (*connect.Response[rootstockv1.LoginResponse], error) {
+	result, err := h.login.Run(ctx, userflows.LoginInput{
+		Email:    req.Msg.GetEmail(),
+		Password: req.Msg.GetPassword(),
+	})
+	if err != nil {
+		return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("login failed: %w", err))
+	}
+
+	return connect.NewResponse(&rootstockv1.LoginResponse{
+		SessionId:    result.SessionID,
+		SessionToken: result.SessionToken,
+		User:         flowUserToProto(&result.User),
+	}), nil
+}
+
+func (h *UserServiceHandler) Logout(
+	ctx context.Context,
+	req *connect.Request[rootstockv1.LogoutRequest],
+) (*connect.Response[rootstockv1.LogoutResponse], error) {
+	sessionID, ok := auth.SessionIDFromContext(ctx)
+	if !ok {
+		return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("no session"))
+	}
+	sessionToken, ok := auth.SessionTokenFromContext(ctx)
+	if !ok {
+		return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("no session token"))
+	}
+
+	err := h.logout.Run(ctx, userflows.LogoutInput{
+		SessionID:    sessionID,
+		SessionToken: sessionToken,
+	})
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("logout failed: %w", err))
+	}
+
+	return connect.NewResponse(&rootstockv1.LogoutResponse{}), nil
+}
+
+func (h *UserServiceHandler) RegisterResearcher(
+	ctx context.Context,
+	req *connect.Request[rootstockv1.RegisterResearcherRequest],
+) (*connect.Response[rootstockv1.RegisterResearcherResponse], error) {
+	result, err := h.registerResearcher.Run(ctx, userflows.RegisterResearcherInput{
+		Email:      req.Msg.GetEmail(),
+		Password:   req.Msg.GetPassword(),
+		GivenName:  req.Msg.GetGivenName(),
+		FamilyName: req.Msg.GetFamilyName(),
+	})
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("registration failed: %w", err))
+	}
+
+	return connect.NewResponse(&rootstockv1.RegisterResearcherResponse{
+		SessionId:    result.SessionID,
+		SessionToken: result.SessionToken,
+		User:         flowUserToProto(&result.User),
+	}), nil
+}
+
 func userToProto(u *userflows.User) *rootstockv1.UserProto {
+	return &rootstockv1.UserProto{
+		Id:        u.ID,
+		UserType:  u.UserType,
+		Status:    u.Status,
+		CreatedAt: u.CreatedAt.Format(time.RFC3339),
+	}
+}
+
+func flowUserToProto(u *userflows.User) *rootstockv1.UserProto {
 	return &rootstockv1.UserProto{
 		Id:        u.ID,
 		UserType:  u.UserType,

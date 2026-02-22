@@ -91,6 +91,13 @@ const (
 	UserServiceRegisterUserProcedure = "/rootstock.v1.UserService/RegisterUser"
 	// UserServiceGetMeProcedure is the fully-qualified name of the UserService's GetMe RPC.
 	UserServiceGetMeProcedure = "/rootstock.v1.UserService/GetMe"
+	// UserServiceLoginProcedure is the fully-qualified name of the UserService's Login RPC.
+	UserServiceLoginProcedure = "/rootstock.v1.UserService/Login"
+	// UserServiceLogoutProcedure is the fully-qualified name of the UserService's Logout RPC.
+	UserServiceLogoutProcedure = "/rootstock.v1.UserService/Logout"
+	// UserServiceRegisterResearcherProcedure is the fully-qualified name of the UserService's
+	// RegisterResearcher RPC.
+	UserServiceRegisterResearcherProcedure = "/rootstock.v1.UserService/RegisterResearcher"
 	// AdminServiceSuspendByClassProcedure is the fully-qualified name of the AdminService's
 	// SuspendByClass RPC.
 	AdminServiceSuspendByClassProcedure = "/rootstock.v1.AdminService/SuspendByClass"
@@ -736,6 +743,9 @@ func (UnimplementedDeviceServiceHandler) EnrollInCampaign(context.Context, *conn
 type UserServiceClient interface {
 	RegisterUser(context.Context, *connect.Request[v1.RegisterUserRequest]) (*connect.Response[v1.RegisterUserResponse], error)
 	GetMe(context.Context, *connect.Request[v1.GetMeRequest]) (*connect.Response[v1.GetMeResponse], error)
+	Login(context.Context, *connect.Request[v1.LoginRequest]) (*connect.Response[v1.LoginResponse], error)
+	Logout(context.Context, *connect.Request[v1.LogoutRequest]) (*connect.Response[v1.LogoutResponse], error)
+	RegisterResearcher(context.Context, *connect.Request[v1.RegisterResearcherRequest]) (*connect.Response[v1.RegisterResearcherResponse], error)
 }
 
 // NewUserServiceClient constructs a client for the rootstock.v1.UserService service. By default, it
@@ -761,13 +771,34 @@ func NewUserServiceClient(httpClient connect.HTTPClient, baseURL string, opts ..
 			connect.WithSchema(userServiceMethods.ByName("GetMe")),
 			connect.WithClientOptions(opts...),
 		),
+		login: connect.NewClient[v1.LoginRequest, v1.LoginResponse](
+			httpClient,
+			baseURL+UserServiceLoginProcedure,
+			connect.WithSchema(userServiceMethods.ByName("Login")),
+			connect.WithClientOptions(opts...),
+		),
+		logout: connect.NewClient[v1.LogoutRequest, v1.LogoutResponse](
+			httpClient,
+			baseURL+UserServiceLogoutProcedure,
+			connect.WithSchema(userServiceMethods.ByName("Logout")),
+			connect.WithClientOptions(opts...),
+		),
+		registerResearcher: connect.NewClient[v1.RegisterResearcherRequest, v1.RegisterResearcherResponse](
+			httpClient,
+			baseURL+UserServiceRegisterResearcherProcedure,
+			connect.WithSchema(userServiceMethods.ByName("RegisterResearcher")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
 // userServiceClient implements UserServiceClient.
 type userServiceClient struct {
-	registerUser *connect.Client[v1.RegisterUserRequest, v1.RegisterUserResponse]
-	getMe        *connect.Client[v1.GetMeRequest, v1.GetMeResponse]
+	registerUser       *connect.Client[v1.RegisterUserRequest, v1.RegisterUserResponse]
+	getMe              *connect.Client[v1.GetMeRequest, v1.GetMeResponse]
+	login              *connect.Client[v1.LoginRequest, v1.LoginResponse]
+	logout             *connect.Client[v1.LogoutRequest, v1.LogoutResponse]
+	registerResearcher *connect.Client[v1.RegisterResearcherRequest, v1.RegisterResearcherResponse]
 }
 
 // RegisterUser calls rootstock.v1.UserService.RegisterUser.
@@ -780,10 +811,28 @@ func (c *userServiceClient) GetMe(ctx context.Context, req *connect.Request[v1.G
 	return c.getMe.CallUnary(ctx, req)
 }
 
+// Login calls rootstock.v1.UserService.Login.
+func (c *userServiceClient) Login(ctx context.Context, req *connect.Request[v1.LoginRequest]) (*connect.Response[v1.LoginResponse], error) {
+	return c.login.CallUnary(ctx, req)
+}
+
+// Logout calls rootstock.v1.UserService.Logout.
+func (c *userServiceClient) Logout(ctx context.Context, req *connect.Request[v1.LogoutRequest]) (*connect.Response[v1.LogoutResponse], error) {
+	return c.logout.CallUnary(ctx, req)
+}
+
+// RegisterResearcher calls rootstock.v1.UserService.RegisterResearcher.
+func (c *userServiceClient) RegisterResearcher(ctx context.Context, req *connect.Request[v1.RegisterResearcherRequest]) (*connect.Response[v1.RegisterResearcherResponse], error) {
+	return c.registerResearcher.CallUnary(ctx, req)
+}
+
 // UserServiceHandler is an implementation of the rootstock.v1.UserService service.
 type UserServiceHandler interface {
 	RegisterUser(context.Context, *connect.Request[v1.RegisterUserRequest]) (*connect.Response[v1.RegisterUserResponse], error)
 	GetMe(context.Context, *connect.Request[v1.GetMeRequest]) (*connect.Response[v1.GetMeResponse], error)
+	Login(context.Context, *connect.Request[v1.LoginRequest]) (*connect.Response[v1.LoginResponse], error)
+	Logout(context.Context, *connect.Request[v1.LogoutRequest]) (*connect.Response[v1.LogoutResponse], error)
+	RegisterResearcher(context.Context, *connect.Request[v1.RegisterResearcherRequest]) (*connect.Response[v1.RegisterResearcherResponse], error)
 }
 
 // NewUserServiceHandler builds an HTTP handler from the service implementation. It returns the path
@@ -805,12 +854,36 @@ func NewUserServiceHandler(svc UserServiceHandler, opts ...connect.HandlerOption
 		connect.WithSchema(userServiceMethods.ByName("GetMe")),
 		connect.WithHandlerOptions(opts...),
 	)
+	userServiceLoginHandler := connect.NewUnaryHandler(
+		UserServiceLoginProcedure,
+		svc.Login,
+		connect.WithSchema(userServiceMethods.ByName("Login")),
+		connect.WithHandlerOptions(opts...),
+	)
+	userServiceLogoutHandler := connect.NewUnaryHandler(
+		UserServiceLogoutProcedure,
+		svc.Logout,
+		connect.WithSchema(userServiceMethods.ByName("Logout")),
+		connect.WithHandlerOptions(opts...),
+	)
+	userServiceRegisterResearcherHandler := connect.NewUnaryHandler(
+		UserServiceRegisterResearcherProcedure,
+		svc.RegisterResearcher,
+		connect.WithSchema(userServiceMethods.ByName("RegisterResearcher")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/rootstock.v1.UserService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case UserServiceRegisterUserProcedure:
 			userServiceRegisterUserHandler.ServeHTTP(w, r)
 		case UserServiceGetMeProcedure:
 			userServiceGetMeHandler.ServeHTTP(w, r)
+		case UserServiceLoginProcedure:
+			userServiceLoginHandler.ServeHTTP(w, r)
+		case UserServiceLogoutProcedure:
+			userServiceLogoutHandler.ServeHTTP(w, r)
+		case UserServiceRegisterResearcherProcedure:
+			userServiceRegisterResearcherHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -826,6 +899,18 @@ func (UnimplementedUserServiceHandler) RegisterUser(context.Context, *connect.Re
 
 func (UnimplementedUserServiceHandler) GetMe(context.Context, *connect.Request[v1.GetMeRequest]) (*connect.Response[v1.GetMeResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("rootstock.v1.UserService.GetMe is not implemented"))
+}
+
+func (UnimplementedUserServiceHandler) Login(context.Context, *connect.Request[v1.LoginRequest]) (*connect.Response[v1.LoginResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("rootstock.v1.UserService.Login is not implemented"))
+}
+
+func (UnimplementedUserServiceHandler) Logout(context.Context, *connect.Request[v1.LogoutRequest]) (*connect.Response[v1.LogoutResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("rootstock.v1.UserService.Logout is not implemented"))
+}
+
+func (UnimplementedUserServiceHandler) RegisterResearcher(context.Context, *connect.Request[v1.RegisterResearcherRequest]) (*connect.Response[v1.RegisterResearcherResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("rootstock.v1.UserService.RegisterResearcher is not implemented"))
 }
 
 // AdminServiceClient is a client for the rootstock.v1.AdminService service.

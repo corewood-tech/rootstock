@@ -26,3 +26,8 @@ type InviteResult struct {
 	UserID    string
 	EmailCode string
 }
+
+// CreatedIdpUser is the result of creating a user in the IdP.
+type CreatedIdpUser struct {
+	UserID string
+}

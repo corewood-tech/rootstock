@@ -32,3 +32,11 @@ type InviteUserInput struct {
 	GivenName  string
 	FamilyName string
 }
+
+// CreateIdpUserInput is what callers send to CreateIdpUser.
+type CreateIdpUserInput struct {
+	Email      string
+	Password   string
+	GivenName  string
+	FamilyName string
+}

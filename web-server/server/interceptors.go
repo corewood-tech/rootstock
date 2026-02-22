@@ -8,22 +8,41 @@ import (
 	"connectrpc.com/connect"
 
 	"rootstock/web-server/auth"
+	userops "rootstock/web-server/ops/user"
 	"rootstock/web-server/repo/authorization"
 )
 
-// AuthorizationInterceptor verifies the JWT (if present) and evaluates OPA policy.
-// Decision logging happens inside the repository via OTel.
-func AuthorizationInterceptor(verifier *JWTVerifier, authz authorization.Repository) connect.UnaryInterceptorFunc {
+// AuthorizationInterceptor verifies the session (if present) and evaluates OPA policy.
+// Authorization header format: "Bearer sessionID|sessionToken"
+func AuthorizationInterceptor(uOps *userops.Ops, authz authorization.Repository) connect.UnaryInterceptorFunc {
 	return func(next connect.UnaryFunc) connect.UnaryFunc {
 		return func(ctx context.Context, req connect.AnyRequest) (connect.AnyResponse, error) {
-			// Extract and verify JWT from Authorization header
+			var subject string
+
 			authHeader := req.Header().Get("Authorization")
-			subject, err := verifier.VerifyToken(ctx, authHeader)
-			if err != nil {
-				return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("authentication failed: %w", err))
+			if authHeader != "" {
+				tokenStr := strings.TrimPrefix(authHeader, "Bearer ")
+				if tokenStr != authHeader {
+					parts := strings.SplitN(tokenStr, "|", 2)
+					if len(parts) != 2 {
+						return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("invalid authorization format"))
+					}
+
+					sessionID, sessionToken := parts[0], parts[1]
+					validated, err := uOps.ValidateSession(ctx, userops.ValidateSessionInput{
+						SessionID:    sessionID,
+						SessionToken: sessionToken,
+					})
+					if err != nil {
+						return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("session validation failed: %w", err))
+					}
+
+					subject = validated.UserID
+					ctx = auth.ContextWithSessionID(ctx, sessionID)
+					ctx = auth.ContextWithSessionToken(ctx, sessionToken)
+				}
 			}
 
-			// Store subject in context for downstream handlers
 			ctx = auth.ContextWithSubject(ctx, subject)
 
 			input := authorization.AuthzInput{

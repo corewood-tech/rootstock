@@ -32,3 +32,11 @@ type InviteUserInput struct {
 	GivenName  string
 	FamilyName string
 }
+
+// CreateHumanUserInput is what callers send to create a user with a password.
+type CreateHumanUserInput struct {
+	Email      string
+	Password   string
+	GivenName  string
+	FamilyName string
+}

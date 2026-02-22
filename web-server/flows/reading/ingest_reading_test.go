@@ -10,9 +10,11 @@ import (
 	"github.com/oklog/ulid/v2"
 
 	campaignops "rootstock/web-server/ops/campaign"
+	graphops "rootstock/web-server/ops/graph"
 	readingops "rootstock/web-server/ops/reading"
 	"rootstock/web-server/config"
 	campaignrepo "rootstock/web-server/repo/campaign"
+	graphrepo "rootstock/web-server/repo/graph"
 	readingrepo "rootstock/web-server/repo/reading"
 	sqlmigrate "rootstock/web-server/repo/sql/migrate"
 )
@@ -43,11 +45,18 @@ func setupIngestTest(t *testing.T) (*IngestReadingFlow, *pgxpool.Pool) {
 	cOps := campaignops.NewOps(cRepo)
 	rOps := readingops.NewOps(rRepo)
 
-	flow := NewIngestReadingFlow(cOps, rOps)
+	gRepo, err := graphrepo.NewDgraphRepository("dgraph-alpha:9080")
+	if err != nil {
+		t.Fatalf("create graph repo: %v", err)
+	}
+	gOps := graphops.NewOps(gRepo)
+
+	flow := NewIngestReadingFlow(cOps, rOps, gOps)
 
 	t.Cleanup(func() {
 		cRepo.Shutdown()
 		rRepo.Shutdown()
+		gRepo.Shutdown()
 		pool.Close()
 	})
 

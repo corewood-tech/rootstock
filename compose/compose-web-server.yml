@@ -4,7 +4,6 @@ services:
       context: ../
       dockerfile: ./build/web-server/Containerfile.dev
     ports:
-      - "8080:8080"
       - "8883:8883"
     environment:
       - ROOTSTOCK_IDENTITY_ZITADEL_SERVICE_USER_PAT
@@ -16,6 +15,8 @@ services:
       - rootstock
     depends_on:
       app-postgres:
+        condition: service_healthy
+      dgraph-alpha:
         condition: service_healthy
       zitadel:
         condition: service_healthy

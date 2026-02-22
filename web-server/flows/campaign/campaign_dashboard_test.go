@@ -40,7 +40,7 @@ func setupCampaignDashboardTest(t *testing.T) (*CreateCampaignFlow, *DashboardFl
 	rRepo := readingrepo.NewRepository(pool)
 	cOps := campaignops.NewOps(cRepo)
 	rOps := readingops.NewOps(rRepo)
-	createFlow := NewCreateCampaignFlow(cOps)
+	createFlow := NewCreateCampaignFlow(cOps, nil)
 	dashboardFlow := NewDashboardFlow(rOps)
 
 	t.Cleanup(func() {

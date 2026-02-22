@@ -61,6 +61,20 @@ func (o *Ops) InviteUser(ctx context.Context, input InviteUserInput) (*InviteRes
 	return fromRepoInviteResult(result), nil
 }
 
+// CreateIdpUser creates a human user in the identity provider with a password.
+func (o *Ops) CreateIdpUser(ctx context.Context, input CreateIdpUserInput) (*CreatedIdpUser, error) {
+	result, err := o.repo.CreateUser(ctx, identityrepo.CreateHumanUserInput{
+		Email:      input.Email,
+		Password:   input.Password,
+		GivenName:  input.GivenName,
+		FamilyName: input.FamilyName,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &CreatedIdpUser{UserID: result.UserID}, nil
+}
+
 func toRepoCreateOrgInput(in CreateOrgInput) identityrepo.CreateOrgInput {
 	return identityrepo.CreateOrgInput{Name: in.Name}
 }

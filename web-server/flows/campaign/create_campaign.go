@@ -2,18 +2,21 @@ package campaign
 
 import (
 	"context"
+	"log/slog"
 
 	campaignops "rootstock/web-server/ops/campaign"
+	graphops "rootstock/web-server/ops/graph"
 )
 
 // CreateCampaignFlow orchestrates campaign creation.
 type CreateCampaignFlow struct {
 	campaignOps *campaignops.Ops
+	graphOps    *graphops.Ops
 }
 
 // NewCreateCampaignFlow creates the flow with its required ops.
-func NewCreateCampaignFlow(campaignOps *campaignops.Ops) *CreateCampaignFlow {
-	return &CreateCampaignFlow{campaignOps: campaignOps}
+func NewCreateCampaignFlow(campaignOps *campaignops.Ops, graphOps *graphops.Ops) *CreateCampaignFlow {
+	return &CreateCampaignFlow{campaignOps: campaignOps, graphOps: graphOps}
 }
 
 // Run creates a campaign with parameters, regions, window, and eligibility.
@@ -22,6 +25,14 @@ func (f *CreateCampaignFlow) Run(ctx context.Context, input CreateCampaignInput)
 	if err != nil {
 		return nil, err
 	}
+
+	// Initialize campaign state machine in graph (best-effort)
+	if f.graphOps != nil {
+		if _, err := f.graphOps.InitCampaignState(ctx, result.ID); err != nil {
+			slog.WarnContext(ctx, "failed to init campaign graph state", "campaign_id", result.ID, "error", err)
+		}
+	}
+
 	return fromOpsCampaign(result), nil
 }
 

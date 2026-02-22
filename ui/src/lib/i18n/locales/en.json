@@ -5,10 +5,38 @@
   },
   "nav": {
     "home": "Home",
-    "skip_to_content": "Skip to main content"
+    "skip_to_content": "Skip to main content",
+    "campaigns": "Campaigns",
+    "logout": "Log out"
   },
   "home": {
     "title": "Rootstock",
-    "subtitle": "Welcome to Rootstock"
+    "subtitle": "Welcome to Rootstock",
+    "login": "Log in",
+    "register": "Create account"
+  },
+  "auth": {
+    "login_title": "Log in to Rootstock",
+    "register_title": "Create your account",
+    "email": "Email",
+    "password": "Password",
+    "confirm_password": "Confirm password",
+    "given_name": "First name",
+    "family_name": "Last name",
+    "login_button": "Log in",
+    "register_button": "Create account",
+    "no_account": "Don't have an account?",
+    "have_account": "Already have an account?",
+    "register_link": "Create one",
+    "login_link": "Log in",
+    "passwords_mismatch": "Passwords do not match",
+    "login_failed": "Invalid email or password",
+    "register_failed": "Registration failed. Please try again."
+  },
+  "researcher": {
+    "welcome": "Welcome to Rootstock",
+    "no_campaigns": "No campaigns yet.",
+    "create_first": "Create your first campaign.",
+    "dashboard": "Dashboard"
   }
 }

@@ -1,0 +1,8 @@
+version: v2
+plugins:
+  - local: protoc-gen-es
+    out: /app/src/lib/api/gen
+    opt: target=ts
+  - local: protoc-gen-connect-es
+    out: /app/src/lib/api/gen
+    opt: target=ts

@@ -9,6 +9,7 @@ services:
       - ../ui/svelte.config.js:/app/svelte.config.js
       - ../ui/vite.config.js:/app/vite.config.js
       - ../ui/tsconfig.json:/app/tsconfig.json
+      - ../proto:/proto
       - ui_node_modules:/app/node_modules
     networks:
       - rootstock

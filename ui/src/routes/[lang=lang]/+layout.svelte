@@ -2,6 +2,7 @@
 	import '../../app.css';
 	import { base } from '$app/paths';
 	import { t } from '$lib/i18n';
+	import { validateSession } from '$lib/auth/store';
 
 	let { children, data } = $props();
 
@@ -9,6 +10,10 @@
 
 	$effect(() => {
 		document.documentElement.lang = currentLang;
+	});
+
+	$effect(() => {
+		validateSession();
 	});
 </script>
 

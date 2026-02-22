@@ -1,9 +1,13 @@
 <script lang="ts">
 	import { base } from '$app/paths';
+	import { page } from '$app/stores';
+	import { t } from '$lib/i18n';
 
 	let status = $state('');
 	let error = $state('');
 	let loading = $state(false);
+
+	const lang = $derived($page.params.lang);
 
 	async function checkHealth() {
 		loading = true;
@@ -49,10 +53,25 @@
 	</div>
 
 	<div class="flex flex-col items-center gap-4">
+		<div class="flex gap-4">
+			<a
+				href="{base}/{lang}/login"
+				class="px-6 py-3 bg-morpho-500 hover:bg-morpho-400 text-cream-100 font-medium rounded transition-colors duration-200"
+			>
+				{$t('home.login')}
+			</a>
+			<a
+				href="{base}/{lang}/register"
+				class="px-6 py-3 border border-morpho-500 hover:bg-morpho-500/10 text-morpho-400 font-medium rounded transition-colors duration-200"
+			>
+				{$t('home.register')}
+			</a>
+		</div>
+
 		<button
 			onclick={checkHealth}
 			disabled={loading}
-			class="px-6 py-3 bg-morpho-500 hover:bg-morpho-400 disabled:opacity-50 text-cream-100 font-medium rounded transition-colors duration-200"
+			class="px-4 py-2 text-sm text-cream-600 hover:text-cream-100 transition-colors duration-200 mt-4"
 			aria-live="polite"
 		>
 			{loading ? 'Checking...' : 'Health Check'}

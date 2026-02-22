@@ -10,3 +10,17 @@ type User struct {
 	Status    string
 	CreatedAt time.Time
 }
+
+// LoginResult is the result of a successful login flow.
+type LoginResult struct {
+	SessionID    string
+	SessionToken string
+	User         User
+}
+
+// RegisterResearcherResult is the result of researcher registration.
+type RegisterResearcherResult struct {
+	SessionID    string
+	SessionToken string
+	User         User
+}

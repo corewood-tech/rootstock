@@ -3,17 +3,19 @@ package user
 import (
 	"context"
 
+	sessionrepo "rootstock/web-server/repo/session"
 	userrepo "rootstock/web-server/repo/user"
 )
 
 // Ops holds user operations. Each method is one op.
 type Ops struct {
-	repo userrepo.Repository
+	repo        userrepo.Repository
+	sessionRepo sessionrepo.Repository
 }
 
-// NewOps creates user ops backed by the given repository.
-func NewOps(repo userrepo.Repository) *Ops {
-	return &Ops{repo: repo}
+// NewOps creates user ops backed by the given repositories.
+func NewOps(repo userrepo.Repository, sessionRepo sessionrepo.Repository) *Ops {
+	return &Ops{repo: repo, sessionRepo: sessionRepo}
 }
 
 // CreateUser creates a new app user.
@@ -47,6 +49,41 @@ func (o *Ops) GetUserByIdpID(ctx context.Context, idpID string) (*User, error) {
 		return nil, nil
 	}
 	return fromRepoUser(result), nil
+}
+
+// Login creates a session for the given credentials.
+func (o *Ops) Login(ctx context.Context, input LoginInput) (*LoginResult, error) {
+	sess, err := o.sessionRepo.CreateSession(ctx, sessionrepo.CreateSessionInput{
+		LoginName: input.Email,
+		Password:  input.Password,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &LoginResult{
+		SessionID:    sess.SessionID,
+		SessionToken: sess.SessionToken,
+		UserID:       sess.UserID,
+	}, nil
+}
+
+// Logout deletes the given session.
+func (o *Ops) Logout(ctx context.Context, input LogoutInput) error {
+	return o.sessionRepo.DeleteSession(ctx, input.SessionID, input.SessionToken)
+}
+
+// ValidateSession verifies a session and returns the associated user ID.
+func (o *Ops) ValidateSession(ctx context.Context, input ValidateSessionInput) (*ValidatedSession, error) {
+	sess, err := o.sessionRepo.GetSession(ctx, sessionrepo.GetSessionInput{
+		SessionID:    input.SessionID,
+		SessionToken: input.SessionToken,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &ValidatedSession{
+		UserID: sess.UserID,
+	}, nil
 }
 
 func fromRepoUser(r *userrepo.User) *User {

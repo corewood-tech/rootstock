@@ -133,6 +133,31 @@ func (r *zitadelRepository) InviteUser(ctx context.Context, input InviteUserInpu
 	}, nil
 }
 
+func (r *zitadelRepository) CreateUser(ctx context.Context, input CreateHumanUserInput) (*CreatedUser, error) {
+	resp, err := r.client.UserServiceV2().AddHumanUser(ctx, &userv2.AddHumanUserRequest{
+		Profile: &userv2.SetHumanProfile{
+			GivenName:  input.GivenName,
+			FamilyName: input.FamilyName,
+		},
+		Email: &userv2.SetHumanEmail{
+			Email:        input.Email,
+			Verification: &userv2.SetHumanEmail_IsVerified{IsVerified: true},
+		},
+		PasswordType: &userv2.AddHumanUserRequest_Password{
+			Password: &userv2.Password{
+				Password:       input.Password,
+				ChangeRequired: false,
+			},
+		},
+	})
+	if err != nil {
+		return nil, fmt.Errorf("create user: %w", err)
+	}
+	return &CreatedUser{
+		UserID: resp.GetUserId(),
+	}, nil
+}
+
 func (r *zitadelRepository) Shutdown() {
 	r.client.Close()
 }

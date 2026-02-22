@@ -264,10 +264,13 @@ message EnrollInCampaignResponse {
   string reason = 2;
 }
 
-// UserService manages app user registration and profile.
+// UserService manages app user registration, profile, and authentication.
 service UserService {
   rpc RegisterUser(RegisterUserRequest) returns (RegisterUserResponse);
   rpc GetMe(GetMeRequest) returns (GetMeResponse);
+  rpc Login(LoginRequest) returns (LoginResponse);
+  rpc Logout(LogoutRequest) returns (LogoutResponse);
+  rpc RegisterResearcher(RegisterResearcherRequest) returns (RegisterResearcherResponse);
 }
 
 // User messages
@@ -291,6 +294,34 @@ message GetMeRequest {}
 
 message GetMeResponse {
   UserProto user = 1;
+}
+
+message LoginRequest {
+  string email = 1;
+  string password = 2;
+}
+
+message LoginResponse {
+  string session_id = 1;
+  string session_token = 2;
+  UserProto user = 3;
+}
+
+message LogoutRequest {}
+
+message LogoutResponse {}
+
+message RegisterResearcherRequest {
+  string email = 1;
+  string password = 2;
+  string given_name = 3;
+  string family_name = 4;
+}
+
+message RegisterResearcherResponse {
+  string session_id = 1;
+  string session_token = 2;
+  UserProto user = 3;
 }
 
 // AdminService provides platform administration operations.

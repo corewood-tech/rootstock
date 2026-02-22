@@ -8,8 +8,10 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 
 	campaignops "rootstock/web-server/ops/campaign"
+	graphops "rootstock/web-server/ops/graph"
 	"rootstock/web-server/config"
 	campaignrepo "rootstock/web-server/repo/campaign"
+	graphrepo "rootstock/web-server/repo/graph"
 	sqlmigrate "rootstock/web-server/repo/sql/migrate"
 )
 
@@ -35,11 +37,19 @@ func setupPublishCampaignTest(t *testing.T) (*CreateCampaignFlow, *PublishCampai
 
 	cRepo := campaignrepo.NewRepository(pool)
 	cOps := campaignops.NewOps(cRepo)
-	createFlow := NewCreateCampaignFlow(cOps)
-	publishFlow := NewPublishCampaignFlow(cOps)
+
+	gRepo, err := graphrepo.NewDgraphRepository("dgraph-alpha:9080")
+	if err != nil {
+		t.Fatalf("create graph repo: %v", err)
+	}
+	gOps := graphops.NewOps(gRepo)
+
+	createFlow := NewCreateCampaignFlow(cOps, gOps)
+	publishFlow := NewPublishCampaignFlow(cOps, gOps)
 
 	t.Cleanup(func() {
 		cRepo.Shutdown()
+		gRepo.Shutdown()
 		pool.Close()
 	})
 

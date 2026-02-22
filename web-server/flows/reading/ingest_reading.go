@@ -2,8 +2,10 @@ package reading
 
 import (
 	"context"
+	"log/slog"
 
 	campaignops "rootstock/web-server/ops/campaign"
+	graphops "rootstock/web-server/ops/graph"
 	"rootstock/web-server/ops/pure"
 	readingops "rootstock/web-server/ops/reading"
 )
@@ -12,11 +14,12 @@ import (
 type IngestReadingFlow struct {
 	campaignOps *campaignops.Ops
 	readingOps  *readingops.Ops
+	graphOps    *graphops.Ops
 }
 
 // NewIngestReadingFlow creates the flow with its required ops.
-func NewIngestReadingFlow(campaignOps *campaignops.Ops, readingOps *readingops.Ops) *IngestReadingFlow {
-	return &IngestReadingFlow{campaignOps: campaignOps, readingOps: readingOps}
+func NewIngestReadingFlow(campaignOps *campaignops.Ops, readingOps *readingops.Ops, graphOps *graphops.Ops) *IngestReadingFlow {
+	return &IngestReadingFlow{campaignOps: campaignOps, readingOps: readingOps, graphOps: graphOps}
 }
 
 // Run validates a reading against campaign rules, persists it, and quarantines if invalid.
@@ -62,6 +65,37 @@ func (f *IngestReadingFlow) Run(ctx context.Context, input IngestReadingInput) (
 		}
 		opsReading.Status = "quarantined"
 		opsReading.QuarantineReason = &validationResult.Reason
+	}
+
+	// 5. Anomaly detection for valid readings (best-effort)
+	if validationResult.Valid && len(rules.Parameters) > 0 {
+		paramName := rules.Parameters[0].Name
+
+		// Update rolling baseline
+		if _, err := f.graphOps.UpdateBaseline(ctx, graphops.UpdateBaselineInput{
+			CampaignRef:   input.CampaignID,
+			ParameterName: paramName,
+			Value:         input.Value,
+		}); err != nil {
+			slog.WarnContext(ctx, "failed to update baseline", "campaign_id", input.CampaignID, "error", err)
+		}
+
+		// Check for anomaly
+		anomaly, err := f.graphOps.CheckAnomaly(ctx, graphops.CheckAnomalyInput{
+			CampaignRef:   input.CampaignID,
+			ParameterName: paramName,
+			Value:         input.Value,
+		})
+		if err != nil {
+			slog.WarnContext(ctx, "failed to check anomaly", "campaign_id", input.CampaignID, "error", err)
+		} else if anomaly != nil {
+			if err := f.readingOps.QuarantineReading(ctx, opsReading.ID, anomaly.Reason); err != nil {
+				slog.WarnContext(ctx, "failed to quarantine anomaly", "reading_id", opsReading.ID, "error", err)
+			} else {
+				opsReading.Status = "quarantined"
+				opsReading.QuarantineReason = &anomaly.Reason
+			}
+		}
 	}
 
 	return fromOpsReading(opsReading), nil

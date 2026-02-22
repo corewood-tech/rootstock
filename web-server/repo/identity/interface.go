@@ -9,5 +9,6 @@ type Repository interface {
 	DefineRole(ctx context.Context, input DefineRoleInput) (*Role, error)
 	AssignRole(ctx context.Context, input AssignRoleInput) (*UserGrant, error)
 	InviteUser(ctx context.Context, input InviteUserInput) (*InviteResult, error)
+	CreateUser(ctx context.Context, input CreateHumanUserInput) (*CreatedUser, error)
 	Shutdown()
 }

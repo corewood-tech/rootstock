@@ -10,13 +10,29 @@ ROOTSTOCK serves two purposes:
 - A reference architecture for LLM-driven engineering which reliably scales, designed and used by [Corewood](https://corewood.io). Branch out without uprooting your project.
 - A citizen scientific data collection platform — gamified campaigns connect researchers with citizen scientists who already own the sensors.
 
+## Why this matters
+
+<p align="center">
+  <img src="media/nsf_awards.jpg" alt="NSF Awards 2021-2026 — new awards in 2026 have collapsed to near zero" width="500" />
+  <br/>
+  <sub>Credit: <a href="https://www.linkedin.com/posts/amirhusain_research-grants-from-the-nsf-the-america-activity-7430263663275683840-oYcZ">Amir Husain</a></sub>
+</p>
+
+Federal research funding is in freefall. The chart above shows cumulative NSF awards by fiscal year — 2021 through 2024 tracked roughly 12,000 awards each; 2025 dropped to half; 2026 is flatlined near zero. Even before counting terminated grants, the pipeline that funds field research has effectively shut down.
+
+This means researchers who still have questions can't afford to collect data the old way — deploying proprietary sensor networks, hiring field teams, or buying satellite time. The infrastructure that made science possible is being defunded out from under them.
+
+Rootstock is built on the premise that the sensors already exist. Consumer IoT devices — weather stations, air quality monitors, water sensors — are deployed at massive scale in homes and backyards. What's missing is a way to connect those devices to the researchers who need the data. That's what this platform does: structured data campaigns that turn idle consumer hardware into distributed research infrastructure, at near-zero marginal cost per reading.
+
+When funding dries up, the alternative to expensive data collection isn't no data collection — it's crowdsourced data collection with proper quality controls. That's what Rootstock provides.
+
 ## System
 
 Open-source, community-driven science data acquisition.
 
 ### Problem
 
-Current methods of acquiring field data for scientific analysis are expensive, slow, and limited in geographic scope. Meanwhile, consumer IoT devices — weather stations, air quality monitors, water sensors, GPS-enabled devices — are already deployed at massive scale in people's homes and backyards. These are distributed mini-labs sitting idle. The **last-mile problem**: there is no standard, low-friction way to connect these consumer devices to active research needs.
+Current methods of acquiring field data for scientific analysis are expensive, slow, and limited in geographic scope — and the federal funding that underwrote those methods is disappearing. Meanwhile, consumer IoT devices — weather stations, air quality monitors, water sensors, GPS-enabled devices — are already deployed at massive scale in people's homes and backyards. These are distributed mini-labs sitting idle. The **last-mile problem**: there is no standard, low-friction way to connect these consumer devices to active research needs.
 
 ### Solution
 
@@ -192,7 +208,7 @@ Both the web server (Go/air) and UI (SvelteKit/vite) hot reload on file changes.
 Health check (binary protobuf — JSON is rejected by the server):
 
 ```bash
-curl -s -X POST http://localhost:8080/rootstock.v1.HealthService/Check \
+curl -s -X POST http://localhost:9999/rootstock.v1.HealthService/Check \
   -H "Content-Type: application/proto" --data-binary ''
 ```
 

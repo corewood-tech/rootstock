@@ -3,9 +3,12 @@ package device
 import (
 	"context"
 	"encoding/json"
+	"log/slog"
+	"time"
 
 	campaignops "rootstock/web-server/ops/campaign"
 	deviceops "rootstock/web-server/ops/device"
+	graphops "rootstock/web-server/ops/graph"
 	mqttops "rootstock/web-server/ops/mqtt"
 	"rootstock/web-server/ops/pure"
 )
@@ -17,14 +20,16 @@ type EnrollInCampaignFlow struct {
 	deviceOps   *deviceops.Ops
 	campaignOps *campaignops.Ops
 	mqttOps     *mqttops.Ops
+	graphOps    *graphops.Ops
 }
 
 // NewEnrollInCampaignFlow creates the flow with its required ops.
-func NewEnrollInCampaignFlow(deviceOps *deviceops.Ops, campaignOps *campaignops.Ops, mqttOps *mqttops.Ops) *EnrollInCampaignFlow {
+func NewEnrollInCampaignFlow(deviceOps *deviceops.Ops, campaignOps *campaignops.Ops, mqttOps *mqttops.Ops, graphOps *graphops.Ops) *EnrollInCampaignFlow {
 	return &EnrollInCampaignFlow{
 		deviceOps:   deviceOps,
 		campaignOps: campaignOps,
 		mqttOps:     mqttOps,
+		graphOps:    graphOps,
 	}
 }
 
@@ -79,7 +84,17 @@ func (f *EnrollInCampaignFlow) Run(ctx context.Context, input EnrollInCampaignIn
 		return nil, err
 	}
 
-	// 5. Push config to device via MQTT
+	// 5. Create graph enrollment edge (best-effort)
+	if err := f.graphOps.AddEnrollment(ctx, graphops.AddEnrollmentInput{
+		DeviceRef:   input.DeviceID,
+		CampaignRef: input.CampaignID,
+		OwnerRef:    "",
+		EnrolledAt:  time.Now().UTC(),
+	}); err != nil {
+		slog.WarnContext(ctx, "failed to add graph enrollment", "device_id", input.DeviceID, "campaign_id", input.CampaignID, "error", err)
+	}
+
+	// 6. Push config to device via MQTT
 	configPayload, err := json.Marshal(DeviceConfigPayload{
 		CampaignID: input.CampaignID,
 	})

@@ -22,6 +22,7 @@ import (
 	campaignops "rootstock/web-server/ops/campaign"
 	certops "rootstock/web-server/ops/cert"
 	deviceops "rootstock/web-server/ops/device"
+	graphops "rootstock/web-server/ops/graph"
 	mqttops "rootstock/web-server/ops/mqtt"
 	notificationops "rootstock/web-server/ops/notification"
 	orgops "rootstock/web-server/ops/org"
@@ -31,21 +32,22 @@ import (
 	"rootstock/web-server/proto/rootstock/v1/rootstockv1connect"
 	"rootstock/web-server/repo/authorization"
 	campaignrepo "rootstock/web-server/repo/campaign"
+	graphrepo "rootstock/web-server/repo/graph"
 	identityrepo "rootstock/web-server/repo/identity"
 	notificationrepo "rootstock/web-server/repo/notification"
 	readingrepo "rootstock/web-server/repo/reading"
 	scorerepo "rootstock/web-server/repo/score"
+	sessionrepo "rootstock/web-server/repo/session"
 	userrepo "rootstock/web-server/repo/user"
 )
 
 // NewRPCServer wires repos → ops → flows → Connect RPC handlers and returns
 // an http.Handler, the MQTTFlows for subscription wiring, and a shutdown function.
 func NewRPCServer(ctx context.Context, cfg *config.Config, pool *pgxpool.Pool, iRepo identityrepo.Repository, dOps *deviceops.Ops, crtOps *certops.Ops, mOps *mqttops.Ops) (http.Handler, *MQTTFlows, func(), error) {
-	// JWT verification
-	jwksURL := fmt.Sprintf("http://%s:%d/oauth/v2/keys", cfg.Identity.Zitadel.Host, cfg.Identity.Zitadel.Port)
-	jwtVerifier, err := NewJWTVerifier(ctx, jwksURL, cfg.Identity.Zitadel.ExternalDomain, cfg.Identity.Zitadel.Issuer)
+	// Session repo (Zitadel Session API)
+	sessRepo, err := sessionrepo.NewRepository(ctx, cfg.Identity.Zitadel)
 	if err != nil {
-		return nil, nil, nil, fmt.Errorf("create jwt verifier: %w", err)
+		return nil, nil, nil, fmt.Errorf("create session repo: %w", err)
 	}
 
 	// Authorization (OPA)
@@ -53,12 +55,6 @@ func NewRPCServer(ctx context.Context, cfg *config.Config, pool *pgxpool.Pool, i
 	if err := authzRepo.Recompile(ctx); err != nil {
 		return nil, nil, nil, fmt.Errorf("compile authorization policy: %w", err)
 	}
-
-	otelInterceptor, err := otelconnect.NewInterceptor()
-	if err != nil {
-		return nil, nil, nil, fmt.Errorf("create otel interceptor: %w", err)
-	}
-	interceptors := connect.WithInterceptors(otelInterceptor, AuthorizationInterceptor(jwtVerifier, authzRepo), BinaryOnlyInterceptor())
 
 	// Business repos
 	cRepo := campaignrepo.NewRepository(pool)
@@ -69,17 +65,31 @@ func NewRPCServer(ctx context.Context, cfg *config.Config, pool *pgxpool.Pool, i
 	// Notification repo (SMTP)
 	nRepo := notificationrepo.NewRepository(cfg.SMTP.Host, cfg.SMTP.Port, cfg.SMTP.From)
 
+	// Graph repo (Dgraph)
+	gRepo, err := graphrepo.NewDgraphRepository(cfg.Database.Dgraph.AlphaAddr)
+	if err != nil {
+		return nil, nil, nil, fmt.Errorf("create graph repository: %w", err)
+	}
+
 	// Ops
 	cOps := campaignops.NewOps(cRepo)
 	rOps := readingops.NewOps(rRepo)
 	oOps := orgops.NewOps(iRepo)
 	sOps := scoreops.NewOps(sRepo)
-	uOps := userops.NewOps(uRepo)
+	uOps := userops.NewOps(uRepo, sessRepo)
 	nOps := notificationops.NewOps(nRepo)
+	gOps := graphops.NewOps(gRepo)
+
+	// Interceptors (session-based auth)
+	otelInterceptor, err := otelconnect.NewInterceptor()
+	if err != nil {
+		return nil, nil, nil, fmt.Errorf("create otel interceptor: %w", err)
+	}
+	interceptors := connect.WithInterceptors(otelInterceptor, AuthorizationInterceptor(uOps, authzRepo), BinaryOnlyInterceptor())
 
 	// Campaign flows
-	createCampaignFlow := campaignflows.NewCreateCampaignFlow(cOps)
-	publishCampaignFlow := campaignflows.NewPublishCampaignFlow(cOps)
+	createCampaignFlow := campaignflows.NewCreateCampaignFlow(cOps, gOps)
+	publishCampaignFlow := campaignflows.NewPublishCampaignFlow(cOps, gOps)
 	browseCampaignsFlow := campaignflows.NewBrowseCampaignsFlow(cOps)
 	campaignDashboardFlow := campaignflows.NewDashboardFlow(rOps)
 
@@ -89,11 +99,11 @@ func NewRPCServer(ctx context.Context, cfg *config.Config, pool *pgxpool.Pool, i
 	reinstateDeviceFlow := deviceflows.NewReinstateDeviceFlow(dOps)
 	registerDeviceFlow := deviceflows.NewRegisterDeviceFlow(dOps, crtOps)
 	getCACertFlow := deviceflows.NewGetCACertFlow(crtOps)
-	enrollInCampaignFlow := deviceflows.NewEnrollInCampaignFlow(dOps, cOps, mOps)
+	enrollInCampaignFlow := deviceflows.NewEnrollInCampaignFlow(dOps, cOps, mOps, gOps)
 	renewCertFlow := deviceflows.NewRenewCertFlow(dOps, crtOps)
 
 	// Reading flows
-	ingestReadingFlow := readingflows.NewIngestReadingFlow(cOps, rOps)
+	ingestReadingFlow := readingflows.NewIngestReadingFlow(cOps, rOps, gOps)
 	exportDataFlow := readingflows.NewExportDataFlow(rOps)
 
 	// Score flows
@@ -106,6 +116,9 @@ func NewRPCServer(ctx context.Context, cfg *config.Config, pool *pgxpool.Pool, i
 	// User flows
 	registerUserFlow := userflows.NewRegisterUserFlow(uOps)
 	getUserFlow := userflows.NewGetUserFlow(uOps)
+	loginFlow := userflows.NewLoginFlow(uOps)
+	logoutFlow := userflows.NewLogoutFlow(uOps)
+	registerResearcherFlow := userflows.NewRegisterResearcherFlow(oOps, uOps, nOps)
 
 	// Org flows
 	createOrgFlow := orgflows.NewCreateOrgFlow(oOps)
@@ -135,7 +148,7 @@ func NewRPCServer(ctx context.Context, cfg *config.Config, pool *pgxpool.Pool, i
 	deviceHandler := connecthandlers.NewDeviceServiceHandler(getDeviceFlow, revokeDeviceFlow, reinstateDeviceFlow, enrollInCampaignFlow)
 	devicePath, deviceH := rootstockv1connect.NewDeviceServiceHandler(deviceHandler, interceptors)
 
-	userHandler := connecthandlers.NewUserServiceHandler(registerUserFlow, getUserFlow)
+	userHandler := connecthandlers.NewUserServiceHandler(registerUserFlow, getUserFlow, loginFlow, logoutFlow, registerResearcherFlow)
 	userPath, userH := rootstockv1connect.NewUserServiceHandler(userHandler, interceptors)
 
 	adminHandler := connecthandlers.NewAdminServiceHandler(securityResponseFlow)
@@ -167,6 +180,8 @@ func NewRPCServer(ctx context.Context, cfg *config.Config, pool *pgxpool.Pool, i
 		sRepo.Shutdown()
 		uRepo.Shutdown()
 		nRepo.Shutdown()
+		gRepo.Shutdown()
+		sessRepo.Shutdown()
 	}
 
 	return mux, mqttFlows, shutdown, nil

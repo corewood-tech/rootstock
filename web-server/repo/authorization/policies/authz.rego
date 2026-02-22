@@ -5,6 +5,8 @@ import rego.v1
 # Public endpoints — accessible without authentication
 public_methods := {
 	"/rootstock.v1.HealthService/Check",
+	"/rootstock.v1.UserService/Login",
+	"/rootstock.v1.UserService/RegisterResearcher",
 }
 
 # Main decision object — default deny
