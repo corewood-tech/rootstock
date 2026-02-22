@@ -271,6 +271,7 @@ service UserService {
   rpc Login(LoginRequest) returns (LoginResponse);
   rpc Logout(LogoutRequest) returns (LogoutResponse);
   rpc RegisterResearcher(RegisterResearcherRequest) returns (RegisterResearcherResponse);
+  rpc VerifyEmail(VerifyEmailRequest) returns (VerifyEmailResponse);
 }
 
 // User messages
@@ -319,9 +320,17 @@ message RegisterResearcherRequest {
 }
 
 message RegisterResearcherResponse {
-  string session_id = 1;
-  string session_token = 2;
-  UserProto user = 3;
+  string user_id = 1;
+  bool email_verification_sent = 2;
+}
+
+message VerifyEmailRequest {
+  string user_id = 1;
+  string verification_code = 2;
+}
+
+message VerifyEmailResponse {
+  bool verified = 1;
 }
 
 // AdminService provides platform administration operations.

@@ -72,7 +72,15 @@ func (o *Ops) CreateIdpUser(ctx context.Context, input CreateIdpUserInput) (*Cre
 	if err != nil {
 		return nil, err
 	}
-	return &CreatedIdpUser{UserID: result.UserID}, nil
+	return &CreatedIdpUser{UserID: result.UserID, EmailCode: result.EmailCode}, nil
+}
+
+// VerifyEmail verifies a user's email address using the verification code.
+func (o *Ops) VerifyEmail(ctx context.Context, input VerifyEmailInput) error {
+	return o.repo.VerifyEmail(ctx, identityrepo.VerifyEmailInput{
+		UserID:           input.UserID,
+		VerificationCode: input.VerificationCode,
+	})
 }
 
 func toRepoCreateOrgInput(in CreateOrgInput) identityrepo.CreateOrgInput {

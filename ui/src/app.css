@@ -1,8 +1,33 @@
-@import 'tailwindcss';
+/*
+ * @component  app
+ * @purpose    Global styles, theme tokens, and semantic CSS classes
+ * @theme      Corewood dark — forest greens, bark browns, morpho blues
+ * @breakpoints mobile: <640px, tablet: 640-1024px, desktop: >1024px
+ * @ref        graph:0x3b (Corewood Theme System), graph:0x4f (Tailwind Migration)
+ */
 
+/* ============================================================
+   RESET
+   Minimal reset for cross-browser consistency.
+   ============================================================ */
 
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
 
-@theme {
+/* ============================================================
+   THEME TOKENS
+   Custom properties defining the Corewood visual language.
+   Forest greens, bark browns, morpho blues, dart reds, cream neutrals.
+   Semantic aliases map intent to palette.
+   @ref graph:0x3b
+   ============================================================ */
+
+:root {
   /* Forest greens */
   --color-forest-900: #06150D;
   --color-forest-800: #0B2B1A;
@@ -59,12 +84,36 @@
   --color-text-secondary: #A69E86;
   --color-accent: #1B7EB0;
   --color-accent-hover: #2A95C8;
+  --color-error: #E85A48;
+  --color-success: #4A8F63;
 
   /* Font stacks */
   --font-display: 'Roca Two', system-ui, sans-serif;
   --font-body: 'HK Grotesk Pro', system-ui, sans-serif;
   --font-mono: ui-monospace, 'SF Mono', 'Cascadia Code', 'Fira Code', monospace;
+
+  /* Spacing scale */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-12: 3rem;
+
+  /* Radii */
+  --radius: 0.25rem;
+  --radius-md: 0.375rem;
+
+  /* Transitions */
+  --transition-colors: color 200ms ease, background-color 200ms ease, border-color 200ms ease;
 }
+
+
+/* ============================================================
+   BASE
+   Body, typography defaults, and background.
+   ============================================================ */
 
 body {
   font-family: var(--font-body);
@@ -77,12 +126,872 @@ body {
     radial-gradient(ellipse at 0% 100%, rgba(10, 30, 20, 0.4) 0%, transparent 50%);
   background-attachment: fixed;
   min-height: 100vh;
+  line-height: 1.5;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+
+/* ============================================================
+   ACCESSIBILITY
+   Screen reader utilities and reduced motion.
+   ============================================================ */
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+.sr-only:focus {
+  position: absolute;
+  width: auto;
+  height: auto;
+  padding: var(--space-2) var(--space-4);
+  margin: 0;
+  overflow: visible;
+  clip: auto;
+  white-space: normal;
+  top: var(--space-2);
+  left: var(--space-2);
+  z-index: 50;
+  background-color: var(--color-morpho-500);
+  color: var(--color-cream-100);
+  border-radius: var(--radius);
 }
 
 @media (prefers-reduced-motion: reduce) {
-  * {
+  *,
+  *::before,
+  *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
+}
+
+
+/* ============================================================
+   LAYOUT — Page shells
+   @purpose  Full-page centered layouts for auth and landing pages
+   @states   none
+   @breakpoints mobile: padding reduces to --space-4
+   ============================================================ */
+
+.page-shell {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.page-centered {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 0 var(--space-6);
+}
+
+.page-content {
+  flex-grow: 1;
+}
+
+
+/* ============================================================
+   LAYOUT — App shell (authenticated)
+   @purpose  Header + content for researcher dashboard
+   @ref      graph:0x43 (Researcher Layout)
+   @breakpoints mobile: hamburger replaces inline nav
+   ============================================================ */
+
+/*
+ * @component  app-header
+ * @purpose    Top navigation bar for authenticated views
+ * @states     none
+ * @breakpoints mobile: stacks to column, hides nav links
+ */
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-4) var(--space-6);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.app-header__brand {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.app-header__brand-logo {
+  height: 2rem;
+  width: auto;
+}
+
+.app-header__brand-name {
+  font-size: 0.875rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  font-family: var(--font-display);
+}
+
+.app-header__left {
+  display: flex;
+  align-items: center;
+  gap: var(--space-6);
+}
+
+.app-header__nav {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.app-header__nav-item {
+  font-size: 0.875rem;
+  color: var(--color-cream-700);
+}
+
+.app-header__nav-item--active {
+  color: var(--color-text-primary);
+}
+
+.app-header__right {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.app-header__user-type {
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+}
+
+
+/* ============================================================
+   BUTTONS
+   @purpose  Primary, secondary, ghost, and text buttons
+   @states   default, hover, disabled, loading
+   ============================================================ */
+
+/*
+ * @component  btn
+ * @purpose    Base button reset + shared properties
+ */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-3) var(--space-6);
+  font-family: var(--font-body);
+  font-size: 1rem;
+  font-weight: 500;
+  border-radius: var(--radius);
+  border: none;
+  cursor: pointer;
+  transition: var(--transition-colors);
+  text-decoration: none;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/*
+ * @component  btn--primary
+ * @purpose    Primary CTA — morpho blue background
+ * @states     hover: lighter blue, disabled: 50% opacity
+ */
+.btn--primary {
+  background-color: var(--color-morpho-500);
+  color: var(--color-cream-100);
+}
+
+.btn--primary:hover:not(:disabled) {
+  background-color: var(--color-morpho-400);
+}
+
+/*
+ * @component  btn--secondary
+ * @purpose    Secondary action — outlined
+ * @states     hover: faint morpho background
+ */
+.btn--secondary {
+  background-color: transparent;
+  color: var(--color-morpho-400);
+  border: 1px solid var(--color-morpho-500);
+}
+
+.btn--secondary:hover:not(:disabled) {
+  background-color: rgba(27, 126, 176, 0.1);
+}
+
+/*
+ * @component  btn--ghost
+ * @purpose    Low-emphasis action — no border, no background
+ * @states     hover: text brightens
+ */
+.btn--ghost {
+  background-color: transparent;
+  color: var(--color-text-secondary);
+  padding: var(--space-2) var(--space-4);
+  font-size: 0.875rem;
+}
+
+.btn--ghost:hover:not(:disabled) {
+  color: var(--color-text-primary);
+}
+
+/*
+ * @component  btn--text
+ * @purpose    Inline text link styled as button
+ */
+.btn--text {
+  background: none;
+  border: none;
+  color: var(--color-morpho-400);
+  padding: 0;
+  font-size: inherit;
+  text-decoration: underline;
+  cursor: pointer;
+  transition: var(--transition-colors);
+}
+
+.btn--text:hover {
+  color: var(--color-morpho-300);
+}
+
+
+/* ============================================================
+   FORMS
+   @purpose  Input fields, labels, field groups, error messages
+   @ref      graph:0x46 (Semantic Locator Pattern)
+   @states   default, focus, error, disabled
+   ============================================================ */
+
+/*
+ * @component  form-card
+ * @purpose    Constrains form width for auth pages
+ */
+.form-card {
+  width: 100%;
+  max-width: 24rem;
+}
+
+/*
+ * @component  form-stack
+ * @purpose    Vertical form layout with consistent gap
+ */
+.form-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+/*
+ * @component  form-row
+ * @purpose    Horizontal field group (e.g., first/last name)
+ * @breakpoints mobile: stacks vertically
+ */
+.form-row {
+  display: flex;
+  gap: var(--space-4);
+}
+
+.form-row > * {
+  flex: 1;
+}
+
+/*
+ * @component  field
+ * @purpose    Single form field: label + input
+ */
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.field__label {
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+}
+
+.field__input {
+  padding: var(--space-3) var(--space-4);
+  background-color: rgba(6, 21, 13, 0.5);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius);
+  color: var(--color-text-primary);
+  font-family: var(--font-body);
+  font-size: 1rem;
+  transition: var(--transition-colors);
+}
+
+.field__input::placeholder {
+  color: var(--color-cream-700);
+}
+
+.field__input:focus {
+  outline: none;
+  border-color: var(--color-morpho-500);
+}
+
+.field__input:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+textarea.field__input {
+  resize: vertical;
+  min-height: 4rem;
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+}
+
+/*
+ * @component  form-error
+ * @purpose    Inline validation error message
+ * @states     visible when error exists
+ */
+.form-error {
+  color: var(--color-error);
+  font-size: 0.875rem;
+}
+
+/*
+ * @component  form-footer
+ * @purpose    Text + link below form (e.g., "Already have an account? Log in")
+ */
+.form-footer {
+  text-align: center;
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+  margin-top: var(--space-6);
+}
+
+.form-footer__link {
+  color: var(--color-morpho-400);
+  text-decoration: underline;
+  transition: var(--transition-colors);
+}
+
+.form-footer__link:hover {
+  color: var(--color-morpho-300);
+}
+
+
+/* ============================================================
+   HEADINGS
+   @purpose  Semantic heading styles using display font
+   ============================================================ */
+
+.heading {
+  font-family: var(--font-display);
+  font-weight: 700;
+}
+
+.heading--xl {
+  font-size: 1.875rem;
+}
+
+.heading--lg {
+  font-size: 1.5rem;
+}
+
+.heading--center {
+  text-align: center;
+  margin-bottom: var(--space-8);
+}
+
+
+/* ============================================================
+   HOME PAGE
+   @purpose  Landing page with branding + CTA buttons
+   @ref      graph:0x3c (Home Page)
+   @breakpoints mobile: gap and padding reduce
+   ============================================================ */
+
+/*
+ * @component  landing
+ * @purpose    Full-page centered landing layout
+ */
+.landing {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  gap: var(--space-12);
+  padding: 0 var(--space-6);
+}
+
+.landing__brand {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-6);
+  width: 80%;
+}
+
+.landing__logo {
+  width: 100%;
+}
+
+.landing__symbol {
+  height: 5rem;
+  width: auto;
+}
+
+.landing__wordmark {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-family: var(--font-display);
+}
+
+.landing__title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+}
+
+.landing__subtitle {
+  font-size: 0.875rem;
+  font-weight: 300;
+  letter-spacing: 0.05em;
+}
+
+.landing__actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.landing__cta-group {
+  display: flex;
+  gap: var(--space-4);
+}
+
+/*
+ * @component  status-text
+ * @purpose    Health check / status feedback
+ * @variants   --success (forest green), --error (dart red)
+ */
+.status-text {
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+}
+
+.status-text--success {
+  color: var(--color-forest-300);
+}
+
+.status-text--error {
+  color: var(--color-dart-400);
+}
+
+
+/* ============================================================
+   LOADING STATE
+   @purpose  Centered loading indicator
+   ============================================================ */
+
+.loading-screen {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  color: var(--color-text-secondary);
+}
+
+
+/* ============================================================
+   DASHBOARD — Empty state
+   @purpose  Placeholder when no campaigns exist
+   @ref      graph:0x44 (Researcher Dashboard)
+   ============================================================ */
+
+/*
+ * @component  empty-state
+ * @purpose    Centered message + CTA when list is empty
+ */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  padding: 0 var(--space-6);
+}
+
+.empty-state__message {
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-6);
+}
+
+
+/* ============================================================
+   CAMPAIGN LIST
+   @purpose  Table/card view of campaigns on researcher dashboard
+   @ref      graph:0x4d (GAP: Campaign List UI)
+   @states   loading, empty, populated
+   @breakpoints mobile: cards stack vertically
+   ============================================================ */
+
+/*
+ * @component  campaign-list
+ * @purpose    Container for campaign cards
+ */
+.campaign-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-6);
+}
+
+.campaign-list__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-4);
+}
+
+/*
+ * @component  campaign-card
+ * @purpose    Single campaign summary in the list
+ * @states     hover: border brightens
+ */
+.campaign-card {
+  padding: var(--space-6);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  transition: var(--transition-colors);
+}
+
+.campaign-card:hover {
+  border-color: var(--color-border-strong);
+}
+
+.campaign-card__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-3);
+}
+
+.campaign-card__id {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+}
+
+.campaign-card__dates {
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+}
+
+.campaign-card__meta {
+  display: flex;
+  gap: var(--space-4);
+  margin-top: var(--space-3);
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+}
+
+
+/* ============================================================
+   STATUS BADGE
+   @purpose  Inline status indicator for campaign lifecycle
+   @ref      graph:0x26-0x2a (Lifecycle States)
+   @variants draft, published, active, completed, cancelled
+   ============================================================ */
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--space-1) var(--space-3);
+  font-size: 0.75rem;
+  font-weight: 500;
+  border-radius: 9999px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.status-badge--draft {
+  background-color: rgba(138, 131, 112, 0.2);
+  color: var(--color-cream-600);
+}
+
+.status-badge--published {
+  background-color: rgba(27, 126, 176, 0.2);
+  color: var(--color-morpho-400);
+}
+
+.status-badge--active {
+  background-color: rgba(74, 143, 99, 0.2);
+  color: var(--color-forest-300);
+}
+
+.status-badge--completed {
+  background-color: rgba(74, 143, 99, 0.15);
+  color: var(--color-forest-400);
+}
+
+.status-badge--cancelled {
+  background-color: rgba(232, 90, 72, 0.15);
+  color: var(--color-dart-400);
+}
+
+
+/* ============================================================
+   CAMPAIGN FORM / WIZARD
+   @purpose  Multi-step campaign creation
+   @ref      graph:0x47 (GAP: Campaign Creation UI)
+   @states   step-1 (basics), step-2 (parameters), step-3 (regions), step-4 (eligibility), step-5 (review)
+   @breakpoints mobile: full width, steps stack
+   ============================================================ */
+
+/*
+ * @component  wizard
+ * @purpose    Multi-step form container with step indicator
+ */
+.wizard {
+  max-width: 48rem;
+  margin: 0 auto;
+  padding: var(--space-6);
+}
+
+.wizard__steps {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-8);
+}
+
+.wizard__step {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+}
+
+.wizard__step--active {
+  color: var(--color-text-primary);
+}
+
+.wizard__step--completed {
+  color: var(--color-forest-300);
+}
+
+.wizard__step-divider {
+  width: 2rem;
+  height: 1px;
+  background-color: var(--color-border-strong);
+}
+
+.wizard__section {
+  margin-bottom: var(--space-8);
+}
+
+.wizard__section-title {
+  font-family: var(--font-display);
+  font-size: 1.125rem;
+  font-weight: 700;
+  margin-bottom: var(--space-4);
+}
+
+.wizard__actions {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin-top: var(--space-8);
+}
+
+/*
+ * @component  repeater
+ * @purpose    Add/remove rows for parameters, eligibility, etc.
+ */
+.repeater {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.repeater__item {
+  padding: var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.repeater__item-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-3);
+}
+
+.repeater__remove {
+  background: none;
+  border: none;
+  color: var(--color-dart-400);
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: var(--transition-colors);
+}
+
+.repeater__remove:hover {
+  color: var(--color-dart-300);
+}
+
+.repeater__add {
+  align-self: flex-start;
+}
+
+
+/* ============================================================
+   VERIFY EMAIL PAGE
+   @purpose  Email verification landing from link
+   @ref      graph:0x4c (GAP: Email Verification UI)
+   @states   verifying, success, error
+   ============================================================ */
+
+.verify-email {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 0 var(--space-6);
+  text-align: center;
+}
+
+.verify-email__icon {
+  font-size: 3rem;
+  margin-bottom: var(--space-4);
+}
+
+.verify-email__message {
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-6);
+}
+
+
+/* ============================================================
+   UTILITY — Spacing, text helpers
+   @purpose  Minimal utilities for one-off adjustments
+   ============================================================ */
+
+.mt-2 { margin-top: var(--space-2); }
+.mt-4 { margin-top: var(--space-4); }
+.text-secondary { color: var(--color-text-secondary); }
+.text-mono { font-family: var(--font-mono); }
+
+
+/* ============================================================
+   RESPONSIVE
+   @purpose  Mobile-first adjustments
+   @ref      graph:0x50 (GAP: Responsive CSS Implementation)
+   @breakpoints mobile: <640px
+   ============================================================ */
+
+@media (max-width: 640px) {
+  .form-row {
+    flex-direction: column;
+  }
+
+  .landing__brand {
+    width: 100%;
+  }
+
+  .landing__cta-group {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .landing__cta-group .btn {
+    width: 100%;
+  }
+
+  .app-header {
+    padding: var(--space-3) var(--space-4);
+  }
+
+  .app-header__nav {
+    display: none;
+  }
+
+  .wizard__steps {
+    overflow-x: auto;
+  }
+
+  .campaign-card {
+    padding: var(--space-4);
+  }
+}
+
+/* Mobile navigation drawer */
+.mobile-nav-toggle {
+  display: none;
+  background: none;
+  border: none;
+  color: var(--color-text-primary);
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: var(--space-2);
+}
+
+@media (max-width: 640px) {
+  .mobile-nav-toggle {
+    display: block;
+  }
+}
+
+.mobile-nav {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(6, 21, 13, 0.95);
+  z-index: 40;
+  padding: var(--space-6);
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.mobile-nav--open {
+  display: flex;
+}
+
+.mobile-nav__close {
+  align-self: flex-end;
+  background: none;
+  border: none;
+  color: var(--color-text-primary);
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: var(--space-2);
+}
+
+.mobile-nav__link {
+  font-size: 1.25rem;
+  color: var(--color-text-primary);
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid var(--color-border);
 }

@@ -3,8 +3,9 @@ package config
 func defaults() Config {
 	return Config{
 		Server: ServerConfig{
-			Host: "0.0.0.0",
-			Port: 8080,
+			Host:          "0.0.0.0",
+			Port:          8080,
+			PublicBaseURL: "http://caddy:9999",
 		},
 		Database: DatabaseConfig{
 			Postgres: PostgresConfig{

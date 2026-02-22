@@ -10,5 +10,6 @@ type Repository interface {
 	AssignRole(ctx context.Context, input AssignRoleInput) (*UserGrant, error)
 	InviteUser(ctx context.Context, input InviteUserInput) (*InviteResult, error)
 	CreateUser(ctx context.Context, input CreateHumanUserInput) (*CreatedUser, error)
+	VerifyEmail(ctx context.Context, input VerifyEmailInput) error
 	Shutdown()
 }

@@ -7,6 +7,7 @@ public_methods := {
 	"/rootstock.v1.HealthService/Check",
 	"/rootstock.v1.UserService/Login",
 	"/rootstock.v1.UserService/RegisterResearcher",
+	"/rootstock.v1.UserService/VerifyEmail",
 }
 
 # Main decision object — default deny

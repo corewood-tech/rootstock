@@ -19,6 +19,7 @@ services:
   app-postgres:
     restart: unless-stopped
     image: timescale/timescaledb:latest-pg17
+    command: ["postgres", "-c", "shared_preload_libraries=timescaledb"]
     environment:
       PGUSER: rootstock
       POSTGRES_USER: rootstock

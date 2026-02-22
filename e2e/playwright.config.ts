@@ -1,4 +1,6 @@
-import { defineConfig } from '@playwright/test';
+import { defineConfig, devices } from '@playwright/test';
+
+const STORAGE_STATE = './tests/.auth/user.json';
 
 export default defineConfig({
   testDir: './tests',
@@ -13,7 +15,30 @@ export default defineConfig({
   },
   projects: [
     {
+      name: 'setup',
+      testMatch: /.*\.setup\.ts/,
+    },
+    {
       name: 'chromium',
+      testIgnore: [/.*\.noauth\.spec\.ts/, /.*\.mobile\.spec\.ts/],
+      use: {
+        browserName: 'chromium',
+        storageState: STORAGE_STATE,
+      },
+      dependencies: ['setup'],
+    },
+    {
+      name: 'mobile-chrome',
+      testIgnore: /.*\.noauth\.spec\.ts/,
+      use: {
+        ...devices['Pixel 5'],
+        storageState: STORAGE_STATE,
+      },
+      dependencies: ['setup'],
+    },
+    {
+      name: 'no-auth',
+      testMatch: /.*\.noauth\.spec\.ts/,
       use: { browserName: 'chromium' },
     },
   ],

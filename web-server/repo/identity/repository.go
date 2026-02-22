@@ -10,6 +10,7 @@ import (
 	orgv2 "github.com/zitadel/zitadel-go/v3/pkg/client/zitadel/org/v2"
 	userv2 "github.com/zitadel/zitadel-go/v3/pkg/client/zitadel/user/v2"
 	"github.com/zitadel/zitadel-go/v3/pkg/zitadel"
+	"google.golang.org/grpc"
 
 	"rootstock/web-server/config"
 )
@@ -25,7 +26,10 @@ func NewRepository(ctx context.Context, cfg config.ZitadelConfig) (Repository, e
 		zitadel.WithInsecure(fmt.Sprintf("%d", cfg.Port)),
 	)
 
-	c, err := client.New(ctx, z, client.WithAuth(client.PAT(cfg.ServiceUserPAT)))
+	c, err := client.New(ctx, z,
+		client.WithAuth(client.PAT(cfg.ServiceUserPAT)),
+		client.WithGRPCDialOptions(grpc.WithAuthority(cfg.ExternalDomain)),
+	)
 	if err != nil {
 		return nil, fmt.Errorf("create zitadel client: %w", err)
 	}
@@ -134,14 +138,14 @@ func (r *zitadelRepository) InviteUser(ctx context.Context, input InviteUserInpu
 }
 
 func (r *zitadelRepository) CreateUser(ctx context.Context, input CreateHumanUserInput) (*CreatedUser, error) {
+	// Step 1: Create user without triggering email verification.
 	resp, err := r.client.UserServiceV2().AddHumanUser(ctx, &userv2.AddHumanUserRequest{
 		Profile: &userv2.SetHumanProfile{
 			GivenName:  input.GivenName,
 			FamilyName: input.FamilyName,
 		},
 		Email: &userv2.SetHumanEmail{
-			Email:        input.Email,
-			Verification: &userv2.SetHumanEmail_IsVerified{IsVerified: true},
+			Email: input.Email,
 		},
 		PasswordType: &userv2.AddHumanUserRequest_Password{
 			Password: &userv2.Password{
@@ -153,9 +157,35 @@ func (r *zitadelRepository) CreateUser(ctx context.Context, input CreateHumanUse
 	if err != nil {
 		return nil, fmt.Errorf("create user: %w", err)
 	}
+
+	userID := resp.GetUserId()
+
+	// Step 2: Request verification code via ReturnCode (app sends the email).
+	codeResp, err := r.client.UserServiceV2().ResendEmailCode(ctx, &userv2.ResendEmailCodeRequest{
+		UserId: userID,
+		Verification: &userv2.ResendEmailCodeRequest_ReturnCode{
+			ReturnCode: &userv2.ReturnEmailVerificationCode{},
+		},
+	})
+	if err != nil {
+		return nil, fmt.Errorf("request email verification code: %w", err)
+	}
+
 	return &CreatedUser{
-		UserID: resp.GetUserId(),
+		UserID:    userID,
+		EmailCode: codeResp.GetVerificationCode(),
 	}, nil
+}
+
+func (r *zitadelRepository) VerifyEmail(ctx context.Context, input VerifyEmailInput) error {
+	_, err := r.client.UserServiceV2().VerifyEmail(ctx, &userv2.VerifyEmailRequest{
+		UserId:           input.UserID,
+		VerificationCode: input.VerificationCode,
+	})
+	if err != nil {
+		return fmt.Errorf("verify email: %w", err)
+	}
+	return nil
 }
 
 func (r *zitadelRepository) Shutdown() {

@@ -47,12 +47,12 @@
 	</style>`}
 </svelte:head>
 
-<div class="min-h-screen flex flex-col">
-	<a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:px-4 focus:py-2 bg-morpho-500 text-cream-100 rounded">
+<div class="page-shell">
+	<a href="#main-content" class="sr-only">
 		{$t('nav.skip_to_content')}
 	</a>
 
-	<main id="main-content" class="flex-grow">
+	<main id="main-content" class="page-content">
 		{@render children()}
 	</main>
 </div>

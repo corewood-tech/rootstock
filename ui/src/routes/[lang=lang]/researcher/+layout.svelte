@@ -11,6 +11,7 @@
 	const lang = $derived($page.params.lang);
 
 	let guardChecked = $state(false);
+	let mobileNavOpen = $state(false);
 
 	$effect(() => {
 		requireAuth(lang).then((ok) => {
@@ -25,35 +26,58 @@
 </script>
 
 {#if $authLoading || !guardChecked}
-	<div class="flex items-center justify-center min-h-screen">
-		<p class="text-cream-600">{$t('common.loading')}</p>
+	<div class="loading-screen">
+		<p>{$t('common.loading')}</p>
 	</div>
 {:else}
-	<div class="min-h-screen flex flex-col">
-		<header class="flex items-center justify-between px-6 py-4 border-b border-border">
-			<div class="flex items-center gap-6">
-				<a href="{base}/{lang}/researcher/" class="flex items-center gap-2">
-					<img src="{base}/corewood_symbol_transparent_ON-DARK.png" alt="Rootstock" class="h-8 w-auto" />
-					<span class="text-sm font-bold tracking-wider" style="font-family: var(--font-display);">ROOTSTOCK</span>
+	<div class="page-shell">
+		<header class="app-header">
+			<div class="app-header__left">
+				<a href="{base}/{lang}/researcher/" class="app-header__brand">
+					<img src="{base}/corewood_symbol_transparent_ON-DARK.png" alt="Rootstock" class="app-header__brand-logo" />
+					<span class="app-header__brand-name">ROOTSTOCK</span>
 				</a>
-				<nav class="flex items-center gap-4">
-					<span class="text-sm text-cream-700 cursor-not-allowed">{$t('nav.campaigns')}</span>
+				<nav class="app-header__nav">
+					<a href="{base}/{lang}/researcher/" class="app-header__nav-item app-header__nav-item--active">{$t('nav.campaigns')}</a>
 				</nav>
 			</div>
-			<div class="flex items-center gap-4">
+
+			<button
+				class="mobile-nav-toggle"
+				onclick={() => mobileNavOpen = true}
+				aria-label="Open navigation"
+			>
+				&#9776;
+			</button>
+
+			<div class="app-header__right">
 				{#if $currentUser}
-					<span class="text-sm text-cream-600">{$currentUser.userType}</span>
+					<span class="app-header__user-type">{$currentUser.userType}</span>
 				{/if}
-				<button
-					onclick={handleLogout}
-					class="text-sm text-cream-600 hover:text-cream-100 transition-colors"
-				>
+				<button onclick={handleLogout} class="btn btn--ghost">
 					{$t('nav.logout')}
 				</button>
 			</div>
 		</header>
 
-		<div class="flex-grow">
+		{#if mobileNavOpen}
+			<div class="mobile-nav mobile-nav--open">
+				<button class="mobile-nav__close" onclick={() => mobileNavOpen = false} aria-label="Close navigation">
+					&#10005;
+				</button>
+				<a href="{base}/{lang}/researcher/" class="mobile-nav__link" onclick={() => mobileNavOpen = false}>
+					{$t('nav.campaigns')}
+				</a>
+				{#if $currentUser}
+					<span class="mobile-nav__link text-secondary">{$currentUser.userType}</span>
+				{/if}
+				<button class="mobile-nav__link btn--ghost" onclick={() => { mobileNavOpen = false; handleLogout(); }}>
+					{$t('nav.logout')}
+				</button>
+			</div>
+		{/if}
+
+		<div class="page-content">
 			{@render children()}
 		</div>
 	</div>

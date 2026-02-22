@@ -29,5 +29,6 @@ type InviteResult struct {
 
 // CreatedUser is the result of creating a user with a password.
 type CreatedUser struct {
-	UserID string
+	UserID    string
+	EmailCode string
 }

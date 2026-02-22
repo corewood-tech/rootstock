@@ -20,7 +20,6 @@ type LoginResult struct {
 
 // RegisterResearcherResult is the result of researcher registration.
 type RegisterResearcherResult struct {
-	SessionID    string
-	SessionToken string
-	User         User
+	UserID                 string
+	EmailVerificationSent  bool
 }

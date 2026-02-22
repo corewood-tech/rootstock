@@ -3,7 +3,6 @@ package user
 import (
 	"context"
 	"fmt"
-	"log/slog"
 
 	notificationops "rootstock/web-server/ops/notification"
 	orgops "rootstock/web-server/ops/org"
@@ -11,21 +10,29 @@ import (
 )
 
 // RegisterResearcherFlow orchestrates researcher self-registration.
-// Creates a Zitadel user (with password), an app record, and a session.
+// Creates a Zitadel user (with password) and an app record.
+// Uses ReturnCode to get the verification code, then sends the
+// verification email via notification ops (app controls delivery).
 type RegisterResearcherFlow struct {
-	orgOps          *orgops.Ops
-	userOps         *userops.Ops
-	notificationOps *notificationops.Ops
+	orgOps            *orgops.Ops
+	userOps           *userops.Ops
+	notificationOps   *notificationops.Ops
+	verifyURLBase     string
 }
 
 // NewRegisterResearcherFlow creates the flow with its required ops.
-func NewRegisterResearcherFlow(orgOps *orgops.Ops, userOps *userops.Ops, notificationOps *notificationops.Ops) *RegisterResearcherFlow {
-	return &RegisterResearcherFlow{orgOps: orgOps, userOps: userOps, notificationOps: notificationOps}
+func NewRegisterResearcherFlow(orgOps *orgops.Ops, userOps *userops.Ops, notificationOps *notificationops.Ops, verifyURLBase string) *RegisterResearcherFlow {
+	return &RegisterResearcherFlow{
+		orgOps:          orgOps,
+		userOps:         userOps,
+		notificationOps: notificationOps,
+		verifyURLBase:   verifyURLBase,
+	}
 }
 
-// Run creates the Zitadel user, the app record, and a session.
+// Run creates the Zitadel user, the app record, and sends the verification email.
 func (f *RegisterResearcherFlow) Run(ctx context.Context, input RegisterResearcherInput) (*RegisterResearcherResult, error) {
-	// 1. Create user in Zitadel with password.
+	// 1. Create user in Zitadel with password. ReturnCode gives us the verification code.
 	idpUser, err := f.orgOps.CreateIdpUser(ctx, orgops.CreateIdpUserInput{
 		Email:      input.Email,
 		Password:   input.Password,
@@ -37,7 +44,7 @@ func (f *RegisterResearcherFlow) Run(ctx context.Context, input RegisterResearch
 	}
 
 	// 2. Create app record.
-	appUser, err := f.userOps.CreateUser(ctx, userops.CreateUserInput{
+	_, err = f.userOps.CreateUser(ctx, userops.CreateUserInput{
 		IdpID:    idpUser.UserID,
 		UserType: "researcher",
 	})
@@ -45,29 +52,30 @@ func (f *RegisterResearcherFlow) Run(ctx context.Context, input RegisterResearch
 		return nil, err
 	}
 
-	// 3. Create session (log them in immediately).
-	loginResult, err := f.userOps.Login(ctx, userops.LoginInput{
-		Email:    input.Email,
-		Password: input.Password,
+	// 3. Send verification email via notification ops.
+	verifyURL := fmt.Sprintf("%s/app/en/verify-email?userId=%s&code=%s",
+		f.verifyURLBase, idpUser.UserID, idpUser.EmailCode)
+
+	body := fmt.Sprintf(
+		"Welcome to Rootstock!\n\nPlease verify your email by clicking the link below:\n\n%s\n\nIf you did not create this account, you can ignore this email.",
+		verifyURL,
+	)
+
+	err = f.notificationOps.NotifyScitizens(ctx, notificationops.NotifyInput{
+		Recipients: []notificationops.Recipient{
+			{
+				ID:      input.Email,
+				Subject: "Verify your Rootstock account",
+				Body:    body,
+			},
+		},
 	})
 	if err != nil {
-		return nil, err
-	}
-
-	// 4. Send welcome email (best-effort).
-	if err := f.notificationOps.NotifyScitizens(ctx, notificationops.NotifyInput{
-		Recipients: []notificationops.Recipient{{
-			ID:      input.Email,
-			Subject: "Welcome to Rootstock",
-			Body:    fmt.Sprintf("Hello %s,\n\nYour researcher account has been created.\n\nWelcome to Rootstock by Corewood.", input.GivenName),
-		}},
-	}); err != nil {
-		slog.WarnContext(ctx, "failed to send welcome email", "email", input.Email, "error", err)
+		return nil, fmt.Errorf("send verification email: %w", err)
 	}
 
 	return &RegisterResearcherResult{
-		SessionID:    loginResult.SessionID,
-		SessionToken: loginResult.SessionToken,
-		User:         *fromOpsUser(appUser),
+		UserID:                idpUser.UserID,
+		EmailVerificationSent: true,
 	}, nil
 }

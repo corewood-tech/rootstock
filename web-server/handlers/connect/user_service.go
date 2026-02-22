@@ -19,6 +19,7 @@ type UserServiceHandler struct {
 	login              *userflows.LoginFlow
 	logout             *userflows.LogoutFlow
 	registerResearcher *userflows.RegisterResearcherFlow
+	verifyEmail        *userflows.VerifyEmailFlow
 }
 
 // NewUserServiceHandler creates the handler with all required flows.
@@ -28,6 +29,7 @@ func NewUserServiceHandler(
 	login *userflows.LoginFlow,
 	logout *userflows.LogoutFlow,
 	registerResearcher *userflows.RegisterResearcherFlow,
+	verifyEmail *userflows.VerifyEmailFlow,
 ) *UserServiceHandler {
 	return &UserServiceHandler{
 		registerUser:       registerUser,
@@ -35,6 +37,7 @@ func NewUserServiceHandler(
 		login:              login,
 		logout:             logout,
 		registerResearcher: registerResearcher,
+		verifyEmail:        verifyEmail,
 	}
 }
 
@@ -140,9 +143,25 @@ func (h *UserServiceHandler) RegisterResearcher(
 	}
 
 	return connect.NewResponse(&rootstockv1.RegisterResearcherResponse{
-		SessionId:    result.SessionID,
-		SessionToken: result.SessionToken,
-		User:         flowUserToProto(&result.User),
+		UserId:                result.UserID,
+		EmailVerificationSent: result.EmailVerificationSent,
+	}), nil
+}
+
+func (h *UserServiceHandler) VerifyEmail(
+	ctx context.Context,
+	req *connect.Request[rootstockv1.VerifyEmailRequest],
+) (*connect.Response[rootstockv1.VerifyEmailResponse], error) {
+	err := h.verifyEmail.Run(ctx, userflows.VerifyEmailInput{
+		UserID:           req.Msg.GetUserId(),
+		VerificationCode: req.Msg.GetVerificationCode(),
+	})
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("email verification failed: %w", err))
+	}
+
+	return connect.NewResponse(&rootstockv1.VerifyEmailResponse{
+		Verified: true,
 	}), nil
 }
 

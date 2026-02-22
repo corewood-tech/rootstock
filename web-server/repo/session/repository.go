@@ -8,6 +8,7 @@ import (
 	"github.com/zitadel/zitadel-go/v3/pkg/client"
 	sessionv2 "github.com/zitadel/zitadel-go/v3/pkg/client/zitadel/session/v2"
 	"github.com/zitadel/zitadel-go/v3/pkg/zitadel"
+	"google.golang.org/grpc"
 	"google.golang.org/protobuf/types/known/durationpb"
 
 	"rootstock/web-server/config"
@@ -26,7 +27,10 @@ func NewRepository(ctx context.Context, cfg config.ZitadelConfig) (Repository, e
 		zitadel.WithInsecure(fmt.Sprintf("%d", cfg.Port)),
 	)
 
-	c, err := client.New(ctx, z, client.WithAuth(client.PAT(cfg.ServiceUserPAT)))
+	c, err := client.New(ctx, z,
+		client.WithAuth(client.PAT(cfg.ServiceUserPAT)),
+		client.WithGRPCDialOptions(grpc.WithAuthority(cfg.ExternalDomain)),
+	)
 	if err != nil {
 		return nil, fmt.Errorf("create zitadel client: %w", err)
 	}

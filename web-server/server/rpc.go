@@ -118,7 +118,8 @@ func NewRPCServer(ctx context.Context, cfg *config.Config, pool *pgxpool.Pool, i
 	getUserFlow := userflows.NewGetUserFlow(uOps)
 	loginFlow := userflows.NewLoginFlow(uOps)
 	logoutFlow := userflows.NewLogoutFlow(uOps)
-	registerResearcherFlow := userflows.NewRegisterResearcherFlow(oOps, uOps, nOps)
+	registerResearcherFlow := userflows.NewRegisterResearcherFlow(oOps, uOps, nOps, cfg.Server.PublicBaseURL)
+	verifyEmailFlow := userflows.NewVerifyEmailFlow(oOps)
 
 	// Org flows
 	createOrgFlow := orgflows.NewCreateOrgFlow(oOps)
@@ -148,7 +149,7 @@ func NewRPCServer(ctx context.Context, cfg *config.Config, pool *pgxpool.Pool, i
 	deviceHandler := connecthandlers.NewDeviceServiceHandler(getDeviceFlow, revokeDeviceFlow, reinstateDeviceFlow, enrollInCampaignFlow)
 	devicePath, deviceH := rootstockv1connect.NewDeviceServiceHandler(deviceHandler, interceptors)
 
-	userHandler := connecthandlers.NewUserServiceHandler(registerUserFlow, getUserFlow, loginFlow, logoutFlow, registerResearcherFlow)
+	userHandler := connecthandlers.NewUserServiceHandler(registerUserFlow, getUserFlow, loginFlow, logoutFlow, registerResearcherFlow, verifyEmailFlow)
 	userPath, userH := rootstockv1connect.NewUserServiceHandler(userHandler, interceptors)
 
 	adminHandler := connecthandlers.NewAdminServiceHandler(securityResponseFlow)

@@ -6,7 +6,7 @@ services:
     ports:
       - "8883:8883"
     environment:
-      - ROOTSTOCK_IDENTITY_ZITADEL_SERVICE_USER_PAT
+      - ROOTSTOCK_IDENTITY_ZITADEL_PAT
     volumes:
       - ../web-server:/src
       - ../proto:/proto

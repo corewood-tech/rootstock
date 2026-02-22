@@ -60,24 +60,35 @@ export async function logout(): Promise<void> {
 	}
 }
 
+/** Register a researcher. Returns userId — user must verify email before login. */
 export async function registerResearcher(
 	email: string,
 	password: string,
 	givenName: string,
 	familyName: string,
-): Promise<void> {
+): Promise<{ userId: string; emailVerificationSent: boolean }> {
 	const resp = await userService.registerResearcher({
 		email,
 		password,
 		givenName,
 		familyName,
 	});
-	saveTokens(resp.sessionId, resp.sessionToken);
-	authState.set({
-		tokens: { sessionId: resp.sessionId, sessionToken: resp.sessionToken },
-		user: resp.user ?? null,
-		loading: false,
+	return {
+		userId: resp.userId,
+		emailVerificationSent: resp.emailVerificationSent,
+	};
+}
+
+/** Verify email using code from verification link. */
+export async function verifyEmail(
+	userId: string,
+	verificationCode: string,
+): Promise<boolean> {
+	const resp = await userService.verifyEmail({
+		userId,
+		verificationCode,
 	});
+	return resp.verified;
 }
 
 /** Validate existing session from localStorage. Call on app mount. */

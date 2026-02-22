@@ -98,6 +98,8 @@ const (
 	// UserServiceRegisterResearcherProcedure is the fully-qualified name of the UserService's
 	// RegisterResearcher RPC.
 	UserServiceRegisterResearcherProcedure = "/rootstock.v1.UserService/RegisterResearcher"
+	// UserServiceVerifyEmailProcedure is the fully-qualified name of the UserService's VerifyEmail RPC.
+	UserServiceVerifyEmailProcedure = "/rootstock.v1.UserService/VerifyEmail"
 	// AdminServiceSuspendByClassProcedure is the fully-qualified name of the AdminService's
 	// SuspendByClass RPC.
 	AdminServiceSuspendByClassProcedure = "/rootstock.v1.AdminService/SuspendByClass"
@@ -746,6 +748,7 @@ type UserServiceClient interface {
 	Login(context.Context, *connect.Request[v1.LoginRequest]) (*connect.Response[v1.LoginResponse], error)
 	Logout(context.Context, *connect.Request[v1.LogoutRequest]) (*connect.Response[v1.LogoutResponse], error)
 	RegisterResearcher(context.Context, *connect.Request[v1.RegisterResearcherRequest]) (*connect.Response[v1.RegisterResearcherResponse], error)
+	VerifyEmail(context.Context, *connect.Request[v1.VerifyEmailRequest]) (*connect.Response[v1.VerifyEmailResponse], error)
 }
 
 // NewUserServiceClient constructs a client for the rootstock.v1.UserService service. By default, it
@@ -789,6 +792,12 @@ func NewUserServiceClient(httpClient connect.HTTPClient, baseURL string, opts ..
 			connect.WithSchema(userServiceMethods.ByName("RegisterResearcher")),
 			connect.WithClientOptions(opts...),
 		),
+		verifyEmail: connect.NewClient[v1.VerifyEmailRequest, v1.VerifyEmailResponse](
+			httpClient,
+			baseURL+UserServiceVerifyEmailProcedure,
+			connect.WithSchema(userServiceMethods.ByName("VerifyEmail")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
@@ -799,6 +808,7 @@ type userServiceClient struct {
 	login              *connect.Client[v1.LoginRequest, v1.LoginResponse]
 	logout             *connect.Client[v1.LogoutRequest, v1.LogoutResponse]
 	registerResearcher *connect.Client[v1.RegisterResearcherRequest, v1.RegisterResearcherResponse]
+	verifyEmail        *connect.Client[v1.VerifyEmailRequest, v1.VerifyEmailResponse]
 }
 
 // RegisterUser calls rootstock.v1.UserService.RegisterUser.
@@ -826,6 +836,11 @@ func (c *userServiceClient) RegisterResearcher(ctx context.Context, req *connect
 	return c.registerResearcher.CallUnary(ctx, req)
 }
 
+// VerifyEmail calls rootstock.v1.UserService.VerifyEmail.
+func (c *userServiceClient) VerifyEmail(ctx context.Context, req *connect.Request[v1.VerifyEmailRequest]) (*connect.Response[v1.VerifyEmailResponse], error) {
+	return c.verifyEmail.CallUnary(ctx, req)
+}
+
 // UserServiceHandler is an implementation of the rootstock.v1.UserService service.
 type UserServiceHandler interface {
 	RegisterUser(context.Context, *connect.Request[v1.RegisterUserRequest]) (*connect.Response[v1.RegisterUserResponse], error)
@@ -833,6 +848,7 @@ type UserServiceHandler interface {
 	Login(context.Context, *connect.Request[v1.LoginRequest]) (*connect.Response[v1.LoginResponse], error)
 	Logout(context.Context, *connect.Request[v1.LogoutRequest]) (*connect.Response[v1.LogoutResponse], error)
 	RegisterResearcher(context.Context, *connect.Request[v1.RegisterResearcherRequest]) (*connect.Response[v1.RegisterResearcherResponse], error)
+	VerifyEmail(context.Context, *connect.Request[v1.VerifyEmailRequest]) (*connect.Response[v1.VerifyEmailResponse], error)
 }
 
 // NewUserServiceHandler builds an HTTP handler from the service implementation. It returns the path
@@ -872,6 +888,12 @@ func NewUserServiceHandler(svc UserServiceHandler, opts ...connect.HandlerOption
 		connect.WithSchema(userServiceMethods.ByName("RegisterResearcher")),
 		connect.WithHandlerOptions(opts...),
 	)
+	userServiceVerifyEmailHandler := connect.NewUnaryHandler(
+		UserServiceVerifyEmailProcedure,
+		svc.VerifyEmail,
+		connect.WithSchema(userServiceMethods.ByName("VerifyEmail")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/rootstock.v1.UserService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case UserServiceRegisterUserProcedure:
@@ -884,6 +906,8 @@ func NewUserServiceHandler(svc UserServiceHandler, opts ...connect.HandlerOption
 			userServiceLogoutHandler.ServeHTTP(w, r)
 		case UserServiceRegisterResearcherProcedure:
 			userServiceRegisterResearcherHandler.ServeHTTP(w, r)
+		case UserServiceVerifyEmailProcedure:
+			userServiceVerifyEmailHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -911,6 +935,10 @@ func (UnimplementedUserServiceHandler) Logout(context.Context, *connect.Request[
 
 func (UnimplementedUserServiceHandler) RegisterResearcher(context.Context, *connect.Request[v1.RegisterResearcherRequest]) (*connect.Response[v1.RegisterResearcherResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("rootstock.v1.UserService.RegisterResearcher is not implemented"))
+}
+
+func (UnimplementedUserServiceHandler) VerifyEmail(context.Context, *connect.Request[v1.VerifyEmailRequest]) (*connect.Response[v1.VerifyEmailResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("rootstock.v1.UserService.VerifyEmail is not implemented"))
 }
 
 // AdminServiceClient is a client for the rootstock.v1.AdminService service.

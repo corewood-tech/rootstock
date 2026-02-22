@@ -9,8 +9,7 @@ test('health check produces ok status and increments span metrics', async ({ pag
     params: { query: METRIC_QUERY },
     timeout: 5_000,
   });
-  console.log(`Prometheus baseline response: ${baselineResponse.status()} ${baselineResponse.url()}`);
-  expect(baselineResponse.ok(), `Prometheus returned ${baselineResponse.status()}: ${await baselineResponse.text()}`).toBeTruthy();
+  expect(baselineResponse.ok(), `Prometheus returned ${baselineResponse.status()}`).toBeTruthy();
 
   const baselineData = await baselineResponse.json();
   const baselineResults = baselineData.data?.result ?? [];
@@ -18,20 +17,13 @@ test('health check produces ok status and increments span metrics', async ({ pag
     (sum: number, r: { value: [number, string] }) => sum + parseFloat(r.value[1]),
     0,
   );
-  console.log(`Baseline metric total: ${baseline}`);
 
-  // 2. Navigate to the app and click the Health Check button
-  page.on('pageerror', (err) => console.log(`PAGE ERROR: ${err.message}`));
-  page.on('console', (msg) => console.log(`PAGE CONSOLE [${msg.type()}]: ${msg.text()}`));
-
-  const navResponse = await page.goto('/app/en/', { timeout: 10_000, waitUntil: 'networkidle' });
-  console.log(`Navigation: ${navResponse?.status()} ${navResponse?.url()}`);
-
-  await page.getByRole('button', { name: 'Health Check' }).click({ timeout: 10_000 });
-
-  // 3. Assert UI shows "ok" in the status element
-  await expect(page.getByRole('status')).toHaveText('ok', { timeout: 10_000 });
-  console.log('Health check returned ok');
+  // 2. Navigate to the app and click the Health Check button multiple times
+  await page.goto('/app/en/', { timeout: 10_000, waitUntil: 'networkidle' });
+  for (let i = 0; i < 3; i++) {
+    await page.getByRole('button', { name: 'Health Check' }).click({ timeout: 10_000 });
+    await expect(page.getByRole('status')).toHaveText('ok', { timeout: 10_000 });
+  }
 
   // 4. Poll Prometheus until span_metrics_calls_total increments above baseline
   await expect(async () => {
@@ -47,7 +39,6 @@ test('health check produces ok status and increments span metrics', async ({ pag
       (sum: number, r: { value: [number, string] }) => sum + parseFloat(r.value[1]),
       0,
     );
-    console.log(`Polling metric total: ${current} (baseline: ${baseline})`);
 
     expect(current).toBeGreaterThan(baseline);
   }).toPass({

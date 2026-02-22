@@ -40,3 +40,9 @@ type CreateIdpUserInput struct {
 	GivenName  string
 	FamilyName string
 }
+
+// VerifyEmailInput is what callers send to VerifyEmail.
+type VerifyEmailInput struct {
+	UserID           string
+	VerificationCode string
+}

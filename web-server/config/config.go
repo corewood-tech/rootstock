@@ -27,8 +27,9 @@ type Config struct {
 }
 
 type ServerConfig struct {
-	Host string `koanf:"host"`
-	Port int    `koanf:"port"`
+	Host          string `koanf:"host"`
+	Port          int    `koanf:"port"`
+	PublicBaseURL string `koanf:"publicbaseurl"`
 }
 
 type DatabaseConfig struct {
@@ -57,8 +58,8 @@ type ZitadelConfig struct {
 	Host           string `koanf:"host"`
 	Port           int    `koanf:"port"`
 	Issuer         string `koanf:"issuer"`
-	ExternalDomain string `koanf:"external_domain"`
-	ServiceUserPAT string `koanf:"service_user_pat"`
+	ExternalDomain string `koanf:"externaldomain"`
+	ServiceUserPAT string `koanf:"pat"`
 }
 
 type AuthorizationConfig struct {

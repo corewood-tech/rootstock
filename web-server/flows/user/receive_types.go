@@ -25,3 +25,9 @@ type RegisterResearcherInput struct {
 	GivenName  string
 	FamilyName string
 }
+
+// VerifyEmailInput is what callers send to VerifyEmailFlow.
+type VerifyEmailInput struct {
+	UserID           string
+	VerificationCode string
+}
