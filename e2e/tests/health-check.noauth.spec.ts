@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-const PROMETHEUS_BASE = 'http://prometheus:9090/prometheus';
+const PROMETHEUS_BASE = 'http://caddy:9999/prometheus';
 const METRIC_QUERY = 'span_metrics_calls_total{service_name="rootstock"}';
 
 test('health check produces ok status and increments span metrics', async ({ page, request }) => {
@@ -20,12 +20,13 @@ test('health check produces ok status and increments span metrics', async ({ pag
 
   // 2. Navigate to the app and click the Health Check button multiple times
   await page.goto('/app/en/', { timeout: 10_000, waitUntil: 'networkidle' });
-  for (let i = 0; i < 3; i++) {
+  for (let i = 0; i < 5; i++) {
     await page.getByRole('button', { name: 'Health Check' }).click({ timeout: 10_000 });
     await expect(page.getByRole('status')).toHaveText('ok', { timeout: 10_000 });
   }
 
-  // 4. Poll Prometheus until span_metrics_calls_total increments above baseline
+  // 3. Poll Prometheus until span_metrics_calls_total increments above baseline
+  //    Scrape interval + span processor flush can take up to 60s
   await expect(async () => {
     const response = await request.get(`${PROMETHEUS_BASE}/api/v1/query`, {
       params: { query: METRIC_QUERY },
@@ -42,7 +43,7 @@ test('health check produces ok status and increments span metrics', async ({ pag
 
     expect(current).toBeGreaterThan(baseline);
   }).toPass({
-    intervals: [2_000],
-    timeout: 30_000,
+    intervals: [3_000],
+    timeout: 55_000,
   });
 });

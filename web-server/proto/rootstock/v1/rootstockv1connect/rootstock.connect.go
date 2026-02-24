@@ -33,6 +33,10 @@ const (
 	DeviceServiceName = "rootstock.v1.DeviceService"
 	// UserServiceName is the fully-qualified name of the UserService service.
 	UserServiceName = "rootstock.v1.UserService"
+	// ScitizenServiceName is the fully-qualified name of the ScitizenService service.
+	ScitizenServiceName = "rootstock.v1.ScitizenService"
+	// NotificationServiceName is the fully-qualified name of the NotificationService service.
+	NotificationServiceName = "rootstock.v1.NotificationService"
 	// AdminServiceName is the fully-qualified name of the AdminService service.
 	AdminServiceName = "rootstock.v1.AdminService"
 )
@@ -100,6 +104,54 @@ const (
 	UserServiceRegisterResearcherProcedure = "/rootstock.v1.UserService/RegisterResearcher"
 	// UserServiceVerifyEmailProcedure is the fully-qualified name of the UserService's VerifyEmail RPC.
 	UserServiceVerifyEmailProcedure = "/rootstock.v1.UserService/VerifyEmail"
+	// ScitizenServiceRegisterScitizenProcedure is the fully-qualified name of the ScitizenService's
+	// RegisterScitizen RPC.
+	ScitizenServiceRegisterScitizenProcedure = "/rootstock.v1.ScitizenService/RegisterScitizen"
+	// ScitizenServiceGetDashboardProcedure is the fully-qualified name of the ScitizenService's
+	// GetDashboard RPC.
+	ScitizenServiceGetDashboardProcedure = "/rootstock.v1.ScitizenService/GetDashboard"
+	// ScitizenServiceBrowsePublishedCampaignsProcedure is the fully-qualified name of the
+	// ScitizenService's BrowsePublishedCampaigns RPC.
+	ScitizenServiceBrowsePublishedCampaignsProcedure = "/rootstock.v1.ScitizenService/BrowsePublishedCampaigns"
+	// ScitizenServiceGetCampaignDetailProcedure is the fully-qualified name of the ScitizenService's
+	// GetCampaignDetail RPC.
+	ScitizenServiceGetCampaignDetailProcedure = "/rootstock.v1.ScitizenService/GetCampaignDetail"
+	// ScitizenServiceSearchCampaignsProcedure is the fully-qualified name of the ScitizenService's
+	// SearchCampaigns RPC.
+	ScitizenServiceSearchCampaignsProcedure = "/rootstock.v1.ScitizenService/SearchCampaigns"
+	// ScitizenServiceEnrollDeviceProcedure is the fully-qualified name of the ScitizenService's
+	// EnrollDevice RPC.
+	ScitizenServiceEnrollDeviceProcedure = "/rootstock.v1.ScitizenService/EnrollDevice"
+	// ScitizenServiceWithdrawEnrollmentProcedure is the fully-qualified name of the ScitizenService's
+	// WithdrawEnrollment RPC.
+	ScitizenServiceWithdrawEnrollmentProcedure = "/rootstock.v1.ScitizenService/WithdrawEnrollment"
+	// ScitizenServiceGetDevicesProcedure is the fully-qualified name of the ScitizenService's
+	// GetDevices RPC.
+	ScitizenServiceGetDevicesProcedure = "/rootstock.v1.ScitizenService/GetDevices"
+	// ScitizenServiceGetDeviceDetailProcedure is the fully-qualified name of the ScitizenService's
+	// GetDeviceDetail RPC.
+	ScitizenServiceGetDeviceDetailProcedure = "/rootstock.v1.ScitizenService/GetDeviceDetail"
+	// ScitizenServiceGetNotificationsProcedure is the fully-qualified name of the ScitizenService's
+	// GetNotifications RPC.
+	ScitizenServiceGetNotificationsProcedure = "/rootstock.v1.ScitizenService/GetNotifications"
+	// ScitizenServiceGetContributionsProcedure is the fully-qualified name of the ScitizenService's
+	// GetContributions RPC.
+	ScitizenServiceGetContributionsProcedure = "/rootstock.v1.ScitizenService/GetContributions"
+	// ScitizenServiceGetOnboardingStateProcedure is the fully-qualified name of the ScitizenService's
+	// GetOnboardingState RPC.
+	ScitizenServiceGetOnboardingStateProcedure = "/rootstock.v1.ScitizenService/GetOnboardingState"
+	// NotificationServiceListNotificationsProcedure is the fully-qualified name of the
+	// NotificationService's ListNotifications RPC.
+	NotificationServiceListNotificationsProcedure = "/rootstock.v1.NotificationService/ListNotifications"
+	// NotificationServiceMarkReadProcedure is the fully-qualified name of the NotificationService's
+	// MarkRead RPC.
+	NotificationServiceMarkReadProcedure = "/rootstock.v1.NotificationService/MarkRead"
+	// NotificationServiceGetPreferencesProcedure is the fully-qualified name of the
+	// NotificationService's GetPreferences RPC.
+	NotificationServiceGetPreferencesProcedure = "/rootstock.v1.NotificationService/GetPreferences"
+	// NotificationServiceUpdatePreferencesProcedure is the fully-qualified name of the
+	// NotificationService's UpdatePreferences RPC.
+	NotificationServiceUpdatePreferencesProcedure = "/rootstock.v1.NotificationService/UpdatePreferences"
 	// AdminServiceSuspendByClassProcedure is the fully-qualified name of the AdminService's
 	// SuspendByClass RPC.
 	AdminServiceSuspendByClassProcedure = "/rootstock.v1.AdminService/SuspendByClass"
@@ -939,6 +991,510 @@ func (UnimplementedUserServiceHandler) RegisterResearcher(context.Context, *conn
 
 func (UnimplementedUserServiceHandler) VerifyEmail(context.Context, *connect.Request[v1.VerifyEmailRequest]) (*connect.Response[v1.VerifyEmailResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("rootstock.v1.UserService.VerifyEmail is not implemented"))
+}
+
+// ScitizenServiceClient is a client for the rootstock.v1.ScitizenService service.
+type ScitizenServiceClient interface {
+	RegisterScitizen(context.Context, *connect.Request[v1.RegisterScitizenRequest]) (*connect.Response[v1.RegisterScitizenResponse], error)
+	GetDashboard(context.Context, *connect.Request[v1.GetDashboardRequest]) (*connect.Response[v1.GetDashboardResponse], error)
+	BrowsePublishedCampaigns(context.Context, *connect.Request[v1.BrowsePublishedCampaignsRequest]) (*connect.Response[v1.BrowsePublishedCampaignsResponse], error)
+	GetCampaignDetail(context.Context, *connect.Request[v1.GetCampaignDetailRequest]) (*connect.Response[v1.GetCampaignDetailResponse], error)
+	SearchCampaigns(context.Context, *connect.Request[v1.SearchCampaignsRequest]) (*connect.Response[v1.SearchCampaignsResponse], error)
+	EnrollDevice(context.Context, *connect.Request[v1.EnrollDeviceRequest]) (*connect.Response[v1.EnrollDeviceResponse], error)
+	WithdrawEnrollment(context.Context, *connect.Request[v1.WithdrawEnrollmentRequest]) (*connect.Response[v1.WithdrawEnrollmentResponse], error)
+	GetDevices(context.Context, *connect.Request[v1.GetDevicesRequest]) (*connect.Response[v1.GetDevicesResponse], error)
+	GetDeviceDetail(context.Context, *connect.Request[v1.GetDeviceDetailRequest]) (*connect.Response[v1.GetDeviceDetailResponse], error)
+	GetNotifications(context.Context, *connect.Request[v1.GetNotificationsRequest]) (*connect.Response[v1.GetNotificationsResponse], error)
+	GetContributions(context.Context, *connect.Request[v1.GetContributionsRequest]) (*connect.Response[v1.GetContributionsResponse], error)
+	GetOnboardingState(context.Context, *connect.Request[v1.GetOnboardingStateRequest]) (*connect.Response[v1.GetOnboardingStateResponse], error)
+}
+
+// NewScitizenServiceClient constructs a client for the rootstock.v1.ScitizenService service. By
+// default, it uses the Connect protocol with the binary Protobuf Codec, asks for gzipped responses,
+// and sends uncompressed requests. To use the gRPC or gRPC-Web protocols, supply the
+// connect.WithGRPC() or connect.WithGRPCWeb() options.
+//
+// The URL supplied here should be the base URL for the Connect or gRPC server (for example,
+// http://api.acme.com or https://acme.com/grpc).
+func NewScitizenServiceClient(httpClient connect.HTTPClient, baseURL string, opts ...connect.ClientOption) ScitizenServiceClient {
+	baseURL = strings.TrimRight(baseURL, "/")
+	scitizenServiceMethods := v1.File_rootstock_v1_rootstock_proto.Services().ByName("ScitizenService").Methods()
+	return &scitizenServiceClient{
+		registerScitizen: connect.NewClient[v1.RegisterScitizenRequest, v1.RegisterScitizenResponse](
+			httpClient,
+			baseURL+ScitizenServiceRegisterScitizenProcedure,
+			connect.WithSchema(scitizenServiceMethods.ByName("RegisterScitizen")),
+			connect.WithClientOptions(opts...),
+		),
+		getDashboard: connect.NewClient[v1.GetDashboardRequest, v1.GetDashboardResponse](
+			httpClient,
+			baseURL+ScitizenServiceGetDashboardProcedure,
+			connect.WithSchema(scitizenServiceMethods.ByName("GetDashboard")),
+			connect.WithClientOptions(opts...),
+		),
+		browsePublishedCampaigns: connect.NewClient[v1.BrowsePublishedCampaignsRequest, v1.BrowsePublishedCampaignsResponse](
+			httpClient,
+			baseURL+ScitizenServiceBrowsePublishedCampaignsProcedure,
+			connect.WithSchema(scitizenServiceMethods.ByName("BrowsePublishedCampaigns")),
+			connect.WithClientOptions(opts...),
+		),
+		getCampaignDetail: connect.NewClient[v1.GetCampaignDetailRequest, v1.GetCampaignDetailResponse](
+			httpClient,
+			baseURL+ScitizenServiceGetCampaignDetailProcedure,
+			connect.WithSchema(scitizenServiceMethods.ByName("GetCampaignDetail")),
+			connect.WithClientOptions(opts...),
+		),
+		searchCampaigns: connect.NewClient[v1.SearchCampaignsRequest, v1.SearchCampaignsResponse](
+			httpClient,
+			baseURL+ScitizenServiceSearchCampaignsProcedure,
+			connect.WithSchema(scitizenServiceMethods.ByName("SearchCampaigns")),
+			connect.WithClientOptions(opts...),
+		),
+		enrollDevice: connect.NewClient[v1.EnrollDeviceRequest, v1.EnrollDeviceResponse](
+			httpClient,
+			baseURL+ScitizenServiceEnrollDeviceProcedure,
+			connect.WithSchema(scitizenServiceMethods.ByName("EnrollDevice")),
+			connect.WithClientOptions(opts...),
+		),
+		withdrawEnrollment: connect.NewClient[v1.WithdrawEnrollmentRequest, v1.WithdrawEnrollmentResponse](
+			httpClient,
+			baseURL+ScitizenServiceWithdrawEnrollmentProcedure,
+			connect.WithSchema(scitizenServiceMethods.ByName("WithdrawEnrollment")),
+			connect.WithClientOptions(opts...),
+		),
+		getDevices: connect.NewClient[v1.GetDevicesRequest, v1.GetDevicesResponse](
+			httpClient,
+			baseURL+ScitizenServiceGetDevicesProcedure,
+			connect.WithSchema(scitizenServiceMethods.ByName("GetDevices")),
+			connect.WithClientOptions(opts...),
+		),
+		getDeviceDetail: connect.NewClient[v1.GetDeviceDetailRequest, v1.GetDeviceDetailResponse](
+			httpClient,
+			baseURL+ScitizenServiceGetDeviceDetailProcedure,
+			connect.WithSchema(scitizenServiceMethods.ByName("GetDeviceDetail")),
+			connect.WithClientOptions(opts...),
+		),
+		getNotifications: connect.NewClient[v1.GetNotificationsRequest, v1.GetNotificationsResponse](
+			httpClient,
+			baseURL+ScitizenServiceGetNotificationsProcedure,
+			connect.WithSchema(scitizenServiceMethods.ByName("GetNotifications")),
+			connect.WithClientOptions(opts...),
+		),
+		getContributions: connect.NewClient[v1.GetContributionsRequest, v1.GetContributionsResponse](
+			httpClient,
+			baseURL+ScitizenServiceGetContributionsProcedure,
+			connect.WithSchema(scitizenServiceMethods.ByName("GetContributions")),
+			connect.WithClientOptions(opts...),
+		),
+		getOnboardingState: connect.NewClient[v1.GetOnboardingStateRequest, v1.GetOnboardingStateResponse](
+			httpClient,
+			baseURL+ScitizenServiceGetOnboardingStateProcedure,
+			connect.WithSchema(scitizenServiceMethods.ByName("GetOnboardingState")),
+			connect.WithClientOptions(opts...),
+		),
+	}
+}
+
+// scitizenServiceClient implements ScitizenServiceClient.
+type scitizenServiceClient struct {
+	registerScitizen         *connect.Client[v1.RegisterScitizenRequest, v1.RegisterScitizenResponse]
+	getDashboard             *connect.Client[v1.GetDashboardRequest, v1.GetDashboardResponse]
+	browsePublishedCampaigns *connect.Client[v1.BrowsePublishedCampaignsRequest, v1.BrowsePublishedCampaignsResponse]
+	getCampaignDetail        *connect.Client[v1.GetCampaignDetailRequest, v1.GetCampaignDetailResponse]
+	searchCampaigns          *connect.Client[v1.SearchCampaignsRequest, v1.SearchCampaignsResponse]
+	enrollDevice             *connect.Client[v1.EnrollDeviceRequest, v1.EnrollDeviceResponse]
+	withdrawEnrollment       *connect.Client[v1.WithdrawEnrollmentRequest, v1.WithdrawEnrollmentResponse]
+	getDevices               *connect.Client[v1.GetDevicesRequest, v1.GetDevicesResponse]
+	getDeviceDetail          *connect.Client[v1.GetDeviceDetailRequest, v1.GetDeviceDetailResponse]
+	getNotifications         *connect.Client[v1.GetNotificationsRequest, v1.GetNotificationsResponse]
+	getContributions         *connect.Client[v1.GetContributionsRequest, v1.GetContributionsResponse]
+	getOnboardingState       *connect.Client[v1.GetOnboardingStateRequest, v1.GetOnboardingStateResponse]
+}
+
+// RegisterScitizen calls rootstock.v1.ScitizenService.RegisterScitizen.
+func (c *scitizenServiceClient) RegisterScitizen(ctx context.Context, req *connect.Request[v1.RegisterScitizenRequest]) (*connect.Response[v1.RegisterScitizenResponse], error) {
+	return c.registerScitizen.CallUnary(ctx, req)
+}
+
+// GetDashboard calls rootstock.v1.ScitizenService.GetDashboard.
+func (c *scitizenServiceClient) GetDashboard(ctx context.Context, req *connect.Request[v1.GetDashboardRequest]) (*connect.Response[v1.GetDashboardResponse], error) {
+	return c.getDashboard.CallUnary(ctx, req)
+}
+
+// BrowsePublishedCampaigns calls rootstock.v1.ScitizenService.BrowsePublishedCampaigns.
+func (c *scitizenServiceClient) BrowsePublishedCampaigns(ctx context.Context, req *connect.Request[v1.BrowsePublishedCampaignsRequest]) (*connect.Response[v1.BrowsePublishedCampaignsResponse], error) {
+	return c.browsePublishedCampaigns.CallUnary(ctx, req)
+}
+
+// GetCampaignDetail calls rootstock.v1.ScitizenService.GetCampaignDetail.
+func (c *scitizenServiceClient) GetCampaignDetail(ctx context.Context, req *connect.Request[v1.GetCampaignDetailRequest]) (*connect.Response[v1.GetCampaignDetailResponse], error) {
+	return c.getCampaignDetail.CallUnary(ctx, req)
+}
+
+// SearchCampaigns calls rootstock.v1.ScitizenService.SearchCampaigns.
+func (c *scitizenServiceClient) SearchCampaigns(ctx context.Context, req *connect.Request[v1.SearchCampaignsRequest]) (*connect.Response[v1.SearchCampaignsResponse], error) {
+	return c.searchCampaigns.CallUnary(ctx, req)
+}
+
+// EnrollDevice calls rootstock.v1.ScitizenService.EnrollDevice.
+func (c *scitizenServiceClient) EnrollDevice(ctx context.Context, req *connect.Request[v1.EnrollDeviceRequest]) (*connect.Response[v1.EnrollDeviceResponse], error) {
+	return c.enrollDevice.CallUnary(ctx, req)
+}
+
+// WithdrawEnrollment calls rootstock.v1.ScitizenService.WithdrawEnrollment.
+func (c *scitizenServiceClient) WithdrawEnrollment(ctx context.Context, req *connect.Request[v1.WithdrawEnrollmentRequest]) (*connect.Response[v1.WithdrawEnrollmentResponse], error) {
+	return c.withdrawEnrollment.CallUnary(ctx, req)
+}
+
+// GetDevices calls rootstock.v1.ScitizenService.GetDevices.
+func (c *scitizenServiceClient) GetDevices(ctx context.Context, req *connect.Request[v1.GetDevicesRequest]) (*connect.Response[v1.GetDevicesResponse], error) {
+	return c.getDevices.CallUnary(ctx, req)
+}
+
+// GetDeviceDetail calls rootstock.v1.ScitizenService.GetDeviceDetail.
+func (c *scitizenServiceClient) GetDeviceDetail(ctx context.Context, req *connect.Request[v1.GetDeviceDetailRequest]) (*connect.Response[v1.GetDeviceDetailResponse], error) {
+	return c.getDeviceDetail.CallUnary(ctx, req)
+}
+
+// GetNotifications calls rootstock.v1.ScitizenService.GetNotifications.
+func (c *scitizenServiceClient) GetNotifications(ctx context.Context, req *connect.Request[v1.GetNotificationsRequest]) (*connect.Response[v1.GetNotificationsResponse], error) {
+	return c.getNotifications.CallUnary(ctx, req)
+}
+
+// GetContributions calls rootstock.v1.ScitizenService.GetContributions.
+func (c *scitizenServiceClient) GetContributions(ctx context.Context, req *connect.Request[v1.GetContributionsRequest]) (*connect.Response[v1.GetContributionsResponse], error) {
+	return c.getContributions.CallUnary(ctx, req)
+}
+
+// GetOnboardingState calls rootstock.v1.ScitizenService.GetOnboardingState.
+func (c *scitizenServiceClient) GetOnboardingState(ctx context.Context, req *connect.Request[v1.GetOnboardingStateRequest]) (*connect.Response[v1.GetOnboardingStateResponse], error) {
+	return c.getOnboardingState.CallUnary(ctx, req)
+}
+
+// ScitizenServiceHandler is an implementation of the rootstock.v1.ScitizenService service.
+type ScitizenServiceHandler interface {
+	RegisterScitizen(context.Context, *connect.Request[v1.RegisterScitizenRequest]) (*connect.Response[v1.RegisterScitizenResponse], error)
+	GetDashboard(context.Context, *connect.Request[v1.GetDashboardRequest]) (*connect.Response[v1.GetDashboardResponse], error)
+	BrowsePublishedCampaigns(context.Context, *connect.Request[v1.BrowsePublishedCampaignsRequest]) (*connect.Response[v1.BrowsePublishedCampaignsResponse], error)
+	GetCampaignDetail(context.Context, *connect.Request[v1.GetCampaignDetailRequest]) (*connect.Response[v1.GetCampaignDetailResponse], error)
+	SearchCampaigns(context.Context, *connect.Request[v1.SearchCampaignsRequest]) (*connect.Response[v1.SearchCampaignsResponse], error)
+	EnrollDevice(context.Context, *connect.Request[v1.EnrollDeviceRequest]) (*connect.Response[v1.EnrollDeviceResponse], error)
+	WithdrawEnrollment(context.Context, *connect.Request[v1.WithdrawEnrollmentRequest]) (*connect.Response[v1.WithdrawEnrollmentResponse], error)
+	GetDevices(context.Context, *connect.Request[v1.GetDevicesRequest]) (*connect.Response[v1.GetDevicesResponse], error)
+	GetDeviceDetail(context.Context, *connect.Request[v1.GetDeviceDetailRequest]) (*connect.Response[v1.GetDeviceDetailResponse], error)
+	GetNotifications(context.Context, *connect.Request[v1.GetNotificationsRequest]) (*connect.Response[v1.GetNotificationsResponse], error)
+	GetContributions(context.Context, *connect.Request[v1.GetContributionsRequest]) (*connect.Response[v1.GetContributionsResponse], error)
+	GetOnboardingState(context.Context, *connect.Request[v1.GetOnboardingStateRequest]) (*connect.Response[v1.GetOnboardingStateResponse], error)
+}
+
+// NewScitizenServiceHandler builds an HTTP handler from the service implementation. It returns the
+// path on which to mount the handler and the handler itself.
+//
+// By default, handlers support the Connect, gRPC, and gRPC-Web protocols with the binary Protobuf
+// and JSON codecs. They also support gzip compression.
+func NewScitizenServiceHandler(svc ScitizenServiceHandler, opts ...connect.HandlerOption) (string, http.Handler) {
+	scitizenServiceMethods := v1.File_rootstock_v1_rootstock_proto.Services().ByName("ScitizenService").Methods()
+	scitizenServiceRegisterScitizenHandler := connect.NewUnaryHandler(
+		ScitizenServiceRegisterScitizenProcedure,
+		svc.RegisterScitizen,
+		connect.WithSchema(scitizenServiceMethods.ByName("RegisterScitizen")),
+		connect.WithHandlerOptions(opts...),
+	)
+	scitizenServiceGetDashboardHandler := connect.NewUnaryHandler(
+		ScitizenServiceGetDashboardProcedure,
+		svc.GetDashboard,
+		connect.WithSchema(scitizenServiceMethods.ByName("GetDashboard")),
+		connect.WithHandlerOptions(opts...),
+	)
+	scitizenServiceBrowsePublishedCampaignsHandler := connect.NewUnaryHandler(
+		ScitizenServiceBrowsePublishedCampaignsProcedure,
+		svc.BrowsePublishedCampaigns,
+		connect.WithSchema(scitizenServiceMethods.ByName("BrowsePublishedCampaigns")),
+		connect.WithHandlerOptions(opts...),
+	)
+	scitizenServiceGetCampaignDetailHandler := connect.NewUnaryHandler(
+		ScitizenServiceGetCampaignDetailProcedure,
+		svc.GetCampaignDetail,
+		connect.WithSchema(scitizenServiceMethods.ByName("GetCampaignDetail")),
+		connect.WithHandlerOptions(opts...),
+	)
+	scitizenServiceSearchCampaignsHandler := connect.NewUnaryHandler(
+		ScitizenServiceSearchCampaignsProcedure,
+		svc.SearchCampaigns,
+		connect.WithSchema(scitizenServiceMethods.ByName("SearchCampaigns")),
+		connect.WithHandlerOptions(opts...),
+	)
+	scitizenServiceEnrollDeviceHandler := connect.NewUnaryHandler(
+		ScitizenServiceEnrollDeviceProcedure,
+		svc.EnrollDevice,
+		connect.WithSchema(scitizenServiceMethods.ByName("EnrollDevice")),
+		connect.WithHandlerOptions(opts...),
+	)
+	scitizenServiceWithdrawEnrollmentHandler := connect.NewUnaryHandler(
+		ScitizenServiceWithdrawEnrollmentProcedure,
+		svc.WithdrawEnrollment,
+		connect.WithSchema(scitizenServiceMethods.ByName("WithdrawEnrollment")),
+		connect.WithHandlerOptions(opts...),
+	)
+	scitizenServiceGetDevicesHandler := connect.NewUnaryHandler(
+		ScitizenServiceGetDevicesProcedure,
+		svc.GetDevices,
+		connect.WithSchema(scitizenServiceMethods.ByName("GetDevices")),
+		connect.WithHandlerOptions(opts...),
+	)
+	scitizenServiceGetDeviceDetailHandler := connect.NewUnaryHandler(
+		ScitizenServiceGetDeviceDetailProcedure,
+		svc.GetDeviceDetail,
+		connect.WithSchema(scitizenServiceMethods.ByName("GetDeviceDetail")),
+		connect.WithHandlerOptions(opts...),
+	)
+	scitizenServiceGetNotificationsHandler := connect.NewUnaryHandler(
+		ScitizenServiceGetNotificationsProcedure,
+		svc.GetNotifications,
+		connect.WithSchema(scitizenServiceMethods.ByName("GetNotifications")),
+		connect.WithHandlerOptions(opts...),
+	)
+	scitizenServiceGetContributionsHandler := connect.NewUnaryHandler(
+		ScitizenServiceGetContributionsProcedure,
+		svc.GetContributions,
+		connect.WithSchema(scitizenServiceMethods.ByName("GetContributions")),
+		connect.WithHandlerOptions(opts...),
+	)
+	scitizenServiceGetOnboardingStateHandler := connect.NewUnaryHandler(
+		ScitizenServiceGetOnboardingStateProcedure,
+		svc.GetOnboardingState,
+		connect.WithSchema(scitizenServiceMethods.ByName("GetOnboardingState")),
+		connect.WithHandlerOptions(opts...),
+	)
+	return "/rootstock.v1.ScitizenService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.URL.Path {
+		case ScitizenServiceRegisterScitizenProcedure:
+			scitizenServiceRegisterScitizenHandler.ServeHTTP(w, r)
+		case ScitizenServiceGetDashboardProcedure:
+			scitizenServiceGetDashboardHandler.ServeHTTP(w, r)
+		case ScitizenServiceBrowsePublishedCampaignsProcedure:
+			scitizenServiceBrowsePublishedCampaignsHandler.ServeHTTP(w, r)
+		case ScitizenServiceGetCampaignDetailProcedure:
+			scitizenServiceGetCampaignDetailHandler.ServeHTTP(w, r)
+		case ScitizenServiceSearchCampaignsProcedure:
+			scitizenServiceSearchCampaignsHandler.ServeHTTP(w, r)
+		case ScitizenServiceEnrollDeviceProcedure:
+			scitizenServiceEnrollDeviceHandler.ServeHTTP(w, r)
+		case ScitizenServiceWithdrawEnrollmentProcedure:
+			scitizenServiceWithdrawEnrollmentHandler.ServeHTTP(w, r)
+		case ScitizenServiceGetDevicesProcedure:
+			scitizenServiceGetDevicesHandler.ServeHTTP(w, r)
+		case ScitizenServiceGetDeviceDetailProcedure:
+			scitizenServiceGetDeviceDetailHandler.ServeHTTP(w, r)
+		case ScitizenServiceGetNotificationsProcedure:
+			scitizenServiceGetNotificationsHandler.ServeHTTP(w, r)
+		case ScitizenServiceGetContributionsProcedure:
+			scitizenServiceGetContributionsHandler.ServeHTTP(w, r)
+		case ScitizenServiceGetOnboardingStateProcedure:
+			scitizenServiceGetOnboardingStateHandler.ServeHTTP(w, r)
+		default:
+			http.NotFound(w, r)
+		}
+	})
+}
+
+// UnimplementedScitizenServiceHandler returns CodeUnimplemented from all methods.
+type UnimplementedScitizenServiceHandler struct{}
+
+func (UnimplementedScitizenServiceHandler) RegisterScitizen(context.Context, *connect.Request[v1.RegisterScitizenRequest]) (*connect.Response[v1.RegisterScitizenResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("rootstock.v1.ScitizenService.RegisterScitizen is not implemented"))
+}
+
+func (UnimplementedScitizenServiceHandler) GetDashboard(context.Context, *connect.Request[v1.GetDashboardRequest]) (*connect.Response[v1.GetDashboardResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("rootstock.v1.ScitizenService.GetDashboard is not implemented"))
+}
+
+func (UnimplementedScitizenServiceHandler) BrowsePublishedCampaigns(context.Context, *connect.Request[v1.BrowsePublishedCampaignsRequest]) (*connect.Response[v1.BrowsePublishedCampaignsResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("rootstock.v1.ScitizenService.BrowsePublishedCampaigns is not implemented"))
+}
+
+func (UnimplementedScitizenServiceHandler) GetCampaignDetail(context.Context, *connect.Request[v1.GetCampaignDetailRequest]) (*connect.Response[v1.GetCampaignDetailResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("rootstock.v1.ScitizenService.GetCampaignDetail is not implemented"))
+}
+
+func (UnimplementedScitizenServiceHandler) SearchCampaigns(context.Context, *connect.Request[v1.SearchCampaignsRequest]) (*connect.Response[v1.SearchCampaignsResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("rootstock.v1.ScitizenService.SearchCampaigns is not implemented"))
+}
+
+func (UnimplementedScitizenServiceHandler) EnrollDevice(context.Context, *connect.Request[v1.EnrollDeviceRequest]) (*connect.Response[v1.EnrollDeviceResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("rootstock.v1.ScitizenService.EnrollDevice is not implemented"))
+}
+
+func (UnimplementedScitizenServiceHandler) WithdrawEnrollment(context.Context, *connect.Request[v1.WithdrawEnrollmentRequest]) (*connect.Response[v1.WithdrawEnrollmentResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("rootstock.v1.ScitizenService.WithdrawEnrollment is not implemented"))
+}
+
+func (UnimplementedScitizenServiceHandler) GetDevices(context.Context, *connect.Request[v1.GetDevicesRequest]) (*connect.Response[v1.GetDevicesResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("rootstock.v1.ScitizenService.GetDevices is not implemented"))
+}
+
+func (UnimplementedScitizenServiceHandler) GetDeviceDetail(context.Context, *connect.Request[v1.GetDeviceDetailRequest]) (*connect.Response[v1.GetDeviceDetailResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("rootstock.v1.ScitizenService.GetDeviceDetail is not implemented"))
+}
+
+func (UnimplementedScitizenServiceHandler) GetNotifications(context.Context, *connect.Request[v1.GetNotificationsRequest]) (*connect.Response[v1.GetNotificationsResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("rootstock.v1.ScitizenService.GetNotifications is not implemented"))
+}
+
+func (UnimplementedScitizenServiceHandler) GetContributions(context.Context, *connect.Request[v1.GetContributionsRequest]) (*connect.Response[v1.GetContributionsResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("rootstock.v1.ScitizenService.GetContributions is not implemented"))
+}
+
+func (UnimplementedScitizenServiceHandler) GetOnboardingState(context.Context, *connect.Request[v1.GetOnboardingStateRequest]) (*connect.Response[v1.GetOnboardingStateResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("rootstock.v1.ScitizenService.GetOnboardingState is not implemented"))
+}
+
+// NotificationServiceClient is a client for the rootstock.v1.NotificationService service.
+type NotificationServiceClient interface {
+	ListNotifications(context.Context, *connect.Request[v1.ListNotificationsRequest]) (*connect.Response[v1.ListNotificationsResponse], error)
+	MarkRead(context.Context, *connect.Request[v1.MarkReadRequest]) (*connect.Response[v1.MarkReadResponse], error)
+	GetPreferences(context.Context, *connect.Request[v1.GetPreferencesRequest]) (*connect.Response[v1.GetPreferencesResponse], error)
+	UpdatePreferences(context.Context, *connect.Request[v1.UpdatePreferencesRequest]) (*connect.Response[v1.UpdatePreferencesResponse], error)
+}
+
+// NewNotificationServiceClient constructs a client for the rootstock.v1.NotificationService
+// service. By default, it uses the Connect protocol with the binary Protobuf Codec, asks for
+// gzipped responses, and sends uncompressed requests. To use the gRPC or gRPC-Web protocols, supply
+// the connect.WithGRPC() or connect.WithGRPCWeb() options.
+//
+// The URL supplied here should be the base URL for the Connect or gRPC server (for example,
+// http://api.acme.com or https://acme.com/grpc).
+func NewNotificationServiceClient(httpClient connect.HTTPClient, baseURL string, opts ...connect.ClientOption) NotificationServiceClient {
+	baseURL = strings.TrimRight(baseURL, "/")
+	notificationServiceMethods := v1.File_rootstock_v1_rootstock_proto.Services().ByName("NotificationService").Methods()
+	return &notificationServiceClient{
+		listNotifications: connect.NewClient[v1.ListNotificationsRequest, v1.ListNotificationsResponse](
+			httpClient,
+			baseURL+NotificationServiceListNotificationsProcedure,
+			connect.WithSchema(notificationServiceMethods.ByName("ListNotifications")),
+			connect.WithClientOptions(opts...),
+		),
+		markRead: connect.NewClient[v1.MarkReadRequest, v1.MarkReadResponse](
+			httpClient,
+			baseURL+NotificationServiceMarkReadProcedure,
+			connect.WithSchema(notificationServiceMethods.ByName("MarkRead")),
+			connect.WithClientOptions(opts...),
+		),
+		getPreferences: connect.NewClient[v1.GetPreferencesRequest, v1.GetPreferencesResponse](
+			httpClient,
+			baseURL+NotificationServiceGetPreferencesProcedure,
+			connect.WithSchema(notificationServiceMethods.ByName("GetPreferences")),
+			connect.WithClientOptions(opts...),
+		),
+		updatePreferences: connect.NewClient[v1.UpdatePreferencesRequest, v1.UpdatePreferencesResponse](
+			httpClient,
+			baseURL+NotificationServiceUpdatePreferencesProcedure,
+			connect.WithSchema(notificationServiceMethods.ByName("UpdatePreferences")),
+			connect.WithClientOptions(opts...),
+		),
+	}
+}
+
+// notificationServiceClient implements NotificationServiceClient.
+type notificationServiceClient struct {
+	listNotifications *connect.Client[v1.ListNotificationsRequest, v1.ListNotificationsResponse]
+	markRead          *connect.Client[v1.MarkReadRequest, v1.MarkReadResponse]
+	getPreferences    *connect.Client[v1.GetPreferencesRequest, v1.GetPreferencesResponse]
+	updatePreferences *connect.Client[v1.UpdatePreferencesRequest, v1.UpdatePreferencesResponse]
+}
+
+// ListNotifications calls rootstock.v1.NotificationService.ListNotifications.
+func (c *notificationServiceClient) ListNotifications(ctx context.Context, req *connect.Request[v1.ListNotificationsRequest]) (*connect.Response[v1.ListNotificationsResponse], error) {
+	return c.listNotifications.CallUnary(ctx, req)
+}
+
+// MarkRead calls rootstock.v1.NotificationService.MarkRead.
+func (c *notificationServiceClient) MarkRead(ctx context.Context, req *connect.Request[v1.MarkReadRequest]) (*connect.Response[v1.MarkReadResponse], error) {
+	return c.markRead.CallUnary(ctx, req)
+}
+
+// GetPreferences calls rootstock.v1.NotificationService.GetPreferences.
+func (c *notificationServiceClient) GetPreferences(ctx context.Context, req *connect.Request[v1.GetPreferencesRequest]) (*connect.Response[v1.GetPreferencesResponse], error) {
+	return c.getPreferences.CallUnary(ctx, req)
+}
+
+// UpdatePreferences calls rootstock.v1.NotificationService.UpdatePreferences.
+func (c *notificationServiceClient) UpdatePreferences(ctx context.Context, req *connect.Request[v1.UpdatePreferencesRequest]) (*connect.Response[v1.UpdatePreferencesResponse], error) {
+	return c.updatePreferences.CallUnary(ctx, req)
+}
+
+// NotificationServiceHandler is an implementation of the rootstock.v1.NotificationService service.
+type NotificationServiceHandler interface {
+	ListNotifications(context.Context, *connect.Request[v1.ListNotificationsRequest]) (*connect.Response[v1.ListNotificationsResponse], error)
+	MarkRead(context.Context, *connect.Request[v1.MarkReadRequest]) (*connect.Response[v1.MarkReadResponse], error)
+	GetPreferences(context.Context, *connect.Request[v1.GetPreferencesRequest]) (*connect.Response[v1.GetPreferencesResponse], error)
+	UpdatePreferences(context.Context, *connect.Request[v1.UpdatePreferencesRequest]) (*connect.Response[v1.UpdatePreferencesResponse], error)
+}
+
+// NewNotificationServiceHandler builds an HTTP handler from the service implementation. It returns
+// the path on which to mount the handler and the handler itself.
+//
+// By default, handlers support the Connect, gRPC, and gRPC-Web protocols with the binary Protobuf
+// and JSON codecs. They also support gzip compression.
+func NewNotificationServiceHandler(svc NotificationServiceHandler, opts ...connect.HandlerOption) (string, http.Handler) {
+	notificationServiceMethods := v1.File_rootstock_v1_rootstock_proto.Services().ByName("NotificationService").Methods()
+	notificationServiceListNotificationsHandler := connect.NewUnaryHandler(
+		NotificationServiceListNotificationsProcedure,
+		svc.ListNotifications,
+		connect.WithSchema(notificationServiceMethods.ByName("ListNotifications")),
+		connect.WithHandlerOptions(opts...),
+	)
+	notificationServiceMarkReadHandler := connect.NewUnaryHandler(
+		NotificationServiceMarkReadProcedure,
+		svc.MarkRead,
+		connect.WithSchema(notificationServiceMethods.ByName("MarkRead")),
+		connect.WithHandlerOptions(opts...),
+	)
+	notificationServiceGetPreferencesHandler := connect.NewUnaryHandler(
+		NotificationServiceGetPreferencesProcedure,
+		svc.GetPreferences,
+		connect.WithSchema(notificationServiceMethods.ByName("GetPreferences")),
+		connect.WithHandlerOptions(opts...),
+	)
+	notificationServiceUpdatePreferencesHandler := connect.NewUnaryHandler(
+		NotificationServiceUpdatePreferencesProcedure,
+		svc.UpdatePreferences,
+		connect.WithSchema(notificationServiceMethods.ByName("UpdatePreferences")),
+		connect.WithHandlerOptions(opts...),
+	)
+	return "/rootstock.v1.NotificationService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.URL.Path {
+		case NotificationServiceListNotificationsProcedure:
+			notificationServiceListNotificationsHandler.ServeHTTP(w, r)
+		case NotificationServiceMarkReadProcedure:
+			notificationServiceMarkReadHandler.ServeHTTP(w, r)
+		case NotificationServiceGetPreferencesProcedure:
+			notificationServiceGetPreferencesHandler.ServeHTTP(w, r)
+		case NotificationServiceUpdatePreferencesProcedure:
+			notificationServiceUpdatePreferencesHandler.ServeHTTP(w, r)
+		default:
+			http.NotFound(w, r)
+		}
+	})
+}
+
+// UnimplementedNotificationServiceHandler returns CodeUnimplemented from all methods.
+type UnimplementedNotificationServiceHandler struct{}
+
+func (UnimplementedNotificationServiceHandler) ListNotifications(context.Context, *connect.Request[v1.ListNotificationsRequest]) (*connect.Response[v1.ListNotificationsResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("rootstock.v1.NotificationService.ListNotifications is not implemented"))
+}
+
+func (UnimplementedNotificationServiceHandler) MarkRead(context.Context, *connect.Request[v1.MarkReadRequest]) (*connect.Response[v1.MarkReadResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("rootstock.v1.NotificationService.MarkRead is not implemented"))
+}
+
+func (UnimplementedNotificationServiceHandler) GetPreferences(context.Context, *connect.Request[v1.GetPreferencesRequest]) (*connect.Response[v1.GetPreferencesResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("rootstock.v1.NotificationService.GetPreferences is not implemented"))
+}
+
+func (UnimplementedNotificationServiceHandler) UpdatePreferences(context.Context, *connect.Request[v1.UpdatePreferencesRequest]) (*connect.Response[v1.UpdatePreferencesResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("rootstock.v1.NotificationService.UpdatePreferences is not implemented"))
 }
 
 // AdminServiceClient is a client for the rootstock.v1.AdminService service.

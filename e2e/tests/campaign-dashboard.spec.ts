@@ -3,8 +3,10 @@ import { test, expect } from '@playwright/test';
 test.describe('campaign dashboard', () => {
   test('shows campaign list or empty state', async ({ page }) => {
     await page.goto('/app/en/researcher/');
-    // Wait for the dashboard to render (either state)
     await expect(page.locator('.app-header__brand-name')).toHaveText('ROOTSTOCK', { timeout: 10_000 });
+    // Wait for loading to complete — the page shows .empty-state during loading too,
+    // so wait for network to settle before checking final state
+    await page.waitForLoadState('networkidle');
     const hasCampaigns = await page.locator('.campaign-list').isVisible().catch(() => false);
     const hasEmptyState = await page.locator('.empty-state').isVisible().catch(() => false);
     expect(hasCampaigns || hasEmptyState).toBeTruthy();
@@ -13,7 +15,12 @@ test.describe('campaign dashboard', () => {
   test('navigates to campaign creation form', async ({ page }) => {
     await page.goto('/app/en/researcher/');
     await expect(page.locator('.app-header__brand-name')).toHaveText('ROOTSTOCK', { timeout: 10_000 });
-    await page.getByRole('link', { name: 'New campaign' }).click();
+    await page.waitForLoadState('networkidle');
+
+    // "New campaign" link may be in the campaign list header or the empty state CTA
+    const newCampaignLink = page.getByRole('link', { name: /new campaign|create/i });
+    await expect(newCampaignLink.first()).toBeVisible({ timeout: 5_000 });
+    await newCampaignLink.first().click();
     await expect(page).toHaveURL(/\/researcher\/campaigns\/new/, { timeout: 10_000 });
   });
 });

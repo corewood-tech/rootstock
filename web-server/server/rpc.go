@@ -14,6 +14,7 @@ import (
 	deviceflows "rootstock/web-server/flows/device"
 	orgflows "rootstock/web-server/flows/org"
 	readingflows "rootstock/web-server/flows/reading"
+	scitizenflows "rootstock/web-server/flows/scitizen"
 	scoreflows "rootstock/web-server/flows/score"
 	securityflows "rootstock/web-server/flows/security"
 	userflows "rootstock/web-server/flows/user"
@@ -22,20 +23,24 @@ import (
 	campaignops "rootstock/web-server/ops/campaign"
 	certops "rootstock/web-server/ops/cert"
 	deviceops "rootstock/web-server/ops/device"
+	enrollmentops "rootstock/web-server/ops/enrollment"
 	graphops "rootstock/web-server/ops/graph"
 	mqttops "rootstock/web-server/ops/mqtt"
 	notificationops "rootstock/web-server/ops/notification"
 	orgops "rootstock/web-server/ops/org"
 	readingops "rootstock/web-server/ops/reading"
+	scitizenops "rootstock/web-server/ops/scitizen"
 	scoreops "rootstock/web-server/ops/score"
 	userops "rootstock/web-server/ops/user"
 	"rootstock/web-server/proto/rootstock/v1/rootstockv1connect"
 	"rootstock/web-server/repo/authorization"
 	campaignrepo "rootstock/web-server/repo/campaign"
+	enrollmentrepo "rootstock/web-server/repo/enrollment"
 	graphrepo "rootstock/web-server/repo/graph"
 	identityrepo "rootstock/web-server/repo/identity"
 	notificationrepo "rootstock/web-server/repo/notification"
 	readingrepo "rootstock/web-server/repo/reading"
+	scitizenrepo "rootstock/web-server/repo/scitizen"
 	scorerepo "rootstock/web-server/repo/score"
 	sessionrepo "rootstock/web-server/repo/session"
 	userrepo "rootstock/web-server/repo/user"
@@ -61,6 +66,8 @@ func NewRPCServer(ctx context.Context, cfg *config.Config, pool *pgxpool.Pool, i
 	rRepo := readingrepo.NewRepository(pool)
 	sRepo := scorerepo.NewRepository(pool)
 	uRepo := userrepo.NewRepository(pool)
+	scRepo := scitizenrepo.NewRepository(pool)
+	eRepo := enrollmentrepo.NewRepository(pool)
 
 	// Notification repo (SMTP)
 	nRepo := notificationrepo.NewRepository(cfg.SMTP.Host, cfg.SMTP.Port, cfg.SMTP.From)
@@ -79,6 +86,8 @@ func NewRPCServer(ctx context.Context, cfg *config.Config, pool *pgxpool.Pool, i
 	uOps := userops.NewOps(uRepo, sessRepo)
 	nOps := notificationops.NewOps(nRepo)
 	gOps := graphops.NewOps(gRepo)
+	scOps := scitizenops.NewOps(scRepo)
+	eOps := enrollmentops.NewOps(eRepo)
 
 	// Interceptors (session-based auth)
 	otelInterceptor, err := otelconnect.NewInterceptor()
@@ -121,6 +130,19 @@ func NewRPCServer(ctx context.Context, cfg *config.Config, pool *pgxpool.Pool, i
 	registerResearcherFlow := userflows.NewRegisterResearcherFlow(oOps, uOps, nOps, cfg.Server.PublicBaseURL)
 	verifyEmailFlow := userflows.NewVerifyEmailFlow(oOps)
 
+	// Scitizen flows
+	scitizenRegisterFlow := scitizenflows.NewScitzenRegistrationFlow(scOps)
+	scitizenDashboardFlow := scitizenflows.NewScitzenDashboardFlow(scOps)
+	scitizenBrowseCampaignsFlow := scitizenflows.NewBrowseCampaignsFlow(scOps)
+	scitizenCampaignDetailFlow := scitizenflows.NewCampaignDetailFlow(scOps)
+	scitizenCampaignSearchFlow := scitizenflows.NewCampaignSearchFlow(scOps)
+	scitizenEnrollDeviceFlow := scitizenflows.NewEnrollDeviceCampaignFlow(scOps, eOps)
+	scitizenWithdrawFlow := scitizenflows.NewWithdrawEnrollmentFlow(eOps)
+	scitizenDeviceFlow := scitizenflows.NewDeviceManagementFlow(scOps)
+	scitizenOnboardingFlow := scitizenflows.NewOnboardingFlow(scOps)
+	scitizenNotificationFlow := scitizenflows.NewNotificationFlow(scOps)
+	scitizenProgressFlow := scitizenflows.NewCampaignProgressFlow(scOps)
+
 	// Org flows
 	createOrgFlow := orgflows.NewCreateOrgFlow(oOps)
 	nestOrgFlow := orgflows.NewNestOrgFlow(oOps)
@@ -152,6 +174,14 @@ func NewRPCServer(ctx context.Context, cfg *config.Config, pool *pgxpool.Pool, i
 	userHandler := connecthandlers.NewUserServiceHandler(registerUserFlow, getUserFlow, loginFlow, logoutFlow, registerResearcherFlow, verifyEmailFlow)
 	userPath, userH := rootstockv1connect.NewUserServiceHandler(userHandler, interceptors)
 
+	scitizenHandler := connecthandlers.NewScitizenServiceHandler(
+		getUserFlow, scitizenRegisterFlow, scitizenDashboardFlow,
+		scitizenBrowseCampaignsFlow, scitizenCampaignDetailFlow, scitizenCampaignSearchFlow,
+		scitizenEnrollDeviceFlow, scitizenWithdrawFlow, scitizenDeviceFlow,
+		scitizenOnboardingFlow, scitizenNotificationFlow, scitizenProgressFlow,
+	)
+	scitizenPath, scitizenH := rootstockv1connect.NewScitizenServiceHandler(scitizenHandler, interceptors)
+
 	adminHandler := connecthandlers.NewAdminServiceHandler(securityResponseFlow)
 	adminPath, adminH := rootstockv1connect.NewAdminServiceHandler(adminHandler, interceptors)
 
@@ -162,6 +192,7 @@ func NewRPCServer(ctx context.Context, cfg *config.Config, pool *pgxpool.Pool, i
 	mux.Handle(scorePath, scoreH)
 	mux.Handle(devicePath, deviceH)
 	mux.Handle(userPath, userH)
+	mux.Handle(scitizenPath, scitizenH)
 	mux.Handle(adminPath, adminH)
 
 	// Device enrollment (enrollment code auth, not JWT) + public CA cert
@@ -182,6 +213,8 @@ func NewRPCServer(ctx context.Context, cfg *config.Config, pool *pgxpool.Pool, i
 		uRepo.Shutdown()
 		nRepo.Shutdown()
 		gRepo.Shutdown()
+		scRepo.Shutdown()
+		eRepo.Shutdown()
 		sessRepo.Shutdown()
 	}
 

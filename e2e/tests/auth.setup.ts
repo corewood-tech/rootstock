@@ -12,7 +12,7 @@ const TEST_USER = {
 
 setup('register, verify email, and login', async ({ page, request }) => {
   // 1. Clear maildev inbox
-  await request.delete('http://maildev:1080/maildev/email/all');
+  await request.delete('http://caddy:9999/maildev/email/all');
 
   // 2. Warm up vite (first load triggers dep optimization + page reload)
   await page.goto('/app/en/', { waitUntil: 'networkidle', timeout: 30_000 });

@@ -1,6 +1,6 @@
 import { expect, type APIRequestContext } from '@playwright/test';
 
-const MAILDEV_BASE = 'http://maildev:1080/maildev';
+const MAILDEV_BASE = 'http://caddy:9999/maildev';
 
 interface MaildevEmail {
   id: string;

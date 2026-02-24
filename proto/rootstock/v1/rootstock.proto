@@ -333,6 +333,263 @@ message VerifyEmailResponse {
   bool verified = 1;
 }
 
+// ScitizenService provides citizen scientist operations.
+// Graph node: 0x49 (Interface), 0x2d (Handler)
+service ScitizenService {
+  rpc RegisterScitizen(RegisterScitizenRequest) returns (RegisterScitizenResponse);
+  rpc GetDashboard(GetDashboardRequest) returns (GetDashboardResponse);
+  rpc BrowsePublishedCampaigns(BrowsePublishedCampaignsRequest) returns (BrowsePublishedCampaignsResponse);
+  rpc GetCampaignDetail(GetCampaignDetailRequest) returns (GetCampaignDetailResponse);
+  rpc SearchCampaigns(SearchCampaignsRequest) returns (SearchCampaignsResponse);
+  rpc EnrollDevice(EnrollDeviceRequest) returns (EnrollDeviceResponse);
+  rpc WithdrawEnrollment(WithdrawEnrollmentRequest) returns (WithdrawEnrollmentResponse);
+  rpc GetDevices(GetDevicesRequest) returns (GetDevicesResponse);
+  rpc GetDeviceDetail(GetDeviceDetailRequest) returns (GetDeviceDetailResponse);
+  rpc GetNotifications(GetNotificationsRequest) returns (GetNotificationsResponse);
+  rpc GetContributions(GetContributionsRequest) returns (GetContributionsResponse);
+  rpc GetOnboardingState(GetOnboardingStateRequest) returns (GetOnboardingStateResponse);
+}
+
+// NotificationService manages notification preferences and read state.
+// Graph node: 0x4a (Interface)
+service NotificationService {
+  rpc ListNotifications(ListNotificationsRequest) returns (ListNotificationsResponse);
+  rpc MarkRead(MarkReadRequest) returns (MarkReadResponse);
+  rpc GetPreferences(GetPreferencesRequest) returns (GetPreferencesResponse);
+  rpc UpdatePreferences(UpdatePreferencesRequest) returns (UpdatePreferencesResponse);
+}
+
+// Scitizen messages
+
+message RegisterScitizenRequest {
+  string email = 1;
+  string password = 2;
+  string given_name = 3;
+  string family_name = 4;
+  bool tos_accepted = 5;
+}
+
+message RegisterScitizenResponse {
+  string user_id = 1;
+  bool email_verification_sent = 2;
+}
+
+message OnboardingStateProto {
+  bool device_registered = 1;
+  bool campaign_enrolled = 2;
+  bool first_reading_submitted = 3;
+  bool tos_accepted = 4;
+}
+
+message GetOnboardingStateRequest {}
+
+message GetOnboardingStateResponse {
+  OnboardingStateProto state = 1;
+}
+
+message EnrollmentProto {
+  string id = 1;
+  string device_id = 2;
+  string campaign_id = 3;
+  string status = 4;
+  string enrolled_at = 5;
+}
+
+message GetDashboardRequest {}
+
+message GetDashboardResponse {
+  int32 active_enrollments = 1;
+  int32 total_readings = 2;
+  int32 accepted_readings = 3;
+  double contribution_score = 4;
+  repeated BadgeProto badges = 5;
+  repeated EnrollmentProto enrollments = 6;
+}
+
+message BrowsePublishedCampaignsRequest {
+  optional double longitude = 1;
+  optional double latitude = 2;
+  optional double radius_km = 3;
+  optional string sensor_type = 4;
+  int32 limit = 5;
+  int32 offset = 6;
+}
+
+message CampaignSummaryProto {
+  string id = 1;
+  string status = 2;
+  optional string window_start = 3;
+  optional string window_end = 4;
+  int32 enrollment_count = 5;
+  repeated string required_sensors = 6;
+  string created_at = 7;
+}
+
+message BrowsePublishedCampaignsResponse {
+  repeated CampaignSummaryProto campaigns = 1;
+  int32 total = 2;
+}
+
+message GetCampaignDetailRequest {
+  string campaign_id = 1;
+}
+
+message GetCampaignDetailResponse {
+  string campaign_id = 1;
+  string status = 2;
+  optional string window_start = 3;
+  optional string window_end = 4;
+  repeated ParameterProto parameters = 5;
+  repeated RegionProto regions = 6;
+  repeated EligibilityProto eligibility = 7;
+  int32 enrollment_count = 8;
+  double progress_percent = 9;
+}
+
+message SearchCampaignsRequest {
+  string query = 1;
+  int32 limit = 2;
+  int32 offset = 3;
+}
+
+message SearchCampaignsResponse {
+  repeated CampaignSummaryProto campaigns = 1;
+  int32 total = 2;
+}
+
+message ConsentProto {
+  string version = 1;
+  string scope = 2;
+}
+
+message EnrollDeviceRequest {
+  string device_id = 1;
+  string campaign_id = 2;
+  ConsentProto consent = 3;
+}
+
+message EnrollDeviceResponse {
+  bool enrolled = 1;
+  string reason = 2;
+  string enrollment_id = 3;
+}
+
+message WithdrawEnrollmentRequest {
+  string enrollment_id = 1;
+}
+
+message WithdrawEnrollmentResponse {}
+
+message DeviceSummaryProto {
+  string id = 1;
+  string status = 2;
+  string class = 3;
+  string firmware_version = 4;
+  int32 tier = 5;
+  repeated string sensors = 6;
+  int32 active_enrollments = 7;
+  optional string last_seen = 8;
+}
+
+message GetDevicesRequest {}
+
+message GetDevicesResponse {
+  repeated DeviceSummaryProto devices = 1;
+}
+
+message ConnectionEventProto {
+  string event_type = 1;
+  string timestamp = 2;
+  optional string reason = 3;
+}
+
+message GetDeviceDetailRequest {
+  string device_id = 1;
+}
+
+message GetDeviceDetailResponse {
+  DeviceProto device = 1;
+  repeated EnrollmentProto enrollments = 2;
+  repeated ConnectionEventProto connection_history = 3;
+}
+
+message NotificationProto {
+  string id = 1;
+  string type = 2;
+  string message = 3;
+  bool read = 4;
+  optional string resource_link = 5;
+  string created_at = 6;
+}
+
+message GetNotificationsRequest {
+  optional string type_filter = 1;
+  int32 limit = 2;
+  int32 offset = 3;
+}
+
+message GetNotificationsResponse {
+  repeated NotificationProto notifications = 1;
+  int32 unread_count = 2;
+  int32 total = 3;
+}
+
+message ReadingHistoryProto {
+  string device_id = 1;
+  string campaign_id = 2;
+  int32 total_readings = 3;
+  int32 accepted = 4;
+  int32 rejected = 5;
+}
+
+message GetContributionsRequest {}
+
+message GetContributionsResponse {
+  repeated ReadingHistoryProto histories = 1;
+  double contribution_score = 2;
+  repeated BadgeProto badges = 3;
+}
+
+// Notification service messages
+
+message ListNotificationsRequest {
+  optional string type_filter = 1;
+  int32 limit = 2;
+  int32 offset = 3;
+}
+
+message ListNotificationsResponse {
+  repeated NotificationProto notifications = 1;
+  int32 unread_count = 2;
+  int32 total = 3;
+}
+
+message MarkReadRequest {
+  repeated string notification_ids = 1;
+}
+
+message MarkReadResponse {
+  int32 marked_count = 1;
+}
+
+message NotificationPreferenceProto {
+  string type = 1;
+  bool in_app = 2;
+  bool email = 3;
+}
+
+message GetPreferencesRequest {}
+
+message GetPreferencesResponse {
+  repeated NotificationPreferenceProto preferences = 1;
+}
+
+message UpdatePreferencesRequest {
+  repeated NotificationPreferenceProto preferences = 1;
+}
+
+message UpdatePreferencesResponse {}
+
 // AdminService provides platform administration operations.
 service AdminService {
   rpc SuspendByClass(SuspendByClassRequest) returns (SuspendByClassResponse);
