@@ -3,7 +3,6 @@ package authorization
 import (
 	"context"
 	_ "embed"
-	"encoding/json"
 	"fmt"
 	"time"
 
@@ -95,13 +94,8 @@ func (s *opaState) doEval(ctx context.Context, input AuthzInput) (*AuthzResult, 
 		return nil, fmt.Errorf("authorization not initialized — call Recompile first")
 	}
 
-	inputMap, err := structToMap(input)
-	if err != nil {
-		return nil, fmt.Errorf("convert input: %w", err)
-	}
-
 	start := time.Now()
-	results, err := s.prepared.Eval(ctx, rego.EvalInput(inputMap))
+	results, err := s.prepared.Eval(ctx, rego.EvalInput(input.ToOPAInput()))
 	elapsed := time.Since(start)
 
 	if err != nil {
@@ -164,18 +158,6 @@ func (s *opaState) logDecision(ctx context.Context, input AuthzInput, result *Au
 	} else {
 		s.logger.Warn(ctx, "authz decision denied", attrs)
 	}
-}
-
-func structToMap(v interface{}) (map[string]interface{}, error) {
-	data, err := json.Marshal(v)
-	if err != nil {
-		return nil, err
-	}
-	var result map[string]interface{}
-	if err := json.Unmarshal(data, &result); err != nil {
-		return nil, err
-	}
-	return result, nil
 }
 
 func extractDecision(results rego.ResultSet) (*AuthzResult, error) {

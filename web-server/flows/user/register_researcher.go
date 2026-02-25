@@ -46,7 +46,7 @@ func (f *RegisterResearcherFlow) Run(ctx context.Context, input RegisterResearch
 	// 2. Create app record.
 	_, err = f.userOps.CreateUser(ctx, userops.CreateUserInput{
 		IdpID:    idpUser.UserID,
-		UserType: "researcher",
+		UserType: input.UserType,
 	})
 	if err != nil {
 		return nil, err

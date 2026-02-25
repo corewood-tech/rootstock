@@ -28,7 +28,7 @@
 
 	<div class="filter-bar">
 		<label for="type-filter" class="visually-hidden">Filter by type</label>
-		<select id="type-filter" bind:value={typeFilter} class="input">
+		<select id="type-filter" bind:value={typeFilter} class="field__input">
 			<option value="">All types</option>
 			<option value="enrollment">Enrollment</option>
 			<option value="badge">Badge</option>

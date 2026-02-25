@@ -69,7 +69,7 @@
 				type="search"
 				bind:value={searchQuery}
 				placeholder="Search campaigns..."
-				class="input"
+				class="field__input"
 			/>
 			<button type="submit" class="btn btn--secondary">Search</button>
 		</form>

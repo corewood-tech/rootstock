@@ -2,8 +2,9 @@
 	import { goto } from '$app/navigation';
 	import { base } from '$app/paths';
 	import { page } from '$app/stores';
+	import { get } from 'svelte/store';
 	import { t } from '$lib/i18n';
-	import { login } from '$lib/auth/store';
+	import { login, activeRole, getDashboardPath } from '$lib/auth/store';
 
 	let email = $state('');
 	let password = $state('');
@@ -19,7 +20,9 @@
 
 		try {
 			await login(email, password);
-			await goto(`${base}/${lang}/researcher/`);
+			const role = get(activeRole);
+			const path = getDashboardPath(lang, role ?? 'researcher');
+			await goto(`${base}${path}`);
 		} catch (err: any) {
 			error = $t('auth.login_failed');
 		} finally {

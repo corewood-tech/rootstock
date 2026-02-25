@@ -272,6 +272,7 @@ service UserService {
   rpc Logout(LogoutRequest) returns (LogoutResponse);
   rpc RegisterResearcher(RegisterResearcherRequest) returns (RegisterResearcherResponse);
   rpc VerifyEmail(VerifyEmailRequest) returns (VerifyEmailResponse);
+  rpc UpdateUserType(UpdateUserTypeRequest) returns (UpdateUserTypeResponse);
 }
 
 // User messages
@@ -317,6 +318,7 @@ message RegisterResearcherRequest {
   string password = 2;
   string given_name = 3;
   string family_name = 4;
+  string user_type = 5;
 }
 
 message RegisterResearcherResponse {
@@ -331,6 +333,14 @@ message VerifyEmailRequest {
 
 message VerifyEmailResponse {
   bool verified = 1;
+}
+
+message UpdateUserTypeRequest {
+  string user_type = 1;
+}
+
+message UpdateUserTypeResponse {
+  UserProto user = 1;
 }
 
 // ScitizenService provides citizen scientist operations.

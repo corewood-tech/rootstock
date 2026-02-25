@@ -2,12 +2,13 @@ package user
 
 import (
 	"context"
+	"fmt"
 
 	userops "rootstock/web-server/ops/user"
 )
 
 // LoginFlow orchestrates user login.
-// Creates a session, resolves the app user (auto-creating if needed), and returns both.
+// Creates a session, resolves the app user, and returns both.
 type LoginFlow struct {
 	userOps *userops.Ops
 }
@@ -33,15 +34,9 @@ func (f *LoginFlow) Run(ctx context.Context, input LoginInput) (*LoginResult, er
 		return nil, err
 	}
 
-	// Auto-create app record if this is the first login.
+	// No app record means the user didn't complete registration.
 	if appUser == nil {
-		appUser, err = f.userOps.CreateUser(ctx, userops.CreateUserInput{
-			IdpID:    loginResult.UserID,
-			UserType: "researcher",
-		})
-		if err != nil {
-			return nil, err
-		}
+		return nil, fmt.Errorf("no app record for user %s: registration incomplete", loginResult.UserID)
 	}
 
 	return &LoginResult{

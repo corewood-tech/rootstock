@@ -86,6 +86,18 @@ func (o *Ops) ValidateSession(ctx context.Context, input ValidateSessionInput) (
 	}, nil
 }
 
+// UpdateUserType changes a user's type (researcher, scitizen, both).
+func (o *Ops) UpdateUserType(ctx context.Context, input UpdateUserTypeInput) (*User, error) {
+	result, err := o.repo.UpdateUserType(ctx, userrepo.UpdateUserTypeInput{
+		ID:       input.ID,
+		UserType: input.UserType,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return fromRepoUser(result), nil
+}
+
 func fromRepoUser(r *userrepo.User) *User {
 	return &User{
 		ID:        r.ID,

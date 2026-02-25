@@ -2,13 +2,14 @@
 	import { base } from '$app/paths';
 	import { page } from '$app/stores';
 	import { t } from '$lib/i18n';
-	import { isAuthenticated, currentUser, authLoading, logout } from '$lib/auth/store';
+	import { currentUser, authLoading, logout, activeRole, setActiveRole } from '$lib/auth/store';
 	import { requireAuth } from '$lib/auth/guard';
 	import { goto } from '$app/navigation';
 
 	let { children } = $props();
 
 	const lang = $derived($page.params.lang);
+	const isBothUser = $derived($currentUser?.userType === 'both');
 
 	let guardChecked = $state(false);
 	let mobileNavOpen = $state(false);
@@ -22,6 +23,11 @@
 	async function handleLogout() {
 		await logout();
 		await goto(`${base}/${lang}/`);
+	}
+
+	async function switchToScitizen() {
+		setActiveRole('scitizen');
+		await goto(`${base}/${lang}/scitizen/`);
 	}
 </script>
 
@@ -51,8 +57,13 @@
 			</button>
 
 			<div class="app-header__right">
+				{#if isBothUser}
+					<button onclick={switchToScitizen} class="btn btn--ghost btn--sm" title="Switch to Citizen Scientist view">
+						{$t('nav.switch_to_scitizen')}
+					</button>
+				{/if}
 				{#if $currentUser}
-					<span class="app-header__user-type">{$currentUser.userType}</span>
+					<span class="app-header__user-type">{$activeRole ?? $currentUser.userType}</span>
 				{/if}
 				<button onclick={handleLogout} class="btn btn--ghost">
 					{$t('nav.logout')}
@@ -68,8 +79,10 @@
 				<a href="{base}/{lang}/researcher/" class="mobile-nav__link" onclick={() => mobileNavOpen = false}>
 					{$t('nav.campaigns')}
 				</a>
-				{#if $currentUser}
-					<span class="mobile-nav__link text-secondary">{$currentUser.userType}</span>
+				{#if isBothUser}
+					<button class="mobile-nav__link btn--ghost" onclick={() => { mobileNavOpen = false; switchToScitizen(); }}>
+						{$t('nav.switch_to_scitizen')}
+					</button>
 				{/if}
 				<button class="mobile-nav__link btn--ghost" onclick={() => { mobileNavOpen = false; handleLogout(); }}>
 					{$t('nav.logout')}

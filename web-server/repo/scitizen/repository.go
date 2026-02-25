@@ -346,7 +346,7 @@ func (r *pgRepo) doGetDashboard(ctx context.Context, userID string) (*Dashboard,
 	// Reading counts from readings table
 	err = r.pool.QueryRow(ctx,
 		`SELECT COALESCE(COUNT(*), 0),
-		        COALESCE(SUM(CASE WHEN status = 'accepted' THEN 1 ELSE 0 END), 0)
+		        COALESCE(SUM(CASE WHEN r.status = 'accepted' THEN 1 ELSE 0 END), 0)
 		 FROM readings r
 		 JOIN devices d ON r.device_id = d.id
 		 WHERE d.owner_id = $1`,
@@ -358,7 +358,7 @@ func (r *pgRepo) doGetDashboard(ctx context.Context, userID string) (*Dashboard,
 
 	// Contribution score
 	err = r.pool.QueryRow(ctx,
-		`SELECT COALESCE(total, 0) FROM scitizen_scores WHERE scitizen_id = $1`,
+		`SELECT COALESCE(total, 0) FROM scores WHERE scitizen_id = $1`,
 		userID,
 	).Scan(&d.ContributionScore)
 	if err != nil && err != pgx.ErrNoRows {
@@ -637,7 +637,7 @@ func (r *pgRepo) doSearchCampaigns(ctx context.Context, input SearchInput) (brow
 func (r *pgRepo) doGetDevices(ctx context.Context, ownerID string) ([]DeviceSummary, error) {
 	rows, err := r.pool.Query(ctx,
 		`SELECT d.id, d.status, d.class, d.firmware_version, d.tier, d.sensors,
-		        COALESCE(e.cnt, 0) as active_enrollments, d.last_seen
+		        COALESCE(e.cnt, 0) as active_enrollments, d.created_at
 		 FROM devices d
 		 LEFT JOIN (SELECT device_id, COUNT(*) as cnt FROM campaign_enrollments WHERE status = 'active' GROUP BY device_id) e
 		   ON d.id = e.device_id

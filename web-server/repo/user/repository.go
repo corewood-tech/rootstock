@@ -32,26 +32,34 @@ type getByIdpIDReq struct {
 	resp  chan response[*User]
 }
 
+type updateUserTypeReq struct {
+	ctx   context.Context
+	input UpdateUserTypeInput
+	resp  chan response[*User]
+}
+
 type shutdownReq struct {
 	resp chan struct{}
 }
 
 type pgRepo struct {
-	pool         *pgxpool.Pool
-	createCh     chan createReq
-	getByIDCh    chan getByIDReq
-	getByIdpIDCh chan getByIdpIDReq
-	shutdownCh   chan shutdownReq
+	pool             *pgxpool.Pool
+	createCh         chan createReq
+	getByIDCh        chan getByIDReq
+	getByIdpIDCh     chan getByIdpIDReq
+	updateUserTypeCh chan updateUserTypeReq
+	shutdownCh       chan shutdownReq
 }
 
 // NewRepository creates a user repository backed by Postgres.
 func NewRepository(pool *pgxpool.Pool) Repository {
 	r := &pgRepo{
-		pool:         pool,
-		createCh:     make(chan createReq),
-		getByIDCh:    make(chan getByIDReq),
-		getByIdpIDCh: make(chan getByIdpIDReq),
-		shutdownCh:   make(chan shutdownReq),
+		pool:             pool,
+		createCh:         make(chan createReq),
+		getByIDCh:        make(chan getByIDReq),
+		getByIdpIDCh:     make(chan getByIdpIDReq),
+		updateUserTypeCh: make(chan updateUserTypeReq),
+		shutdownCh:       make(chan shutdownReq),
 	}
 	go r.manage()
 	return r
@@ -68,6 +76,9 @@ func (r *pgRepo) manage() {
 			req.resp <- response[*User]{val: val, err: err}
 		case req := <-r.getByIdpIDCh:
 			val, err := r.doGetByIdpID(req.ctx, req.idpID)
+			req.resp <- response[*User]{val: val, err: err}
+		case req := <-r.updateUserTypeCh:
+			val, err := r.doUpdateUserType(req.ctx, req.input)
 			req.resp <- response[*User]{val: val, err: err}
 		case req := <-r.shutdownCh:
 			close(req.resp)
@@ -93,6 +104,13 @@ func (r *pgRepo) GetByID(ctx context.Context, id string) (*User, error) {
 func (r *pgRepo) GetByIdpID(ctx context.Context, idpID string) (*User, error) {
 	resp := make(chan response[*User], 1)
 	r.getByIdpIDCh <- getByIdpIDReq{ctx: ctx, idpID: idpID, resp: resp}
+	res := <-resp
+	return res.val, res.err
+}
+
+func (r *pgRepo) UpdateUserType(ctx context.Context, input UpdateUserTypeInput) (*User, error) {
+	resp := make(chan response[*User], 1)
+	r.updateUserTypeCh <- updateUserTypeReq{ctx: ctx, input: input, resp: resp}
 	res := <-resp
 	return res.val, res.err
 }
@@ -130,6 +148,23 @@ func (r *pgRepo) doGetByID(ctx context.Context, id string) (*User, error) {
 			return nil, fmt.Errorf("user %s not found", id)
 		}
 		return nil, fmt.Errorf("get user: %w", err)
+	}
+	return &u, nil
+}
+
+func (r *pgRepo) doUpdateUserType(ctx context.Context, input UpdateUserTypeInput) (*User, error) {
+	var u User
+	err := r.pool.QueryRow(ctx,
+		`UPDATE app_users SET user_type = $2
+		 WHERE id = $1
+		 RETURNING id, idp_id, user_type, status, created_at`,
+		input.ID, input.UserType,
+	).Scan(&u.ID, &u.IdpID, &u.UserType, &u.Status, &u.CreatedAt)
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			return nil, fmt.Errorf("user %s not found", input.ID)
+		}
+		return nil, fmt.Errorf("update user type: %w", err)
 	}
 	return &u, nil
 }

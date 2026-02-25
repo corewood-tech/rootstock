@@ -7,5 +7,6 @@ type Repository interface {
 	Create(ctx context.Context, input CreateUserInput) (*User, error)
 	GetByID(ctx context.Context, id string) (*User, error)
 	GetByIdpID(ctx context.Context, idpID string) (*User, error)
+	UpdateUserType(ctx context.Context, input UpdateUserTypeInput) (*User, error)
 	Shutdown()
 }

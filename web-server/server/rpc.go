@@ -129,6 +129,7 @@ func NewRPCServer(ctx context.Context, cfg *config.Config, pool *pgxpool.Pool, i
 	logoutFlow := userflows.NewLogoutFlow(uOps)
 	registerResearcherFlow := userflows.NewRegisterResearcherFlow(oOps, uOps, nOps, cfg.Server.PublicBaseURL)
 	verifyEmailFlow := userflows.NewVerifyEmailFlow(oOps)
+	updateUserTypeFlow := userflows.NewUpdateUserTypeFlow(uOps)
 
 	// Scitizen flows
 	scitizenRegisterFlow := scitizenflows.NewScitzenRegistrationFlow(scOps)
@@ -171,7 +172,7 @@ func NewRPCServer(ctx context.Context, cfg *config.Config, pool *pgxpool.Pool, i
 	deviceHandler := connecthandlers.NewDeviceServiceHandler(getDeviceFlow, revokeDeviceFlow, reinstateDeviceFlow, enrollInCampaignFlow)
 	devicePath, deviceH := rootstockv1connect.NewDeviceServiceHandler(deviceHandler, interceptors)
 
-	userHandler := connecthandlers.NewUserServiceHandler(registerUserFlow, getUserFlow, loginFlow, logoutFlow, registerResearcherFlow, verifyEmailFlow)
+	userHandler := connecthandlers.NewUserServiceHandler(registerUserFlow, getUserFlow, loginFlow, logoutFlow, registerResearcherFlow, verifyEmailFlow, updateUserTypeFlow)
 	userPath, userH := rootstockv1connect.NewUserServiceHandler(userHandler, interceptors)
 
 	scitizenHandler := connecthandlers.NewScitizenServiceHandler(

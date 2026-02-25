@@ -354,6 +354,11 @@ a {
   color: var(--color-text-primary);
 }
 
+.btn--sm {
+  padding: var(--space-1) var(--space-2);
+  font-size: var(--text-xs, 0.75rem);
+}
+
 /*
  * @component  btn--text
  * @purpose    Inline text link styled as button
@@ -398,6 +403,69 @@ a {
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
+}
+
+/*
+ * @component  role-selector
+ * @purpose    Radio card group for user type selection at registration
+ * @states     role-option--selected
+ */
+.role-selector {
+  border: none;
+  padding: 0;
+  margin: 0;
+}
+
+.role-selector__options {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-3);
+  margin-top: var(--space-2);
+}
+
+.role-option {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-3);
+  border: 1px solid var(--color-border, rgba(255, 255, 255, 0.15));
+  border-radius: var(--radius-md, 0.5rem);
+  cursor: pointer;
+  transition: border-color 0.15s, background-color 0.15s;
+}
+
+.role-option:hover {
+  border-color: var(--color-border-hover, rgba(255, 255, 255, 0.3));
+}
+
+.role-option--selected {
+  border-color: var(--color-primary, #a3e635);
+  background-color: rgba(163, 230, 53, 0.05);
+}
+
+.role-option__input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.role-option__label {
+  font-weight: 600;
+  font-size: var(--text-sm, 0.875rem);
+  color: var(--color-text);
+}
+
+.role-option__desc {
+  font-size: var(--text-xs, 0.75rem);
+  color: var(--color-text-secondary, rgba(255, 255, 255, 0.6));
+  line-height: 1.4;
+}
+
+@media (max-width: 480px) {
+  .role-selector__options {
+    grid-template-columns: 1fr;
+  }
 }
 
 /*

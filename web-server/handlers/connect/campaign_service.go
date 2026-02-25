@@ -2,6 +2,7 @@ package connect
 
 import (
 	"context"
+	"log/slog"
 	"time"
 
 	"connectrpc.com/connect"
@@ -80,7 +81,8 @@ func (h *CampaignServiceHandler) CreateCampaign(
 
 	result, err := h.createCampaign.Run(ctx, input)
 	if err != nil {
-		return nil, err
+		slog.ErrorContext(ctx, "create campaign failed", "error", err)
+		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
 	return connect.NewResponse(&rootstockv1.CreateCampaignResponse{

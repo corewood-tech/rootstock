@@ -7,7 +7,9 @@
     "home": "Home",
     "skip_to_content": "Skip to main content",
     "campaigns": "Campaigns",
-    "logout": "Log out"
+    "logout": "Log out",
+    "switch_to_scitizen": "Switch to Citizen Scientist",
+    "switch_to_researcher": "Switch to Researcher"
   },
   "home": {
     "title": "Rootstock",
@@ -39,7 +41,12 @@
     "verify_success_message": "Your email has been verified. You can now log in to your account.",
     "verify_error_title": "Verification failed",
     "verify_failed": "Email verification failed. The link may have expired or is invalid.",
-    "verify_missing_params": "Invalid verification link. Missing required parameters."
+    "verify_missing_params": "Invalid verification link. Missing required parameters.",
+    "select_role": "I want to join as",
+    "role_researcher": "Researcher",
+    "role_researcher_desc": "Design campaigns and collect environmental data",
+    "role_scitizen": "Citizen Scientist",
+    "role_scitizen_desc": "Contribute data with your devices"
   },
   "researcher": {
     "welcome": "Welcome to Rootstock",

@@ -24,10 +24,17 @@ type RegisterResearcherInput struct {
 	Password   string
 	GivenName  string
 	FamilyName string
+	UserType   string
 }
 
 // VerifyEmailInput is what callers send to VerifyEmailFlow.
 type VerifyEmailInput struct {
 	UserID           string
 	VerificationCode string
+}
+
+// UpdateUserTypeInput is what callers send to UpdateUserTypeFlow.
+type UpdateUserTypeInput struct {
+	AppUserID string
+	UserType  string
 }

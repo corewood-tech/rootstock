@@ -2,13 +2,14 @@
 	import { base } from '$app/paths';
 	import { page } from '$app/stores';
 	import { t } from '$lib/i18n';
-	import { registerResearcher } from '$lib/auth/store';
+	import { register, USER_TYPE, type RegistrationRole } from '$lib/auth/store';
 
 	let email = $state('');
 	let password = $state('');
 	let confirmPassword = $state('');
 	let givenName = $state('');
 	let familyName = $state('');
+	let userType = $state<RegistrationRole | ''>('');
 	let error = $state('');
 	let loading = $state(false);
 	let emailSent = $state(false);
@@ -19,6 +20,11 @@
 		e.preventDefault();
 		error = '';
 
+		if (!userType) {
+			error = $t('auth.select_role');
+			return;
+		}
+
 		if (password !== confirmPassword) {
 			error = $t('auth.passwords_mismatch');
 			return;
@@ -27,7 +33,7 @@
 		loading = true;
 
 		try {
-			const result = await registerResearcher(email, password, givenName, familyName);
+			const result = await register(email, password, givenName, familyName, userType);
 			if (result.emailVerificationSent) {
 				emailSent = true;
 			}
@@ -59,6 +65,34 @@
 			</h1>
 
 			<form onsubmit={handleSubmit} class="form-stack">
+				<fieldset class="role-selector">
+					<legend class="field__label">{$t('auth.select_role')}</legend>
+					<div class="role-selector__options">
+						<label class="role-option" class:role-option--selected={userType === USER_TYPE.RESEARCHER}>
+							<input
+								type="radio"
+								name="user-type"
+								value={USER_TYPE.RESEARCHER}
+								bind:group={userType}
+								class="role-option__input"
+							/>
+							<span class="role-option__label">{$t('auth.role_researcher')}</span>
+							<span class="role-option__desc">{$t('auth.role_researcher_desc')}</span>
+						</label>
+						<label class="role-option" class:role-option--selected={userType === USER_TYPE.SCITIZEN}>
+							<input
+								type="radio"
+								name="user-type"
+								value={USER_TYPE.SCITIZEN}
+								bind:group={userType}
+								class="role-option__input"
+							/>
+							<span class="role-option__label">{$t('auth.role_scitizen')}</span>
+							<span class="role-option__desc">{$t('auth.role_scitizen_desc')}</span>
+						</label>
+					</div>
+				</fieldset>
+
 				<div class="form-row">
 					<div class="field">
 						<label for="given-name" class="field__label">{$t('auth.given_name')}</label>

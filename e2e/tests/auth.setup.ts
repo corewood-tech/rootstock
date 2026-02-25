@@ -17,9 +17,11 @@ setup('register, verify email, and login', async ({ page, request }) => {
   // 2. Warm up vite (first load triggers dep optimization + page reload)
   await page.goto('/app/en/', { waitUntil: 'networkidle', timeout: 30_000 });
 
-  // 3. Register via UI
+  // 3. Register via UI — select researcher role
   await page.goto('/app/en/register', { waitUntil: 'networkidle' });
   await expect(page.getByLabel('First name')).toBeVisible({ timeout: 15_000 });
+
+  await page.locator('.role-option', { hasText: 'Researcher' }).click();
   await page.getByLabel('First name').fill(TEST_USER.givenName);
   await page.getByLabel('Last name').fill(TEST_USER.familyName);
   await page.getByLabel('Email').fill(TEST_USER.email);
@@ -27,26 +29,26 @@ setup('register, verify email, and login', async ({ page, request }) => {
   await page.getByLabel('Confirm password').fill(TEST_USER.password);
   await page.getByRole('button', { name: 'Create account' }).click();
 
-  // 3. Wait for "check your email" confirmation
+  // 4. Wait for "check your email" confirmation
   await expect(page.getByText('Check your email')).toBeVisible({ timeout: 15_000 });
 
-  // 4. Get verification link from maildev
+  // 5. Get verification link from maildev
   const verifyLink = await getVerificationLink(request, TEST_USER.email);
 
-  // 5. Navigate to verification link
+  // 6. Navigate to verification link
   await page.goto(verifyLink);
   await expect(page.getByText('Email verified')).toBeVisible({ timeout: 10_000 });
 
-  // 6. Login
+  // 7. Login
   await page.goto('/app/en/login');
   await page.getByLabel('Email').fill(TEST_USER.email);
   await page.getByLabel('Password').fill(TEST_USER.password);
   await page.getByRole('button', { name: 'Log in' }).click();
 
-  // 7. Wait for researcher dashboard (welcome state or campaign list)
+  // 8. Wait for researcher dashboard (researcher role selected at registration)
   await expect(page).toHaveURL(/\/researcher/, { timeout: 15_000 });
   await expect(page.locator('.app-header__brand-name')).toHaveText('ROOTSTOCK', { timeout: 10_000 });
 
-  // 8. Save storage state
+  // 9. Save storage state
   await page.context().storageState({ path: STORAGE_STATE });
 });

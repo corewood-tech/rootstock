@@ -187,10 +187,14 @@ func (r *pgRepo) doCreate(ctx context.Context, input CreateCampaignInput) (*Camp
 	}
 
 	for _, e := range input.Eligibility {
+		sensors := e.RequiredSensors
+		if sensors == nil {
+			sensors = []string{}
+		}
 		_, err := tx.Exec(ctx,
 			`INSERT INTO campaign_eligibility (id, campaign_id, device_class, tier, required_sensors, firmware_min)
 			 VALUES ($1, $2, $3, $4, $5, $6)`,
-			ulid.Make().String(), c.ID, e.DeviceClass, e.Tier, e.RequiredSensors, e.FirmwareMin,
+			ulid.Make().String(), c.ID, e.DeviceClass, e.Tier, sensors, e.FirmwareMin,
 		)
 		if err != nil {
 			return nil, fmt.Errorf("insert eligibility: %w", err)

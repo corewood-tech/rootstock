@@ -23,3 +23,9 @@ type ValidateSessionInput struct {
 	SessionID    string
 	SessionToken string
 }
+
+// UpdateUserTypeInput is what callers send to UpdateUserType.
+type UpdateUserTypeInput struct {
+	ID       string
+	UserType string
+}

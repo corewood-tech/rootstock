@@ -1,11 +1,8 @@
 <script lang="ts">
-	// Graph node: 0x40 (ScitizenRegisterPage)
-	// Implements: FR-011 (Registration), FR-080 (ToS Acceptance)
 	import { base } from '$app/paths';
 	import { page } from '$app/stores';
-	import { goto } from '$app/navigation';
 	import { t } from '$lib/i18n';
-	import { userService } from '$lib/api/clients';
+	import { register } from '$lib/auth/store';
 
 	const lang = $derived($page.params.lang);
 
@@ -27,12 +24,7 @@
 		loading = true;
 		error = '';
 		try {
-			await userService.registerResearcher({
-				email,
-				password,
-				givenName,
-				familyName,
-			});
+			await register(email, password, givenName, familyName, 'scitizen');
 			success = true;
 		} catch (e: any) {
 			error = e.message || 'Registration failed';
@@ -56,19 +48,19 @@
 		<form onsubmit={(e) => { e.preventDefault(); handleSubmit(); }} class="register-form">
 			<div class="form-group">
 				<label for="given-name">First Name</label>
-				<input id="given-name" type="text" bind:value={givenName} required class="input" autocomplete="given-name" />
+				<input id="given-name" type="text" bind:value={givenName} required class="field__input" autocomplete="given-name" />
 			</div>
 			<div class="form-group">
 				<label for="family-name">Last Name</label>
-				<input id="family-name" type="text" bind:value={familyName} required class="input" autocomplete="family-name" />
+				<input id="family-name" type="text" bind:value={familyName} required class="field__input" autocomplete="family-name" />
 			</div>
 			<div class="form-group">
 				<label for="email">Email</label>
-				<input id="email" type="email" bind:value={email} required class="input" autocomplete="email" />
+				<input id="email" type="email" bind:value={email} required class="field__input" autocomplete="email" />
 			</div>
 			<div class="form-group">
 				<label for="password">Password</label>
-				<input id="password" type="password" bind:value={password} required class="input" minlength="8" autocomplete="new-password" />
+				<input id="password" type="password" bind:value={password} required class="field__input" minlength="8" autocomplete="new-password" />
 			</div>
 			<div class="form-group form-group--checkbox">
 				<input id="tos" type="checkbox" bind:checked={tosAccepted} />

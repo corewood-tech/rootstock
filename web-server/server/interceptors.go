@@ -12,12 +12,14 @@ import (
 	"rootstock/web-server/repo/authorization"
 )
 
-// AuthorizationInterceptor verifies the session (if present) and evaluates OPA policy.
+// AuthorizationInterceptor verifies the session (if present), resolves principal
+// attributes, and evaluates OPA ABAC policy.
 // Authorization header format: "Bearer sessionID|sessionToken"
 func AuthorizationInterceptor(uOps *userops.Ops, authz authorization.Repository) connect.UnaryInterceptorFunc {
 	return func(next connect.UnaryFunc) connect.UnaryFunc {
 		return func(ctx context.Context, req connect.AnyRequest) (connect.AnyResponse, error) {
 			var subject string
+			var principal authorization.Principal
 
 			authHeader := req.Header().Get("Authorization")
 			if authHeader != "" {
@@ -40,6 +42,12 @@ func AuthorizationInterceptor(uOps *userops.Ops, authz authorization.Repository)
 					subject = validated.UserID
 					ctx = auth.ContextWithSessionID(ctx, sessionID)
 					ctx = auth.ContextWithSessionToken(ctx, sessionToken)
+
+					// Resolve principal attributes from app DB.
+					appUser, err := uOps.GetUserByIdpID(ctx, subject)
+					if err == nil && appUser != nil {
+						principal.Role = appUser.UserType
+					}
 				}
 			}
 
@@ -47,6 +55,7 @@ func AuthorizationInterceptor(uOps *userops.Ops, authz authorization.Repository)
 
 			input := authorization.AuthzInput{
 				SessionUserID: subject,
+				Principal:     principal,
 				Method:        req.Spec().Procedure,
 				Request:       req.Any(),
 			}

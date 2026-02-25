@@ -20,6 +20,7 @@ type UserServiceHandler struct {
 	logout             *userflows.LogoutFlow
 	registerResearcher *userflows.RegisterResearcherFlow
 	verifyEmail        *userflows.VerifyEmailFlow
+	updateUserType     *userflows.UpdateUserTypeFlow
 }
 
 // NewUserServiceHandler creates the handler with all required flows.
@@ -30,6 +31,7 @@ func NewUserServiceHandler(
 	logout *userflows.LogoutFlow,
 	registerResearcher *userflows.RegisterResearcherFlow,
 	verifyEmail *userflows.VerifyEmailFlow,
+	updateUserType *userflows.UpdateUserTypeFlow,
 ) *UserServiceHandler {
 	return &UserServiceHandler{
 		registerUser:       registerUser,
@@ -38,6 +40,7 @@ func NewUserServiceHandler(
 		logout:             logout,
 		registerResearcher: registerResearcher,
 		verifyEmail:        verifyEmail,
+		updateUserType:     updateUserType,
 	}
 }
 
@@ -132,11 +135,17 @@ func (h *UserServiceHandler) RegisterResearcher(
 	ctx context.Context,
 	req *connect.Request[rootstockv1.RegisterResearcherRequest],
 ) (*connect.Response[rootstockv1.RegisterResearcherResponse], error) {
+	userType := req.Msg.GetUserType()
+	if !auth.IsValidRegistrationRole(userType) {
+		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("user_type must be '%s' or '%s'", auth.RoleResearcher, auth.RoleScitizen))
+	}
+
 	result, err := h.registerResearcher.Run(ctx, userflows.RegisterResearcherInput{
 		Email:      req.Msg.GetEmail(),
 		Password:   req.Msg.GetPassword(),
 		GivenName:  req.Msg.GetGivenName(),
 		FamilyName: req.Msg.GetFamilyName(),
+		UserType:   userType,
 	})
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("registration failed: %w", err))
@@ -162,6 +171,37 @@ func (h *UserServiceHandler) VerifyEmail(
 
 	return connect.NewResponse(&rootstockv1.VerifyEmailResponse{
 		Verified: true,
+	}), nil
+}
+
+func (h *UserServiceHandler) UpdateUserType(
+	ctx context.Context,
+	req *connect.Request[rootstockv1.UpdateUserTypeRequest],
+) (*connect.Response[rootstockv1.UpdateUserTypeResponse], error) {
+	idpID, ok := auth.SubjectFromContext(ctx)
+	if !ok {
+		return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("no authenticated subject"))
+	}
+
+	// Resolve app user from IDP ID.
+	appUser, err := h.getUser.Run(ctx, idpID)
+	if err != nil {
+		return nil, err
+	}
+	if appUser == nil {
+		return nil, connect.NewError(connect.CodeNotFound, fmt.Errorf("user not found"))
+	}
+
+	result, err := h.updateUserType.Run(ctx, userflows.UpdateUserTypeInput{
+		AppUserID: appUser.ID,
+		UserType:  req.Msg.GetUserType(),
+	})
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("update user type: %w", err))
+	}
+
+	return connect.NewResponse(&rootstockv1.UpdateUserTypeResponse{
+		User: userToProto(result),
 	}), nil
 }
 

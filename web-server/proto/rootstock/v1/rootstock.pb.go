@@ -2683,6 +2683,7 @@ type RegisterResearcherRequest struct {
 	Password      string                 `protobuf:"bytes,2,opt,name=password,proto3" json:"password,omitempty"`
 	GivenName     string                 `protobuf:"bytes,3,opt,name=given_name,json=givenName,proto3" json:"given_name,omitempty"`
 	FamilyName    string                 `protobuf:"bytes,4,opt,name=family_name,json=familyName,proto3" json:"family_name,omitempty"`
+	UserType      string                 `protobuf:"bytes,5,opt,name=user_type,json=userType,proto3" json:"user_type,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -2741,6 +2742,13 @@ func (x *RegisterResearcherRequest) GetGivenName() string {
 func (x *RegisterResearcherRequest) GetFamilyName() string {
 	if x != nil {
 		return x.FamilyName
+	}
+	return ""
+}
+
+func (x *RegisterResearcherRequest) GetUserType() string {
+	if x != nil {
+		return x.UserType
 	}
 	return ""
 }
@@ -2893,6 +2901,94 @@ func (x *VerifyEmailResponse) GetVerified() bool {
 	return false
 }
 
+type UpdateUserTypeRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	UserType      string                 `protobuf:"bytes,1,opt,name=user_type,json=userType,proto3" json:"user_type,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UpdateUserTypeRequest) Reset() {
+	*x = UpdateUserTypeRequest{}
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[52]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UpdateUserTypeRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdateUserTypeRequest) ProtoMessage() {}
+
+func (x *UpdateUserTypeRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[52]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpdateUserTypeRequest.ProtoReflect.Descriptor instead.
+func (*UpdateUserTypeRequest) Descriptor() ([]byte, []int) {
+	return file_rootstock_v1_rootstock_proto_rawDescGZIP(), []int{52}
+}
+
+func (x *UpdateUserTypeRequest) GetUserType() string {
+	if x != nil {
+		return x.UserType
+	}
+	return ""
+}
+
+type UpdateUserTypeResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	User          *UserProto             `protobuf:"bytes,1,opt,name=user,proto3" json:"user,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UpdateUserTypeResponse) Reset() {
+	*x = UpdateUserTypeResponse{}
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[53]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UpdateUserTypeResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdateUserTypeResponse) ProtoMessage() {}
+
+func (x *UpdateUserTypeResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[53]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpdateUserTypeResponse.ProtoReflect.Descriptor instead.
+func (*UpdateUserTypeResponse) Descriptor() ([]byte, []int) {
+	return file_rootstock_v1_rootstock_proto_rawDescGZIP(), []int{53}
+}
+
+func (x *UpdateUserTypeResponse) GetUser() *UserProto {
+	if x != nil {
+		return x.User
+	}
+	return nil
+}
+
 type RegisterScitizenRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Email         string                 `protobuf:"bytes,1,opt,name=email,proto3" json:"email,omitempty"`
@@ -2906,7 +3002,7 @@ type RegisterScitizenRequest struct {
 
 func (x *RegisterScitizenRequest) Reset() {
 	*x = RegisterScitizenRequest{}
-	mi := &file_rootstock_v1_rootstock_proto_msgTypes[52]
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[54]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2918,7 +3014,7 @@ func (x *RegisterScitizenRequest) String() string {
 func (*RegisterScitizenRequest) ProtoMessage() {}
 
 func (x *RegisterScitizenRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_rootstock_v1_rootstock_proto_msgTypes[52]
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[54]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2931,7 +3027,7 @@ func (x *RegisterScitizenRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RegisterScitizenRequest.ProtoReflect.Descriptor instead.
 func (*RegisterScitizenRequest) Descriptor() ([]byte, []int) {
-	return file_rootstock_v1_rootstock_proto_rawDescGZIP(), []int{52}
+	return file_rootstock_v1_rootstock_proto_rawDescGZIP(), []int{54}
 }
 
 func (x *RegisterScitizenRequest) GetEmail() string {
@@ -2979,7 +3075,7 @@ type RegisterScitizenResponse struct {
 
 func (x *RegisterScitizenResponse) Reset() {
 	*x = RegisterScitizenResponse{}
-	mi := &file_rootstock_v1_rootstock_proto_msgTypes[53]
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[55]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2991,7 +3087,7 @@ func (x *RegisterScitizenResponse) String() string {
 func (*RegisterScitizenResponse) ProtoMessage() {}
 
 func (x *RegisterScitizenResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_rootstock_v1_rootstock_proto_msgTypes[53]
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[55]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3004,7 +3100,7 @@ func (x *RegisterScitizenResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RegisterScitizenResponse.ProtoReflect.Descriptor instead.
 func (*RegisterScitizenResponse) Descriptor() ([]byte, []int) {
-	return file_rootstock_v1_rootstock_proto_rawDescGZIP(), []int{53}
+	return file_rootstock_v1_rootstock_proto_rawDescGZIP(), []int{55}
 }
 
 func (x *RegisterScitizenResponse) GetUserId() string {
@@ -3033,7 +3129,7 @@ type OnboardingStateProto struct {
 
 func (x *OnboardingStateProto) Reset() {
 	*x = OnboardingStateProto{}
-	mi := &file_rootstock_v1_rootstock_proto_msgTypes[54]
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[56]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3045,7 +3141,7 @@ func (x *OnboardingStateProto) String() string {
 func (*OnboardingStateProto) ProtoMessage() {}
 
 func (x *OnboardingStateProto) ProtoReflect() protoreflect.Message {
-	mi := &file_rootstock_v1_rootstock_proto_msgTypes[54]
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[56]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3058,7 +3154,7 @@ func (x *OnboardingStateProto) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use OnboardingStateProto.ProtoReflect.Descriptor instead.
 func (*OnboardingStateProto) Descriptor() ([]byte, []int) {
-	return file_rootstock_v1_rootstock_proto_rawDescGZIP(), []int{54}
+	return file_rootstock_v1_rootstock_proto_rawDescGZIP(), []int{56}
 }
 
 func (x *OnboardingStateProto) GetDeviceRegistered() bool {
@@ -3097,7 +3193,7 @@ type GetOnboardingStateRequest struct {
 
 func (x *GetOnboardingStateRequest) Reset() {
 	*x = GetOnboardingStateRequest{}
-	mi := &file_rootstock_v1_rootstock_proto_msgTypes[55]
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[57]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3109,7 +3205,7 @@ func (x *GetOnboardingStateRequest) String() string {
 func (*GetOnboardingStateRequest) ProtoMessage() {}
 
 func (x *GetOnboardingStateRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_rootstock_v1_rootstock_proto_msgTypes[55]
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[57]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3122,7 +3218,7 @@ func (x *GetOnboardingStateRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetOnboardingStateRequest.ProtoReflect.Descriptor instead.
 func (*GetOnboardingStateRequest) Descriptor() ([]byte, []int) {
-	return file_rootstock_v1_rootstock_proto_rawDescGZIP(), []int{55}
+	return file_rootstock_v1_rootstock_proto_rawDescGZIP(), []int{57}
 }
 
 type GetOnboardingStateResponse struct {
@@ -3134,7 +3230,7 @@ type GetOnboardingStateResponse struct {
 
 func (x *GetOnboardingStateResponse) Reset() {
 	*x = GetOnboardingStateResponse{}
-	mi := &file_rootstock_v1_rootstock_proto_msgTypes[56]
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[58]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3146,7 +3242,7 @@ func (x *GetOnboardingStateResponse) String() string {
 func (*GetOnboardingStateResponse) ProtoMessage() {}
 
 func (x *GetOnboardingStateResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_rootstock_v1_rootstock_proto_msgTypes[56]
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[58]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3159,7 +3255,7 @@ func (x *GetOnboardingStateResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetOnboardingStateResponse.ProtoReflect.Descriptor instead.
 func (*GetOnboardingStateResponse) Descriptor() ([]byte, []int) {
-	return file_rootstock_v1_rootstock_proto_rawDescGZIP(), []int{56}
+	return file_rootstock_v1_rootstock_proto_rawDescGZIP(), []int{58}
 }
 
 func (x *GetOnboardingStateResponse) GetState() *OnboardingStateProto {
@@ -3182,7 +3278,7 @@ type EnrollmentProto struct {
 
 func (x *EnrollmentProto) Reset() {
 	*x = EnrollmentProto{}
-	mi := &file_rootstock_v1_rootstock_proto_msgTypes[57]
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[59]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3194,7 +3290,7 @@ func (x *EnrollmentProto) String() string {
 func (*EnrollmentProto) ProtoMessage() {}
 
 func (x *EnrollmentProto) ProtoReflect() protoreflect.Message {
-	mi := &file_rootstock_v1_rootstock_proto_msgTypes[57]
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[59]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3207,7 +3303,7 @@ func (x *EnrollmentProto) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use EnrollmentProto.ProtoReflect.Descriptor instead.
 func (*EnrollmentProto) Descriptor() ([]byte, []int) {
-	return file_rootstock_v1_rootstock_proto_rawDescGZIP(), []int{57}
+	return file_rootstock_v1_rootstock_proto_rawDescGZIP(), []int{59}
 }
 
 func (x *EnrollmentProto) GetId() string {
@@ -3253,7 +3349,7 @@ type GetDashboardRequest struct {
 
 func (x *GetDashboardRequest) Reset() {
 	*x = GetDashboardRequest{}
-	mi := &file_rootstock_v1_rootstock_proto_msgTypes[58]
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[60]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3265,7 +3361,7 @@ func (x *GetDashboardRequest) String() string {
 func (*GetDashboardRequest) ProtoMessage() {}
 
 func (x *GetDashboardRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_rootstock_v1_rootstock_proto_msgTypes[58]
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[60]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3278,7 +3374,7 @@ func (x *GetDashboardRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetDashboardRequest.ProtoReflect.Descriptor instead.
 func (*GetDashboardRequest) Descriptor() ([]byte, []int) {
-	return file_rootstock_v1_rootstock_proto_rawDescGZIP(), []int{58}
+	return file_rootstock_v1_rootstock_proto_rawDescGZIP(), []int{60}
 }
 
 type GetDashboardResponse struct {
@@ -3295,7 +3391,7 @@ type GetDashboardResponse struct {
 
 func (x *GetDashboardResponse) Reset() {
 	*x = GetDashboardResponse{}
-	mi := &file_rootstock_v1_rootstock_proto_msgTypes[59]
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[61]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3307,7 +3403,7 @@ func (x *GetDashboardResponse) String() string {
 func (*GetDashboardResponse) ProtoMessage() {}
 
 func (x *GetDashboardResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_rootstock_v1_rootstock_proto_msgTypes[59]
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[61]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3320,7 +3416,7 @@ func (x *GetDashboardResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetDashboardResponse.ProtoReflect.Descriptor instead.
 func (*GetDashboardResponse) Descriptor() ([]byte, []int) {
-	return file_rootstock_v1_rootstock_proto_rawDescGZIP(), []int{59}
+	return file_rootstock_v1_rootstock_proto_rawDescGZIP(), []int{61}
 }
 
 func (x *GetDashboardResponse) GetActiveEnrollments() int32 {
@@ -3379,7 +3475,7 @@ type BrowsePublishedCampaignsRequest struct {
 
 func (x *BrowsePublishedCampaignsRequest) Reset() {
 	*x = BrowsePublishedCampaignsRequest{}
-	mi := &file_rootstock_v1_rootstock_proto_msgTypes[60]
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[62]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3391,7 +3487,7 @@ func (x *BrowsePublishedCampaignsRequest) String() string {
 func (*BrowsePublishedCampaignsRequest) ProtoMessage() {}
 
 func (x *BrowsePublishedCampaignsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_rootstock_v1_rootstock_proto_msgTypes[60]
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[62]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3404,7 +3500,7 @@ func (x *BrowsePublishedCampaignsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use BrowsePublishedCampaignsRequest.ProtoReflect.Descriptor instead.
 func (*BrowsePublishedCampaignsRequest) Descriptor() ([]byte, []int) {
-	return file_rootstock_v1_rootstock_proto_rawDescGZIP(), []int{60}
+	return file_rootstock_v1_rootstock_proto_rawDescGZIP(), []int{62}
 }
 
 func (x *BrowsePublishedCampaignsRequest) GetLongitude() float64 {
@@ -3464,7 +3560,7 @@ type CampaignSummaryProto struct {
 
 func (x *CampaignSummaryProto) Reset() {
 	*x = CampaignSummaryProto{}
-	mi := &file_rootstock_v1_rootstock_proto_msgTypes[61]
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[63]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3476,7 +3572,7 @@ func (x *CampaignSummaryProto) String() string {
 func (*CampaignSummaryProto) ProtoMessage() {}
 
 func (x *CampaignSummaryProto) ProtoReflect() protoreflect.Message {
-	mi := &file_rootstock_v1_rootstock_proto_msgTypes[61]
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[63]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3489,7 +3585,7 @@ func (x *CampaignSummaryProto) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CampaignSummaryProto.ProtoReflect.Descriptor instead.
 func (*CampaignSummaryProto) Descriptor() ([]byte, []int) {
-	return file_rootstock_v1_rootstock_proto_rawDescGZIP(), []int{61}
+	return file_rootstock_v1_rootstock_proto_rawDescGZIP(), []int{63}
 }
 
 func (x *CampaignSummaryProto) GetId() string {
@@ -3551,7 +3647,7 @@ type BrowsePublishedCampaignsResponse struct {
 
 func (x *BrowsePublishedCampaignsResponse) Reset() {
 	*x = BrowsePublishedCampaignsResponse{}
-	mi := &file_rootstock_v1_rootstock_proto_msgTypes[62]
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[64]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3563,7 +3659,7 @@ func (x *BrowsePublishedCampaignsResponse) String() string {
 func (*BrowsePublishedCampaignsResponse) ProtoMessage() {}
 
 func (x *BrowsePublishedCampaignsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_rootstock_v1_rootstock_proto_msgTypes[62]
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[64]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3576,7 +3672,7 @@ func (x *BrowsePublishedCampaignsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use BrowsePublishedCampaignsResponse.ProtoReflect.Descriptor instead.
 func (*BrowsePublishedCampaignsResponse) Descriptor() ([]byte, []int) {
-	return file_rootstock_v1_rootstock_proto_rawDescGZIP(), []int{62}
+	return file_rootstock_v1_rootstock_proto_rawDescGZIP(), []int{64}
 }
 
 func (x *BrowsePublishedCampaignsResponse) GetCampaigns() []*CampaignSummaryProto {
@@ -3602,7 +3698,7 @@ type GetCampaignDetailRequest struct {
 
 func (x *GetCampaignDetailRequest) Reset() {
 	*x = GetCampaignDetailRequest{}
-	mi := &file_rootstock_v1_rootstock_proto_msgTypes[63]
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[65]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3614,7 +3710,7 @@ func (x *GetCampaignDetailRequest) String() string {
 func (*GetCampaignDetailRequest) ProtoMessage() {}
 
 func (x *GetCampaignDetailRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_rootstock_v1_rootstock_proto_msgTypes[63]
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[65]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3627,7 +3723,7 @@ func (x *GetCampaignDetailRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetCampaignDetailRequest.ProtoReflect.Descriptor instead.
 func (*GetCampaignDetailRequest) Descriptor() ([]byte, []int) {
-	return file_rootstock_v1_rootstock_proto_rawDescGZIP(), []int{63}
+	return file_rootstock_v1_rootstock_proto_rawDescGZIP(), []int{65}
 }
 
 func (x *GetCampaignDetailRequest) GetCampaignId() string {
@@ -3654,7 +3750,7 @@ type GetCampaignDetailResponse struct {
 
 func (x *GetCampaignDetailResponse) Reset() {
 	*x = GetCampaignDetailResponse{}
-	mi := &file_rootstock_v1_rootstock_proto_msgTypes[64]
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[66]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3666,7 +3762,7 @@ func (x *GetCampaignDetailResponse) String() string {
 func (*GetCampaignDetailResponse) ProtoMessage() {}
 
 func (x *GetCampaignDetailResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_rootstock_v1_rootstock_proto_msgTypes[64]
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[66]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3679,7 +3775,7 @@ func (x *GetCampaignDetailResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetCampaignDetailResponse.ProtoReflect.Descriptor instead.
 func (*GetCampaignDetailResponse) Descriptor() ([]byte, []int) {
-	return file_rootstock_v1_rootstock_proto_rawDescGZIP(), []int{64}
+	return file_rootstock_v1_rootstock_proto_rawDescGZIP(), []int{66}
 }
 
 func (x *GetCampaignDetailResponse) GetCampaignId() string {
@@ -3756,7 +3852,7 @@ type SearchCampaignsRequest struct {
 
 func (x *SearchCampaignsRequest) Reset() {
 	*x = SearchCampaignsRequest{}
-	mi := &file_rootstock_v1_rootstock_proto_msgTypes[65]
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[67]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3768,7 +3864,7 @@ func (x *SearchCampaignsRequest) String() string {
 func (*SearchCampaignsRequest) ProtoMessage() {}
 
 func (x *SearchCampaignsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_rootstock_v1_rootstock_proto_msgTypes[65]
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[67]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3781,7 +3877,7 @@ func (x *SearchCampaignsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SearchCampaignsRequest.ProtoReflect.Descriptor instead.
 func (*SearchCampaignsRequest) Descriptor() ([]byte, []int) {
-	return file_rootstock_v1_rootstock_proto_rawDescGZIP(), []int{65}
+	return file_rootstock_v1_rootstock_proto_rawDescGZIP(), []int{67}
 }
 
 func (x *SearchCampaignsRequest) GetQuery() string {
@@ -3815,7 +3911,7 @@ type SearchCampaignsResponse struct {
 
 func (x *SearchCampaignsResponse) Reset() {
 	*x = SearchCampaignsResponse{}
-	mi := &file_rootstock_v1_rootstock_proto_msgTypes[66]
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[68]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3827,7 +3923,7 @@ func (x *SearchCampaignsResponse) String() string {
 func (*SearchCampaignsResponse) ProtoMessage() {}
 
 func (x *SearchCampaignsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_rootstock_v1_rootstock_proto_msgTypes[66]
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[68]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3840,7 +3936,7 @@ func (x *SearchCampaignsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SearchCampaignsResponse.ProtoReflect.Descriptor instead.
 func (*SearchCampaignsResponse) Descriptor() ([]byte, []int) {
-	return file_rootstock_v1_rootstock_proto_rawDescGZIP(), []int{66}
+	return file_rootstock_v1_rootstock_proto_rawDescGZIP(), []int{68}
 }
 
 func (x *SearchCampaignsResponse) GetCampaigns() []*CampaignSummaryProto {
@@ -3867,7 +3963,7 @@ type ConsentProto struct {
 
 func (x *ConsentProto) Reset() {
 	*x = ConsentProto{}
-	mi := &file_rootstock_v1_rootstock_proto_msgTypes[67]
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[69]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3879,7 +3975,7 @@ func (x *ConsentProto) String() string {
 func (*ConsentProto) ProtoMessage() {}
 
 func (x *ConsentProto) ProtoReflect() protoreflect.Message {
-	mi := &file_rootstock_v1_rootstock_proto_msgTypes[67]
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[69]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3892,7 +3988,7 @@ func (x *ConsentProto) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ConsentProto.ProtoReflect.Descriptor instead.
 func (*ConsentProto) Descriptor() ([]byte, []int) {
-	return file_rootstock_v1_rootstock_proto_rawDescGZIP(), []int{67}
+	return file_rootstock_v1_rootstock_proto_rawDescGZIP(), []int{69}
 }
 
 func (x *ConsentProto) GetVersion() string {
@@ -3920,7 +4016,7 @@ type EnrollDeviceRequest struct {
 
 func (x *EnrollDeviceRequest) Reset() {
 	*x = EnrollDeviceRequest{}
-	mi := &file_rootstock_v1_rootstock_proto_msgTypes[68]
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[70]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3932,7 +4028,7 @@ func (x *EnrollDeviceRequest) String() string {
 func (*EnrollDeviceRequest) ProtoMessage() {}
 
 func (x *EnrollDeviceRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_rootstock_v1_rootstock_proto_msgTypes[68]
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[70]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3945,7 +4041,7 @@ func (x *EnrollDeviceRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use EnrollDeviceRequest.ProtoReflect.Descriptor instead.
 func (*EnrollDeviceRequest) Descriptor() ([]byte, []int) {
-	return file_rootstock_v1_rootstock_proto_rawDescGZIP(), []int{68}
+	return file_rootstock_v1_rootstock_proto_rawDescGZIP(), []int{70}
 }
 
 func (x *EnrollDeviceRequest) GetDeviceId() string {
@@ -3980,7 +4076,7 @@ type EnrollDeviceResponse struct {
 
 func (x *EnrollDeviceResponse) Reset() {
 	*x = EnrollDeviceResponse{}
-	mi := &file_rootstock_v1_rootstock_proto_msgTypes[69]
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[71]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3992,7 +4088,7 @@ func (x *EnrollDeviceResponse) String() string {
 func (*EnrollDeviceResponse) ProtoMessage() {}
 
 func (x *EnrollDeviceResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_rootstock_v1_rootstock_proto_msgTypes[69]
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[71]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4005,7 +4101,7 @@ func (x *EnrollDeviceResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use EnrollDeviceResponse.ProtoReflect.Descriptor instead.
 func (*EnrollDeviceResponse) Descriptor() ([]byte, []int) {
-	return file_rootstock_v1_rootstock_proto_rawDescGZIP(), []int{69}
+	return file_rootstock_v1_rootstock_proto_rawDescGZIP(), []int{71}
 }
 
 func (x *EnrollDeviceResponse) GetEnrolled() bool {
@@ -4038,7 +4134,7 @@ type WithdrawEnrollmentRequest struct {
 
 func (x *WithdrawEnrollmentRequest) Reset() {
 	*x = WithdrawEnrollmentRequest{}
-	mi := &file_rootstock_v1_rootstock_proto_msgTypes[70]
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[72]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4050,7 +4146,7 @@ func (x *WithdrawEnrollmentRequest) String() string {
 func (*WithdrawEnrollmentRequest) ProtoMessage() {}
 
 func (x *WithdrawEnrollmentRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_rootstock_v1_rootstock_proto_msgTypes[70]
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[72]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4063,7 +4159,7 @@ func (x *WithdrawEnrollmentRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use WithdrawEnrollmentRequest.ProtoReflect.Descriptor instead.
 func (*WithdrawEnrollmentRequest) Descriptor() ([]byte, []int) {
-	return file_rootstock_v1_rootstock_proto_rawDescGZIP(), []int{70}
+	return file_rootstock_v1_rootstock_proto_rawDescGZIP(), []int{72}
 }
 
 func (x *WithdrawEnrollmentRequest) GetEnrollmentId() string {
@@ -4081,7 +4177,7 @@ type WithdrawEnrollmentResponse struct {
 
 func (x *WithdrawEnrollmentResponse) Reset() {
 	*x = WithdrawEnrollmentResponse{}
-	mi := &file_rootstock_v1_rootstock_proto_msgTypes[71]
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[73]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4093,7 +4189,7 @@ func (x *WithdrawEnrollmentResponse) String() string {
 func (*WithdrawEnrollmentResponse) ProtoMessage() {}
 
 func (x *WithdrawEnrollmentResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_rootstock_v1_rootstock_proto_msgTypes[71]
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[73]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4106,7 +4202,7 @@ func (x *WithdrawEnrollmentResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use WithdrawEnrollmentResponse.ProtoReflect.Descriptor instead.
 func (*WithdrawEnrollmentResponse) Descriptor() ([]byte, []int) {
-	return file_rootstock_v1_rootstock_proto_rawDescGZIP(), []int{71}
+	return file_rootstock_v1_rootstock_proto_rawDescGZIP(), []int{73}
 }
 
 type DeviceSummaryProto struct {
@@ -4125,7 +4221,7 @@ type DeviceSummaryProto struct {
 
 func (x *DeviceSummaryProto) Reset() {
 	*x = DeviceSummaryProto{}
-	mi := &file_rootstock_v1_rootstock_proto_msgTypes[72]
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[74]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4137,7 +4233,7 @@ func (x *DeviceSummaryProto) String() string {
 func (*DeviceSummaryProto) ProtoMessage() {}
 
 func (x *DeviceSummaryProto) ProtoReflect() protoreflect.Message {
-	mi := &file_rootstock_v1_rootstock_proto_msgTypes[72]
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[74]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4150,7 +4246,7 @@ func (x *DeviceSummaryProto) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeviceSummaryProto.ProtoReflect.Descriptor instead.
 func (*DeviceSummaryProto) Descriptor() ([]byte, []int) {
-	return file_rootstock_v1_rootstock_proto_rawDescGZIP(), []int{72}
+	return file_rootstock_v1_rootstock_proto_rawDescGZIP(), []int{74}
 }
 
 func (x *DeviceSummaryProto) GetId() string {
@@ -4217,7 +4313,7 @@ type GetDevicesRequest struct {
 
 func (x *GetDevicesRequest) Reset() {
 	*x = GetDevicesRequest{}
-	mi := &file_rootstock_v1_rootstock_proto_msgTypes[73]
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[75]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4229,7 +4325,7 @@ func (x *GetDevicesRequest) String() string {
 func (*GetDevicesRequest) ProtoMessage() {}
 
 func (x *GetDevicesRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_rootstock_v1_rootstock_proto_msgTypes[73]
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[75]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4242,7 +4338,7 @@ func (x *GetDevicesRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetDevicesRequest.ProtoReflect.Descriptor instead.
 func (*GetDevicesRequest) Descriptor() ([]byte, []int) {
-	return file_rootstock_v1_rootstock_proto_rawDescGZIP(), []int{73}
+	return file_rootstock_v1_rootstock_proto_rawDescGZIP(), []int{75}
 }
 
 type GetDevicesResponse struct {
@@ -4254,7 +4350,7 @@ type GetDevicesResponse struct {
 
 func (x *GetDevicesResponse) Reset() {
 	*x = GetDevicesResponse{}
-	mi := &file_rootstock_v1_rootstock_proto_msgTypes[74]
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[76]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4266,7 +4362,7 @@ func (x *GetDevicesResponse) String() string {
 func (*GetDevicesResponse) ProtoMessage() {}
 
 func (x *GetDevicesResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_rootstock_v1_rootstock_proto_msgTypes[74]
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[76]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4279,7 +4375,7 @@ func (x *GetDevicesResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetDevicesResponse.ProtoReflect.Descriptor instead.
 func (*GetDevicesResponse) Descriptor() ([]byte, []int) {
-	return file_rootstock_v1_rootstock_proto_rawDescGZIP(), []int{74}
+	return file_rootstock_v1_rootstock_proto_rawDescGZIP(), []int{76}
 }
 
 func (x *GetDevicesResponse) GetDevices() []*DeviceSummaryProto {
@@ -4300,7 +4396,7 @@ type ConnectionEventProto struct {
 
 func (x *ConnectionEventProto) Reset() {
 	*x = ConnectionEventProto{}
-	mi := &file_rootstock_v1_rootstock_proto_msgTypes[75]
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[77]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4312,7 +4408,7 @@ func (x *ConnectionEventProto) String() string {
 func (*ConnectionEventProto) ProtoMessage() {}
 
 func (x *ConnectionEventProto) ProtoReflect() protoreflect.Message {
-	mi := &file_rootstock_v1_rootstock_proto_msgTypes[75]
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[77]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4325,7 +4421,7 @@ func (x *ConnectionEventProto) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ConnectionEventProto.ProtoReflect.Descriptor instead.
 func (*ConnectionEventProto) Descriptor() ([]byte, []int) {
-	return file_rootstock_v1_rootstock_proto_rawDescGZIP(), []int{75}
+	return file_rootstock_v1_rootstock_proto_rawDescGZIP(), []int{77}
 }
 
 func (x *ConnectionEventProto) GetEventType() string {
@@ -4358,7 +4454,7 @@ type GetDeviceDetailRequest struct {
 
 func (x *GetDeviceDetailRequest) Reset() {
 	*x = GetDeviceDetailRequest{}
-	mi := &file_rootstock_v1_rootstock_proto_msgTypes[76]
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[78]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4370,7 +4466,7 @@ func (x *GetDeviceDetailRequest) String() string {
 func (*GetDeviceDetailRequest) ProtoMessage() {}
 
 func (x *GetDeviceDetailRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_rootstock_v1_rootstock_proto_msgTypes[76]
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[78]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4383,7 +4479,7 @@ func (x *GetDeviceDetailRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetDeviceDetailRequest.ProtoReflect.Descriptor instead.
 func (*GetDeviceDetailRequest) Descriptor() ([]byte, []int) {
-	return file_rootstock_v1_rootstock_proto_rawDescGZIP(), []int{76}
+	return file_rootstock_v1_rootstock_proto_rawDescGZIP(), []int{78}
 }
 
 func (x *GetDeviceDetailRequest) GetDeviceId() string {
@@ -4404,7 +4500,7 @@ type GetDeviceDetailResponse struct {
 
 func (x *GetDeviceDetailResponse) Reset() {
 	*x = GetDeviceDetailResponse{}
-	mi := &file_rootstock_v1_rootstock_proto_msgTypes[77]
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[79]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4416,7 +4512,7 @@ func (x *GetDeviceDetailResponse) String() string {
 func (*GetDeviceDetailResponse) ProtoMessage() {}
 
 func (x *GetDeviceDetailResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_rootstock_v1_rootstock_proto_msgTypes[77]
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[79]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4429,7 +4525,7 @@ func (x *GetDeviceDetailResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetDeviceDetailResponse.ProtoReflect.Descriptor instead.
 func (*GetDeviceDetailResponse) Descriptor() ([]byte, []int) {
-	return file_rootstock_v1_rootstock_proto_rawDescGZIP(), []int{77}
+	return file_rootstock_v1_rootstock_proto_rawDescGZIP(), []int{79}
 }
 
 func (x *GetDeviceDetailResponse) GetDevice() *DeviceProto {
@@ -4467,7 +4563,7 @@ type NotificationProto struct {
 
 func (x *NotificationProto) Reset() {
 	*x = NotificationProto{}
-	mi := &file_rootstock_v1_rootstock_proto_msgTypes[78]
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[80]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4479,7 +4575,7 @@ func (x *NotificationProto) String() string {
 func (*NotificationProto) ProtoMessage() {}
 
 func (x *NotificationProto) ProtoReflect() protoreflect.Message {
-	mi := &file_rootstock_v1_rootstock_proto_msgTypes[78]
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[80]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4492,7 +4588,7 @@ func (x *NotificationProto) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use NotificationProto.ProtoReflect.Descriptor instead.
 func (*NotificationProto) Descriptor() ([]byte, []int) {
-	return file_rootstock_v1_rootstock_proto_rawDescGZIP(), []int{78}
+	return file_rootstock_v1_rootstock_proto_rawDescGZIP(), []int{80}
 }
 
 func (x *NotificationProto) GetId() string {
@@ -4548,7 +4644,7 @@ type GetNotificationsRequest struct {
 
 func (x *GetNotificationsRequest) Reset() {
 	*x = GetNotificationsRequest{}
-	mi := &file_rootstock_v1_rootstock_proto_msgTypes[79]
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[81]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4560,7 +4656,7 @@ func (x *GetNotificationsRequest) String() string {
 func (*GetNotificationsRequest) ProtoMessage() {}
 
 func (x *GetNotificationsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_rootstock_v1_rootstock_proto_msgTypes[79]
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[81]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4573,7 +4669,7 @@ func (x *GetNotificationsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetNotificationsRequest.ProtoReflect.Descriptor instead.
 func (*GetNotificationsRequest) Descriptor() ([]byte, []int) {
-	return file_rootstock_v1_rootstock_proto_rawDescGZIP(), []int{79}
+	return file_rootstock_v1_rootstock_proto_rawDescGZIP(), []int{81}
 }
 
 func (x *GetNotificationsRequest) GetTypeFilter() string {
@@ -4608,7 +4704,7 @@ type GetNotificationsResponse struct {
 
 func (x *GetNotificationsResponse) Reset() {
 	*x = GetNotificationsResponse{}
-	mi := &file_rootstock_v1_rootstock_proto_msgTypes[80]
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[82]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4620,7 +4716,7 @@ func (x *GetNotificationsResponse) String() string {
 func (*GetNotificationsResponse) ProtoMessage() {}
 
 func (x *GetNotificationsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_rootstock_v1_rootstock_proto_msgTypes[80]
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[82]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4633,7 +4729,7 @@ func (x *GetNotificationsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetNotificationsResponse.ProtoReflect.Descriptor instead.
 func (*GetNotificationsResponse) Descriptor() ([]byte, []int) {
-	return file_rootstock_v1_rootstock_proto_rawDescGZIP(), []int{80}
+	return file_rootstock_v1_rootstock_proto_rawDescGZIP(), []int{82}
 }
 
 func (x *GetNotificationsResponse) GetNotifications() []*NotificationProto {
@@ -4670,7 +4766,7 @@ type ReadingHistoryProto struct {
 
 func (x *ReadingHistoryProto) Reset() {
 	*x = ReadingHistoryProto{}
-	mi := &file_rootstock_v1_rootstock_proto_msgTypes[81]
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[83]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4682,7 +4778,7 @@ func (x *ReadingHistoryProto) String() string {
 func (*ReadingHistoryProto) ProtoMessage() {}
 
 func (x *ReadingHistoryProto) ProtoReflect() protoreflect.Message {
-	mi := &file_rootstock_v1_rootstock_proto_msgTypes[81]
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[83]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4695,7 +4791,7 @@ func (x *ReadingHistoryProto) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ReadingHistoryProto.ProtoReflect.Descriptor instead.
 func (*ReadingHistoryProto) Descriptor() ([]byte, []int) {
-	return file_rootstock_v1_rootstock_proto_rawDescGZIP(), []int{81}
+	return file_rootstock_v1_rootstock_proto_rawDescGZIP(), []int{83}
 }
 
 func (x *ReadingHistoryProto) GetDeviceId() string {
@@ -4741,7 +4837,7 @@ type GetContributionsRequest struct {
 
 func (x *GetContributionsRequest) Reset() {
 	*x = GetContributionsRequest{}
-	mi := &file_rootstock_v1_rootstock_proto_msgTypes[82]
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[84]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4753,7 +4849,7 @@ func (x *GetContributionsRequest) String() string {
 func (*GetContributionsRequest) ProtoMessage() {}
 
 func (x *GetContributionsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_rootstock_v1_rootstock_proto_msgTypes[82]
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[84]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4766,7 +4862,7 @@ func (x *GetContributionsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetContributionsRequest.ProtoReflect.Descriptor instead.
 func (*GetContributionsRequest) Descriptor() ([]byte, []int) {
-	return file_rootstock_v1_rootstock_proto_rawDescGZIP(), []int{82}
+	return file_rootstock_v1_rootstock_proto_rawDescGZIP(), []int{84}
 }
 
 type GetContributionsResponse struct {
@@ -4780,7 +4876,7 @@ type GetContributionsResponse struct {
 
 func (x *GetContributionsResponse) Reset() {
 	*x = GetContributionsResponse{}
-	mi := &file_rootstock_v1_rootstock_proto_msgTypes[83]
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[85]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4792,7 +4888,7 @@ func (x *GetContributionsResponse) String() string {
 func (*GetContributionsResponse) ProtoMessage() {}
 
 func (x *GetContributionsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_rootstock_v1_rootstock_proto_msgTypes[83]
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[85]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4805,7 +4901,7 @@ func (x *GetContributionsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetContributionsResponse.ProtoReflect.Descriptor instead.
 func (*GetContributionsResponse) Descriptor() ([]byte, []int) {
-	return file_rootstock_v1_rootstock_proto_rawDescGZIP(), []int{83}
+	return file_rootstock_v1_rootstock_proto_rawDescGZIP(), []int{85}
 }
 
 func (x *GetContributionsResponse) GetHistories() []*ReadingHistoryProto {
@@ -4840,7 +4936,7 @@ type ListNotificationsRequest struct {
 
 func (x *ListNotificationsRequest) Reset() {
 	*x = ListNotificationsRequest{}
-	mi := &file_rootstock_v1_rootstock_proto_msgTypes[84]
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[86]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4852,7 +4948,7 @@ func (x *ListNotificationsRequest) String() string {
 func (*ListNotificationsRequest) ProtoMessage() {}
 
 func (x *ListNotificationsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_rootstock_v1_rootstock_proto_msgTypes[84]
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[86]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4865,7 +4961,7 @@ func (x *ListNotificationsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListNotificationsRequest.ProtoReflect.Descriptor instead.
 func (*ListNotificationsRequest) Descriptor() ([]byte, []int) {
-	return file_rootstock_v1_rootstock_proto_rawDescGZIP(), []int{84}
+	return file_rootstock_v1_rootstock_proto_rawDescGZIP(), []int{86}
 }
 
 func (x *ListNotificationsRequest) GetTypeFilter() string {
@@ -4900,7 +4996,7 @@ type ListNotificationsResponse struct {
 
 func (x *ListNotificationsResponse) Reset() {
 	*x = ListNotificationsResponse{}
-	mi := &file_rootstock_v1_rootstock_proto_msgTypes[85]
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[87]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4912,7 +5008,7 @@ func (x *ListNotificationsResponse) String() string {
 func (*ListNotificationsResponse) ProtoMessage() {}
 
 func (x *ListNotificationsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_rootstock_v1_rootstock_proto_msgTypes[85]
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[87]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4925,7 +5021,7 @@ func (x *ListNotificationsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListNotificationsResponse.ProtoReflect.Descriptor instead.
 func (*ListNotificationsResponse) Descriptor() ([]byte, []int) {
-	return file_rootstock_v1_rootstock_proto_rawDescGZIP(), []int{85}
+	return file_rootstock_v1_rootstock_proto_rawDescGZIP(), []int{87}
 }
 
 func (x *ListNotificationsResponse) GetNotifications() []*NotificationProto {
@@ -4958,7 +5054,7 @@ type MarkReadRequest struct {
 
 func (x *MarkReadRequest) Reset() {
 	*x = MarkReadRequest{}
-	mi := &file_rootstock_v1_rootstock_proto_msgTypes[86]
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[88]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4970,7 +5066,7 @@ func (x *MarkReadRequest) String() string {
 func (*MarkReadRequest) ProtoMessage() {}
 
 func (x *MarkReadRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_rootstock_v1_rootstock_proto_msgTypes[86]
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[88]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4983,7 +5079,7 @@ func (x *MarkReadRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use MarkReadRequest.ProtoReflect.Descriptor instead.
 func (*MarkReadRequest) Descriptor() ([]byte, []int) {
-	return file_rootstock_v1_rootstock_proto_rawDescGZIP(), []int{86}
+	return file_rootstock_v1_rootstock_proto_rawDescGZIP(), []int{88}
 }
 
 func (x *MarkReadRequest) GetNotificationIds() []string {
@@ -5002,7 +5098,7 @@ type MarkReadResponse struct {
 
 func (x *MarkReadResponse) Reset() {
 	*x = MarkReadResponse{}
-	mi := &file_rootstock_v1_rootstock_proto_msgTypes[87]
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[89]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -5014,7 +5110,7 @@ func (x *MarkReadResponse) String() string {
 func (*MarkReadResponse) ProtoMessage() {}
 
 func (x *MarkReadResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_rootstock_v1_rootstock_proto_msgTypes[87]
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[89]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5027,7 +5123,7 @@ func (x *MarkReadResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use MarkReadResponse.ProtoReflect.Descriptor instead.
 func (*MarkReadResponse) Descriptor() ([]byte, []int) {
-	return file_rootstock_v1_rootstock_proto_rawDescGZIP(), []int{87}
+	return file_rootstock_v1_rootstock_proto_rawDescGZIP(), []int{89}
 }
 
 func (x *MarkReadResponse) GetMarkedCount() int32 {
@@ -5048,7 +5144,7 @@ type NotificationPreferenceProto struct {
 
 func (x *NotificationPreferenceProto) Reset() {
 	*x = NotificationPreferenceProto{}
-	mi := &file_rootstock_v1_rootstock_proto_msgTypes[88]
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[90]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -5060,7 +5156,7 @@ func (x *NotificationPreferenceProto) String() string {
 func (*NotificationPreferenceProto) ProtoMessage() {}
 
 func (x *NotificationPreferenceProto) ProtoReflect() protoreflect.Message {
-	mi := &file_rootstock_v1_rootstock_proto_msgTypes[88]
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[90]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5073,7 +5169,7 @@ func (x *NotificationPreferenceProto) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use NotificationPreferenceProto.ProtoReflect.Descriptor instead.
 func (*NotificationPreferenceProto) Descriptor() ([]byte, []int) {
-	return file_rootstock_v1_rootstock_proto_rawDescGZIP(), []int{88}
+	return file_rootstock_v1_rootstock_proto_rawDescGZIP(), []int{90}
 }
 
 func (x *NotificationPreferenceProto) GetType() string {
@@ -5105,7 +5201,7 @@ type GetPreferencesRequest struct {
 
 func (x *GetPreferencesRequest) Reset() {
 	*x = GetPreferencesRequest{}
-	mi := &file_rootstock_v1_rootstock_proto_msgTypes[89]
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[91]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -5117,7 +5213,7 @@ func (x *GetPreferencesRequest) String() string {
 func (*GetPreferencesRequest) ProtoMessage() {}
 
 func (x *GetPreferencesRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_rootstock_v1_rootstock_proto_msgTypes[89]
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[91]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5130,7 +5226,7 @@ func (x *GetPreferencesRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetPreferencesRequest.ProtoReflect.Descriptor instead.
 func (*GetPreferencesRequest) Descriptor() ([]byte, []int) {
-	return file_rootstock_v1_rootstock_proto_rawDescGZIP(), []int{89}
+	return file_rootstock_v1_rootstock_proto_rawDescGZIP(), []int{91}
 }
 
 type GetPreferencesResponse struct {
@@ -5142,7 +5238,7 @@ type GetPreferencesResponse struct {
 
 func (x *GetPreferencesResponse) Reset() {
 	*x = GetPreferencesResponse{}
-	mi := &file_rootstock_v1_rootstock_proto_msgTypes[90]
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[92]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -5154,7 +5250,7 @@ func (x *GetPreferencesResponse) String() string {
 func (*GetPreferencesResponse) ProtoMessage() {}
 
 func (x *GetPreferencesResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_rootstock_v1_rootstock_proto_msgTypes[90]
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[92]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5167,7 +5263,7 @@ func (x *GetPreferencesResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetPreferencesResponse.ProtoReflect.Descriptor instead.
 func (*GetPreferencesResponse) Descriptor() ([]byte, []int) {
-	return file_rootstock_v1_rootstock_proto_rawDescGZIP(), []int{90}
+	return file_rootstock_v1_rootstock_proto_rawDescGZIP(), []int{92}
 }
 
 func (x *GetPreferencesResponse) GetPreferences() []*NotificationPreferenceProto {
@@ -5186,7 +5282,7 @@ type UpdatePreferencesRequest struct {
 
 func (x *UpdatePreferencesRequest) Reset() {
 	*x = UpdatePreferencesRequest{}
-	mi := &file_rootstock_v1_rootstock_proto_msgTypes[91]
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[93]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -5198,7 +5294,7 @@ func (x *UpdatePreferencesRequest) String() string {
 func (*UpdatePreferencesRequest) ProtoMessage() {}
 
 func (x *UpdatePreferencesRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_rootstock_v1_rootstock_proto_msgTypes[91]
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[93]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5211,7 +5307,7 @@ func (x *UpdatePreferencesRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdatePreferencesRequest.ProtoReflect.Descriptor instead.
 func (*UpdatePreferencesRequest) Descriptor() ([]byte, []int) {
-	return file_rootstock_v1_rootstock_proto_rawDescGZIP(), []int{91}
+	return file_rootstock_v1_rootstock_proto_rawDescGZIP(), []int{93}
 }
 
 func (x *UpdatePreferencesRequest) GetPreferences() []*NotificationPreferenceProto {
@@ -5229,7 +5325,7 @@ type UpdatePreferencesResponse struct {
 
 func (x *UpdatePreferencesResponse) Reset() {
 	*x = UpdatePreferencesResponse{}
-	mi := &file_rootstock_v1_rootstock_proto_msgTypes[92]
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[94]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -5241,7 +5337,7 @@ func (x *UpdatePreferencesResponse) String() string {
 func (*UpdatePreferencesResponse) ProtoMessage() {}
 
 func (x *UpdatePreferencesResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_rootstock_v1_rootstock_proto_msgTypes[92]
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[94]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5254,7 +5350,7 @@ func (x *UpdatePreferencesResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdatePreferencesResponse.ProtoReflect.Descriptor instead.
 func (*UpdatePreferencesResponse) Descriptor() ([]byte, []int) {
-	return file_rootstock_v1_rootstock_proto_rawDescGZIP(), []int{92}
+	return file_rootstock_v1_rootstock_proto_rawDescGZIP(), []int{94}
 }
 
 type SuspendByClassRequest struct {
@@ -5271,7 +5367,7 @@ type SuspendByClassRequest struct {
 
 func (x *SuspendByClassRequest) Reset() {
 	*x = SuspendByClassRequest{}
-	mi := &file_rootstock_v1_rootstock_proto_msgTypes[93]
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[95]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -5283,7 +5379,7 @@ func (x *SuspendByClassRequest) String() string {
 func (*SuspendByClassRequest) ProtoMessage() {}
 
 func (x *SuspendByClassRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_rootstock_v1_rootstock_proto_msgTypes[93]
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[95]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5296,7 +5392,7 @@ func (x *SuspendByClassRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SuspendByClassRequest.ProtoReflect.Descriptor instead.
 func (*SuspendByClassRequest) Descriptor() ([]byte, []int) {
-	return file_rootstock_v1_rootstock_proto_rawDescGZIP(), []int{93}
+	return file_rootstock_v1_rootstock_proto_rawDescGZIP(), []int{95}
 }
 
 func (x *SuspendByClassRequest) GetDeviceClass() string {
@@ -5352,7 +5448,7 @@ type SuspendByClassResponse struct {
 
 func (x *SuspendByClassResponse) Reset() {
 	*x = SuspendByClassResponse{}
-	mi := &file_rootstock_v1_rootstock_proto_msgTypes[94]
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[96]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -5364,7 +5460,7 @@ func (x *SuspendByClassResponse) String() string {
 func (*SuspendByClassResponse) ProtoMessage() {}
 
 func (x *SuspendByClassResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_rootstock_v1_rootstock_proto_msgTypes[94]
+	mi := &file_rootstock_v1_rootstock_proto_msgTypes[96]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5377,7 +5473,7 @@ func (x *SuspendByClassResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SuspendByClassResponse.ProtoReflect.Descriptor instead.
 func (*SuspendByClassResponse) Descriptor() ([]byte, []int) {
-	return file_rootstock_v1_rootstock_proto_rawDescGZIP(), []int{94}
+	return file_rootstock_v1_rootstock_proto_rawDescGZIP(), []int{96}
 }
 
 func (x *SuspendByClassResponse) GetSuspendedCount() int32 {
@@ -5617,14 +5713,15 @@ const file_rootstock_v1_rootstock_proto_rawDesc = "" +
 	"\rsession_token\x18\x02 \x01(\tR\fsessionToken\x12+\n" +
 	"\x04user\x18\x03 \x01(\v2\x17.rootstock.v1.UserProtoR\x04user\"\x0f\n" +
 	"\rLogoutRequest\"\x10\n" +
-	"\x0eLogoutResponse\"\x8d\x01\n" +
+	"\x0eLogoutResponse\"\xaa\x01\n" +
 	"\x19RegisterResearcherRequest\x12\x14\n" +
 	"\x05email\x18\x01 \x01(\tR\x05email\x12\x1a\n" +
 	"\bpassword\x18\x02 \x01(\tR\bpassword\x12\x1d\n" +
 	"\n" +
 	"given_name\x18\x03 \x01(\tR\tgivenName\x12\x1f\n" +
 	"\vfamily_name\x18\x04 \x01(\tR\n" +
-	"familyName\"m\n" +
+	"familyName\x12\x1b\n" +
+	"\tuser_type\x18\x05 \x01(\tR\buserType\"m\n" +
 	"\x1aRegisterResearcherResponse\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\tR\x06userId\x126\n" +
 	"\x17email_verification_sent\x18\x02 \x01(\bR\x15emailVerificationSent\"Z\n" +
@@ -5632,7 +5729,11 @@ const file_rootstock_v1_rootstock_proto_rawDesc = "" +
 	"\auser_id\x18\x01 \x01(\tR\x06userId\x12+\n" +
 	"\x11verification_code\x18\x02 \x01(\tR\x10verificationCode\"1\n" +
 	"\x13VerifyEmailResponse\x12\x1a\n" +
-	"\bverified\x18\x01 \x01(\bR\bverified\"\xae\x01\n" +
+	"\bverified\x18\x01 \x01(\bR\bverified\"4\n" +
+	"\x15UpdateUserTypeRequest\x12\x1b\n" +
+	"\tuser_type\x18\x01 \x01(\tR\buserType\"E\n" +
+	"\x16UpdateUserTypeResponse\x12+\n" +
+	"\x04user\x18\x01 \x01(\v2\x17.rootstock.v1.UserProtoR\x04user\"\xae\x01\n" +
 	"\x17RegisterScitizenRequest\x12\x14\n" +
 	"\x05email\x18\x01 \x01(\tR\x05email\x12\x1a\n" +
 	"\bpassword\x18\x02 \x01(\tR\bpassword\x12\x1d\n" +
@@ -5855,14 +5956,15 @@ const file_rootstock_v1_rootstock_proto_rawDesc = "" +
 	"\tGetDevice\x12\x1e.rootstock.v1.GetDeviceRequest\x1a\x1f.rootstock.v1.GetDeviceResponse\x12U\n" +
 	"\fRevokeDevice\x12!.rootstock.v1.RevokeDeviceRequest\x1a\".rootstock.v1.RevokeDeviceResponse\x12^\n" +
 	"\x0fReinstateDevice\x12$.rootstock.v1.ReinstateDeviceRequest\x1a%.rootstock.v1.ReinstateDeviceResponse\x12a\n" +
-	"\x10EnrollInCampaign\x12%.rootstock.v1.EnrollInCampaignRequest\x1a&.rootstock.v1.EnrollInCampaignResponse2\xea\x03\n" +
+	"\x10EnrollInCampaign\x12%.rootstock.v1.EnrollInCampaignRequest\x1a&.rootstock.v1.EnrollInCampaignResponse2\xc7\x04\n" +
 	"\vUserService\x12U\n" +
 	"\fRegisterUser\x12!.rootstock.v1.RegisterUserRequest\x1a\".rootstock.v1.RegisterUserResponse\x12@\n" +
 	"\x05GetMe\x12\x1a.rootstock.v1.GetMeRequest\x1a\x1b.rootstock.v1.GetMeResponse\x12@\n" +
 	"\x05Login\x12\x1a.rootstock.v1.LoginRequest\x1a\x1b.rootstock.v1.LoginResponse\x12C\n" +
 	"\x06Logout\x12\x1b.rootstock.v1.LogoutRequest\x1a\x1c.rootstock.v1.LogoutResponse\x12g\n" +
 	"\x12RegisterResearcher\x12'.rootstock.v1.RegisterResearcherRequest\x1a(.rootstock.v1.RegisterResearcherResponse\x12R\n" +
-	"\vVerifyEmail\x12 .rootstock.v1.VerifyEmailRequest\x1a!.rootstock.v1.VerifyEmailResponse2\xac\t\n" +
+	"\vVerifyEmail\x12 .rootstock.v1.VerifyEmailRequest\x1a!.rootstock.v1.VerifyEmailResponse\x12[\n" +
+	"\x0eUpdateUserType\x12#.rootstock.v1.UpdateUserTypeRequest\x1a$.rootstock.v1.UpdateUserTypeResponse2\xac\t\n" +
 	"\x0fScitizenService\x12a\n" +
 	"\x10RegisterScitizen\x12%.rootstock.v1.RegisterScitizenRequest\x1a&.rootstock.v1.RegisterScitizenResponse\x12U\n" +
 	"\fGetDashboard\x12!.rootstock.v1.GetDashboardRequest\x1a\".rootstock.v1.GetDashboardResponse\x12y\n" +
@@ -5897,7 +5999,7 @@ func file_rootstock_v1_rootstock_proto_rawDescGZIP() []byte {
 	return file_rootstock_v1_rootstock_proto_rawDescData
 }
 
-var file_rootstock_v1_rootstock_proto_msgTypes = make([]protoimpl.MessageInfo, 95)
+var file_rootstock_v1_rootstock_proto_msgTypes = make([]protoimpl.MessageInfo, 97)
 var file_rootstock_v1_rootstock_proto_goTypes = []any{
 	(*CheckRequest)(nil),                     // 0: rootstock.v1.CheckRequest
 	(*CheckResponse)(nil),                    // 1: rootstock.v1.CheckResponse
@@ -5951,49 +6053,51 @@ var file_rootstock_v1_rootstock_proto_goTypes = []any{
 	(*RegisterResearcherResponse)(nil),       // 49: rootstock.v1.RegisterResearcherResponse
 	(*VerifyEmailRequest)(nil),               // 50: rootstock.v1.VerifyEmailRequest
 	(*VerifyEmailResponse)(nil),              // 51: rootstock.v1.VerifyEmailResponse
-	(*RegisterScitizenRequest)(nil),          // 52: rootstock.v1.RegisterScitizenRequest
-	(*RegisterScitizenResponse)(nil),         // 53: rootstock.v1.RegisterScitizenResponse
-	(*OnboardingStateProto)(nil),             // 54: rootstock.v1.OnboardingStateProto
-	(*GetOnboardingStateRequest)(nil),        // 55: rootstock.v1.GetOnboardingStateRequest
-	(*GetOnboardingStateResponse)(nil),       // 56: rootstock.v1.GetOnboardingStateResponse
-	(*EnrollmentProto)(nil),                  // 57: rootstock.v1.EnrollmentProto
-	(*GetDashboardRequest)(nil),              // 58: rootstock.v1.GetDashboardRequest
-	(*GetDashboardResponse)(nil),             // 59: rootstock.v1.GetDashboardResponse
-	(*BrowsePublishedCampaignsRequest)(nil),  // 60: rootstock.v1.BrowsePublishedCampaignsRequest
-	(*CampaignSummaryProto)(nil),             // 61: rootstock.v1.CampaignSummaryProto
-	(*BrowsePublishedCampaignsResponse)(nil), // 62: rootstock.v1.BrowsePublishedCampaignsResponse
-	(*GetCampaignDetailRequest)(nil),         // 63: rootstock.v1.GetCampaignDetailRequest
-	(*GetCampaignDetailResponse)(nil),        // 64: rootstock.v1.GetCampaignDetailResponse
-	(*SearchCampaignsRequest)(nil),           // 65: rootstock.v1.SearchCampaignsRequest
-	(*SearchCampaignsResponse)(nil),          // 66: rootstock.v1.SearchCampaignsResponse
-	(*ConsentProto)(nil),                     // 67: rootstock.v1.ConsentProto
-	(*EnrollDeviceRequest)(nil),              // 68: rootstock.v1.EnrollDeviceRequest
-	(*EnrollDeviceResponse)(nil),             // 69: rootstock.v1.EnrollDeviceResponse
-	(*WithdrawEnrollmentRequest)(nil),        // 70: rootstock.v1.WithdrawEnrollmentRequest
-	(*WithdrawEnrollmentResponse)(nil),       // 71: rootstock.v1.WithdrawEnrollmentResponse
-	(*DeviceSummaryProto)(nil),               // 72: rootstock.v1.DeviceSummaryProto
-	(*GetDevicesRequest)(nil),                // 73: rootstock.v1.GetDevicesRequest
-	(*GetDevicesResponse)(nil),               // 74: rootstock.v1.GetDevicesResponse
-	(*ConnectionEventProto)(nil),             // 75: rootstock.v1.ConnectionEventProto
-	(*GetDeviceDetailRequest)(nil),           // 76: rootstock.v1.GetDeviceDetailRequest
-	(*GetDeviceDetailResponse)(nil),          // 77: rootstock.v1.GetDeviceDetailResponse
-	(*NotificationProto)(nil),                // 78: rootstock.v1.NotificationProto
-	(*GetNotificationsRequest)(nil),          // 79: rootstock.v1.GetNotificationsRequest
-	(*GetNotificationsResponse)(nil),         // 80: rootstock.v1.GetNotificationsResponse
-	(*ReadingHistoryProto)(nil),              // 81: rootstock.v1.ReadingHistoryProto
-	(*GetContributionsRequest)(nil),          // 82: rootstock.v1.GetContributionsRequest
-	(*GetContributionsResponse)(nil),         // 83: rootstock.v1.GetContributionsResponse
-	(*ListNotificationsRequest)(nil),         // 84: rootstock.v1.ListNotificationsRequest
-	(*ListNotificationsResponse)(nil),        // 85: rootstock.v1.ListNotificationsResponse
-	(*MarkReadRequest)(nil),                  // 86: rootstock.v1.MarkReadRequest
-	(*MarkReadResponse)(nil),                 // 87: rootstock.v1.MarkReadResponse
-	(*NotificationPreferenceProto)(nil),      // 88: rootstock.v1.NotificationPreferenceProto
-	(*GetPreferencesRequest)(nil),            // 89: rootstock.v1.GetPreferencesRequest
-	(*GetPreferencesResponse)(nil),           // 90: rootstock.v1.GetPreferencesResponse
-	(*UpdatePreferencesRequest)(nil),         // 91: rootstock.v1.UpdatePreferencesRequest
-	(*UpdatePreferencesResponse)(nil),        // 92: rootstock.v1.UpdatePreferencesResponse
-	(*SuspendByClassRequest)(nil),            // 93: rootstock.v1.SuspendByClassRequest
-	(*SuspendByClassResponse)(nil),           // 94: rootstock.v1.SuspendByClassResponse
+	(*UpdateUserTypeRequest)(nil),            // 52: rootstock.v1.UpdateUserTypeRequest
+	(*UpdateUserTypeResponse)(nil),           // 53: rootstock.v1.UpdateUserTypeResponse
+	(*RegisterScitizenRequest)(nil),          // 54: rootstock.v1.RegisterScitizenRequest
+	(*RegisterScitizenResponse)(nil),         // 55: rootstock.v1.RegisterScitizenResponse
+	(*OnboardingStateProto)(nil),             // 56: rootstock.v1.OnboardingStateProto
+	(*GetOnboardingStateRequest)(nil),        // 57: rootstock.v1.GetOnboardingStateRequest
+	(*GetOnboardingStateResponse)(nil),       // 58: rootstock.v1.GetOnboardingStateResponse
+	(*EnrollmentProto)(nil),                  // 59: rootstock.v1.EnrollmentProto
+	(*GetDashboardRequest)(nil),              // 60: rootstock.v1.GetDashboardRequest
+	(*GetDashboardResponse)(nil),             // 61: rootstock.v1.GetDashboardResponse
+	(*BrowsePublishedCampaignsRequest)(nil),  // 62: rootstock.v1.BrowsePublishedCampaignsRequest
+	(*CampaignSummaryProto)(nil),             // 63: rootstock.v1.CampaignSummaryProto
+	(*BrowsePublishedCampaignsResponse)(nil), // 64: rootstock.v1.BrowsePublishedCampaignsResponse
+	(*GetCampaignDetailRequest)(nil),         // 65: rootstock.v1.GetCampaignDetailRequest
+	(*GetCampaignDetailResponse)(nil),        // 66: rootstock.v1.GetCampaignDetailResponse
+	(*SearchCampaignsRequest)(nil),           // 67: rootstock.v1.SearchCampaignsRequest
+	(*SearchCampaignsResponse)(nil),          // 68: rootstock.v1.SearchCampaignsResponse
+	(*ConsentProto)(nil),                     // 69: rootstock.v1.ConsentProto
+	(*EnrollDeviceRequest)(nil),              // 70: rootstock.v1.EnrollDeviceRequest
+	(*EnrollDeviceResponse)(nil),             // 71: rootstock.v1.EnrollDeviceResponse
+	(*WithdrawEnrollmentRequest)(nil),        // 72: rootstock.v1.WithdrawEnrollmentRequest
+	(*WithdrawEnrollmentResponse)(nil),       // 73: rootstock.v1.WithdrawEnrollmentResponse
+	(*DeviceSummaryProto)(nil),               // 74: rootstock.v1.DeviceSummaryProto
+	(*GetDevicesRequest)(nil),                // 75: rootstock.v1.GetDevicesRequest
+	(*GetDevicesResponse)(nil),               // 76: rootstock.v1.GetDevicesResponse
+	(*ConnectionEventProto)(nil),             // 77: rootstock.v1.ConnectionEventProto
+	(*GetDeviceDetailRequest)(nil),           // 78: rootstock.v1.GetDeviceDetailRequest
+	(*GetDeviceDetailResponse)(nil),          // 79: rootstock.v1.GetDeviceDetailResponse
+	(*NotificationProto)(nil),                // 80: rootstock.v1.NotificationProto
+	(*GetNotificationsRequest)(nil),          // 81: rootstock.v1.GetNotificationsRequest
+	(*GetNotificationsResponse)(nil),         // 82: rootstock.v1.GetNotificationsResponse
+	(*ReadingHistoryProto)(nil),              // 83: rootstock.v1.ReadingHistoryProto
+	(*GetContributionsRequest)(nil),          // 84: rootstock.v1.GetContributionsRequest
+	(*GetContributionsResponse)(nil),         // 85: rootstock.v1.GetContributionsResponse
+	(*ListNotificationsRequest)(nil),         // 86: rootstock.v1.ListNotificationsRequest
+	(*ListNotificationsResponse)(nil),        // 87: rootstock.v1.ListNotificationsResponse
+	(*MarkReadRequest)(nil),                  // 88: rootstock.v1.MarkReadRequest
+	(*MarkReadResponse)(nil),                 // 89: rootstock.v1.MarkReadResponse
+	(*NotificationPreferenceProto)(nil),      // 90: rootstock.v1.NotificationPreferenceProto
+	(*GetPreferencesRequest)(nil),            // 91: rootstock.v1.GetPreferencesRequest
+	(*GetPreferencesResponse)(nil),           // 92: rootstock.v1.GetPreferencesResponse
+	(*UpdatePreferencesRequest)(nil),         // 93: rootstock.v1.UpdatePreferencesRequest
+	(*UpdatePreferencesResponse)(nil),        // 94: rootstock.v1.UpdatePreferencesResponse
+	(*SuspendByClassRequest)(nil),            // 95: rootstock.v1.SuspendByClassRequest
+	(*SuspendByClassResponse)(nil),           // 96: rootstock.v1.SuspendByClassResponse
 }
 var file_rootstock_v1_rootstock_proto_depIdxs = []int32{
 	2,  // 0: rootstock.v1.CreateCampaignRequest.parameters:type_name -> rootstock.v1.ParameterProto
@@ -6007,108 +6111,111 @@ var file_rootstock_v1_rootstock_proto_depIdxs = []int32{
 	39, // 8: rootstock.v1.RegisterUserResponse.user:type_name -> rootstock.v1.UserProto
 	39, // 9: rootstock.v1.GetMeResponse.user:type_name -> rootstock.v1.UserProto
 	39, // 10: rootstock.v1.LoginResponse.user:type_name -> rootstock.v1.UserProto
-	54, // 11: rootstock.v1.GetOnboardingStateResponse.state:type_name -> rootstock.v1.OnboardingStateProto
-	27, // 12: rootstock.v1.GetDashboardResponse.badges:type_name -> rootstock.v1.BadgeProto
-	57, // 13: rootstock.v1.GetDashboardResponse.enrollments:type_name -> rootstock.v1.EnrollmentProto
-	61, // 14: rootstock.v1.BrowsePublishedCampaignsResponse.campaigns:type_name -> rootstock.v1.CampaignSummaryProto
-	2,  // 15: rootstock.v1.GetCampaignDetailResponse.parameters:type_name -> rootstock.v1.ParameterProto
-	3,  // 16: rootstock.v1.GetCampaignDetailResponse.regions:type_name -> rootstock.v1.RegionProto
-	4,  // 17: rootstock.v1.GetCampaignDetailResponse.eligibility:type_name -> rootstock.v1.EligibilityProto
-	61, // 18: rootstock.v1.SearchCampaignsResponse.campaigns:type_name -> rootstock.v1.CampaignSummaryProto
-	67, // 19: rootstock.v1.EnrollDeviceRequest.consent:type_name -> rootstock.v1.ConsentProto
-	72, // 20: rootstock.v1.GetDevicesResponse.devices:type_name -> rootstock.v1.DeviceSummaryProto
-	30, // 21: rootstock.v1.GetDeviceDetailResponse.device:type_name -> rootstock.v1.DeviceProto
-	57, // 22: rootstock.v1.GetDeviceDetailResponse.enrollments:type_name -> rootstock.v1.EnrollmentProto
-	75, // 23: rootstock.v1.GetDeviceDetailResponse.connection_history:type_name -> rootstock.v1.ConnectionEventProto
-	78, // 24: rootstock.v1.GetNotificationsResponse.notifications:type_name -> rootstock.v1.NotificationProto
-	81, // 25: rootstock.v1.GetContributionsResponse.histories:type_name -> rootstock.v1.ReadingHistoryProto
-	27, // 26: rootstock.v1.GetContributionsResponse.badges:type_name -> rootstock.v1.BadgeProto
-	78, // 27: rootstock.v1.ListNotificationsResponse.notifications:type_name -> rootstock.v1.NotificationProto
-	88, // 28: rootstock.v1.GetPreferencesResponse.preferences:type_name -> rootstock.v1.NotificationPreferenceProto
-	88, // 29: rootstock.v1.UpdatePreferencesRequest.preferences:type_name -> rootstock.v1.NotificationPreferenceProto
-	0,  // 30: rootstock.v1.HealthService.Check:input_type -> rootstock.v1.CheckRequest
-	6,  // 31: rootstock.v1.CampaignService.CreateCampaign:input_type -> rootstock.v1.CreateCampaignRequest
-	8,  // 32: rootstock.v1.CampaignService.PublishCampaign:input_type -> rootstock.v1.PublishCampaignRequest
-	10, // 33: rootstock.v1.CampaignService.ListCampaigns:input_type -> rootstock.v1.ListCampaignsRequest
-	12, // 34: rootstock.v1.CampaignService.GetCampaignDashboard:input_type -> rootstock.v1.GetCampaignDashboardRequest
-	15, // 35: rootstock.v1.CampaignService.ExportCampaignData:input_type -> rootstock.v1.ExportCampaignDataRequest
-	17, // 36: rootstock.v1.OrgService.CreateOrg:input_type -> rootstock.v1.CreateOrgRequest
-	19, // 37: rootstock.v1.OrgService.NestOrg:input_type -> rootstock.v1.NestOrgRequest
-	21, // 38: rootstock.v1.OrgService.DefineRole:input_type -> rootstock.v1.DefineRoleRequest
-	23, // 39: rootstock.v1.OrgService.AssignRole:input_type -> rootstock.v1.AssignRoleRequest
-	25, // 40: rootstock.v1.OrgService.InviteUser:input_type -> rootstock.v1.InviteUserRequest
-	28, // 41: rootstock.v1.ScoreService.GetContribution:input_type -> rootstock.v1.GetContributionRequest
-	31, // 42: rootstock.v1.DeviceService.GetDevice:input_type -> rootstock.v1.GetDeviceRequest
-	33, // 43: rootstock.v1.DeviceService.RevokeDevice:input_type -> rootstock.v1.RevokeDeviceRequest
-	35, // 44: rootstock.v1.DeviceService.ReinstateDevice:input_type -> rootstock.v1.ReinstateDeviceRequest
-	37, // 45: rootstock.v1.DeviceService.EnrollInCampaign:input_type -> rootstock.v1.EnrollInCampaignRequest
-	40, // 46: rootstock.v1.UserService.RegisterUser:input_type -> rootstock.v1.RegisterUserRequest
-	42, // 47: rootstock.v1.UserService.GetMe:input_type -> rootstock.v1.GetMeRequest
-	44, // 48: rootstock.v1.UserService.Login:input_type -> rootstock.v1.LoginRequest
-	46, // 49: rootstock.v1.UserService.Logout:input_type -> rootstock.v1.LogoutRequest
-	48, // 50: rootstock.v1.UserService.RegisterResearcher:input_type -> rootstock.v1.RegisterResearcherRequest
-	50, // 51: rootstock.v1.UserService.VerifyEmail:input_type -> rootstock.v1.VerifyEmailRequest
-	52, // 52: rootstock.v1.ScitizenService.RegisterScitizen:input_type -> rootstock.v1.RegisterScitizenRequest
-	58, // 53: rootstock.v1.ScitizenService.GetDashboard:input_type -> rootstock.v1.GetDashboardRequest
-	60, // 54: rootstock.v1.ScitizenService.BrowsePublishedCampaigns:input_type -> rootstock.v1.BrowsePublishedCampaignsRequest
-	63, // 55: rootstock.v1.ScitizenService.GetCampaignDetail:input_type -> rootstock.v1.GetCampaignDetailRequest
-	65, // 56: rootstock.v1.ScitizenService.SearchCampaigns:input_type -> rootstock.v1.SearchCampaignsRequest
-	68, // 57: rootstock.v1.ScitizenService.EnrollDevice:input_type -> rootstock.v1.EnrollDeviceRequest
-	70, // 58: rootstock.v1.ScitizenService.WithdrawEnrollment:input_type -> rootstock.v1.WithdrawEnrollmentRequest
-	73, // 59: rootstock.v1.ScitizenService.GetDevices:input_type -> rootstock.v1.GetDevicesRequest
-	76, // 60: rootstock.v1.ScitizenService.GetDeviceDetail:input_type -> rootstock.v1.GetDeviceDetailRequest
-	79, // 61: rootstock.v1.ScitizenService.GetNotifications:input_type -> rootstock.v1.GetNotificationsRequest
-	82, // 62: rootstock.v1.ScitizenService.GetContributions:input_type -> rootstock.v1.GetContributionsRequest
-	55, // 63: rootstock.v1.ScitizenService.GetOnboardingState:input_type -> rootstock.v1.GetOnboardingStateRequest
-	84, // 64: rootstock.v1.NotificationService.ListNotifications:input_type -> rootstock.v1.ListNotificationsRequest
-	86, // 65: rootstock.v1.NotificationService.MarkRead:input_type -> rootstock.v1.MarkReadRequest
-	89, // 66: rootstock.v1.NotificationService.GetPreferences:input_type -> rootstock.v1.GetPreferencesRequest
-	91, // 67: rootstock.v1.NotificationService.UpdatePreferences:input_type -> rootstock.v1.UpdatePreferencesRequest
-	93, // 68: rootstock.v1.AdminService.SuspendByClass:input_type -> rootstock.v1.SuspendByClassRequest
-	1,  // 69: rootstock.v1.HealthService.Check:output_type -> rootstock.v1.CheckResponse
-	7,  // 70: rootstock.v1.CampaignService.CreateCampaign:output_type -> rootstock.v1.CreateCampaignResponse
-	9,  // 71: rootstock.v1.CampaignService.PublishCampaign:output_type -> rootstock.v1.PublishCampaignResponse
-	11, // 72: rootstock.v1.CampaignService.ListCampaigns:output_type -> rootstock.v1.ListCampaignsResponse
-	13, // 73: rootstock.v1.CampaignService.GetCampaignDashboard:output_type -> rootstock.v1.GetCampaignDashboardResponse
-	16, // 74: rootstock.v1.CampaignService.ExportCampaignData:output_type -> rootstock.v1.ExportCampaignDataResponse
-	18, // 75: rootstock.v1.OrgService.CreateOrg:output_type -> rootstock.v1.CreateOrgResponse
-	20, // 76: rootstock.v1.OrgService.NestOrg:output_type -> rootstock.v1.NestOrgResponse
-	22, // 77: rootstock.v1.OrgService.DefineRole:output_type -> rootstock.v1.DefineRoleResponse
-	24, // 78: rootstock.v1.OrgService.AssignRole:output_type -> rootstock.v1.AssignRoleResponse
-	26, // 79: rootstock.v1.OrgService.InviteUser:output_type -> rootstock.v1.InviteUserResponse
-	29, // 80: rootstock.v1.ScoreService.GetContribution:output_type -> rootstock.v1.GetContributionResponse
-	32, // 81: rootstock.v1.DeviceService.GetDevice:output_type -> rootstock.v1.GetDeviceResponse
-	34, // 82: rootstock.v1.DeviceService.RevokeDevice:output_type -> rootstock.v1.RevokeDeviceResponse
-	36, // 83: rootstock.v1.DeviceService.ReinstateDevice:output_type -> rootstock.v1.ReinstateDeviceResponse
-	38, // 84: rootstock.v1.DeviceService.EnrollInCampaign:output_type -> rootstock.v1.EnrollInCampaignResponse
-	41, // 85: rootstock.v1.UserService.RegisterUser:output_type -> rootstock.v1.RegisterUserResponse
-	43, // 86: rootstock.v1.UserService.GetMe:output_type -> rootstock.v1.GetMeResponse
-	45, // 87: rootstock.v1.UserService.Login:output_type -> rootstock.v1.LoginResponse
-	47, // 88: rootstock.v1.UserService.Logout:output_type -> rootstock.v1.LogoutResponse
-	49, // 89: rootstock.v1.UserService.RegisterResearcher:output_type -> rootstock.v1.RegisterResearcherResponse
-	51, // 90: rootstock.v1.UserService.VerifyEmail:output_type -> rootstock.v1.VerifyEmailResponse
-	53, // 91: rootstock.v1.ScitizenService.RegisterScitizen:output_type -> rootstock.v1.RegisterScitizenResponse
-	59, // 92: rootstock.v1.ScitizenService.GetDashboard:output_type -> rootstock.v1.GetDashboardResponse
-	62, // 93: rootstock.v1.ScitizenService.BrowsePublishedCampaigns:output_type -> rootstock.v1.BrowsePublishedCampaignsResponse
-	64, // 94: rootstock.v1.ScitizenService.GetCampaignDetail:output_type -> rootstock.v1.GetCampaignDetailResponse
-	66, // 95: rootstock.v1.ScitizenService.SearchCampaigns:output_type -> rootstock.v1.SearchCampaignsResponse
-	69, // 96: rootstock.v1.ScitizenService.EnrollDevice:output_type -> rootstock.v1.EnrollDeviceResponse
-	71, // 97: rootstock.v1.ScitizenService.WithdrawEnrollment:output_type -> rootstock.v1.WithdrawEnrollmentResponse
-	74, // 98: rootstock.v1.ScitizenService.GetDevices:output_type -> rootstock.v1.GetDevicesResponse
-	77, // 99: rootstock.v1.ScitizenService.GetDeviceDetail:output_type -> rootstock.v1.GetDeviceDetailResponse
-	80, // 100: rootstock.v1.ScitizenService.GetNotifications:output_type -> rootstock.v1.GetNotificationsResponse
-	83, // 101: rootstock.v1.ScitizenService.GetContributions:output_type -> rootstock.v1.GetContributionsResponse
-	56, // 102: rootstock.v1.ScitizenService.GetOnboardingState:output_type -> rootstock.v1.GetOnboardingStateResponse
-	85, // 103: rootstock.v1.NotificationService.ListNotifications:output_type -> rootstock.v1.ListNotificationsResponse
-	87, // 104: rootstock.v1.NotificationService.MarkRead:output_type -> rootstock.v1.MarkReadResponse
-	90, // 105: rootstock.v1.NotificationService.GetPreferences:output_type -> rootstock.v1.GetPreferencesResponse
-	92, // 106: rootstock.v1.NotificationService.UpdatePreferences:output_type -> rootstock.v1.UpdatePreferencesResponse
-	94, // 107: rootstock.v1.AdminService.SuspendByClass:output_type -> rootstock.v1.SuspendByClassResponse
-	69, // [69:108] is the sub-list for method output_type
-	30, // [30:69] is the sub-list for method input_type
-	30, // [30:30] is the sub-list for extension type_name
-	30, // [30:30] is the sub-list for extension extendee
-	0,  // [0:30] is the sub-list for field type_name
+	39, // 11: rootstock.v1.UpdateUserTypeResponse.user:type_name -> rootstock.v1.UserProto
+	56, // 12: rootstock.v1.GetOnboardingStateResponse.state:type_name -> rootstock.v1.OnboardingStateProto
+	27, // 13: rootstock.v1.GetDashboardResponse.badges:type_name -> rootstock.v1.BadgeProto
+	59, // 14: rootstock.v1.GetDashboardResponse.enrollments:type_name -> rootstock.v1.EnrollmentProto
+	63, // 15: rootstock.v1.BrowsePublishedCampaignsResponse.campaigns:type_name -> rootstock.v1.CampaignSummaryProto
+	2,  // 16: rootstock.v1.GetCampaignDetailResponse.parameters:type_name -> rootstock.v1.ParameterProto
+	3,  // 17: rootstock.v1.GetCampaignDetailResponse.regions:type_name -> rootstock.v1.RegionProto
+	4,  // 18: rootstock.v1.GetCampaignDetailResponse.eligibility:type_name -> rootstock.v1.EligibilityProto
+	63, // 19: rootstock.v1.SearchCampaignsResponse.campaigns:type_name -> rootstock.v1.CampaignSummaryProto
+	69, // 20: rootstock.v1.EnrollDeviceRequest.consent:type_name -> rootstock.v1.ConsentProto
+	74, // 21: rootstock.v1.GetDevicesResponse.devices:type_name -> rootstock.v1.DeviceSummaryProto
+	30, // 22: rootstock.v1.GetDeviceDetailResponse.device:type_name -> rootstock.v1.DeviceProto
+	59, // 23: rootstock.v1.GetDeviceDetailResponse.enrollments:type_name -> rootstock.v1.EnrollmentProto
+	77, // 24: rootstock.v1.GetDeviceDetailResponse.connection_history:type_name -> rootstock.v1.ConnectionEventProto
+	80, // 25: rootstock.v1.GetNotificationsResponse.notifications:type_name -> rootstock.v1.NotificationProto
+	83, // 26: rootstock.v1.GetContributionsResponse.histories:type_name -> rootstock.v1.ReadingHistoryProto
+	27, // 27: rootstock.v1.GetContributionsResponse.badges:type_name -> rootstock.v1.BadgeProto
+	80, // 28: rootstock.v1.ListNotificationsResponse.notifications:type_name -> rootstock.v1.NotificationProto
+	90, // 29: rootstock.v1.GetPreferencesResponse.preferences:type_name -> rootstock.v1.NotificationPreferenceProto
+	90, // 30: rootstock.v1.UpdatePreferencesRequest.preferences:type_name -> rootstock.v1.NotificationPreferenceProto
+	0,  // 31: rootstock.v1.HealthService.Check:input_type -> rootstock.v1.CheckRequest
+	6,  // 32: rootstock.v1.CampaignService.CreateCampaign:input_type -> rootstock.v1.CreateCampaignRequest
+	8,  // 33: rootstock.v1.CampaignService.PublishCampaign:input_type -> rootstock.v1.PublishCampaignRequest
+	10, // 34: rootstock.v1.CampaignService.ListCampaigns:input_type -> rootstock.v1.ListCampaignsRequest
+	12, // 35: rootstock.v1.CampaignService.GetCampaignDashboard:input_type -> rootstock.v1.GetCampaignDashboardRequest
+	15, // 36: rootstock.v1.CampaignService.ExportCampaignData:input_type -> rootstock.v1.ExportCampaignDataRequest
+	17, // 37: rootstock.v1.OrgService.CreateOrg:input_type -> rootstock.v1.CreateOrgRequest
+	19, // 38: rootstock.v1.OrgService.NestOrg:input_type -> rootstock.v1.NestOrgRequest
+	21, // 39: rootstock.v1.OrgService.DefineRole:input_type -> rootstock.v1.DefineRoleRequest
+	23, // 40: rootstock.v1.OrgService.AssignRole:input_type -> rootstock.v1.AssignRoleRequest
+	25, // 41: rootstock.v1.OrgService.InviteUser:input_type -> rootstock.v1.InviteUserRequest
+	28, // 42: rootstock.v1.ScoreService.GetContribution:input_type -> rootstock.v1.GetContributionRequest
+	31, // 43: rootstock.v1.DeviceService.GetDevice:input_type -> rootstock.v1.GetDeviceRequest
+	33, // 44: rootstock.v1.DeviceService.RevokeDevice:input_type -> rootstock.v1.RevokeDeviceRequest
+	35, // 45: rootstock.v1.DeviceService.ReinstateDevice:input_type -> rootstock.v1.ReinstateDeviceRequest
+	37, // 46: rootstock.v1.DeviceService.EnrollInCampaign:input_type -> rootstock.v1.EnrollInCampaignRequest
+	40, // 47: rootstock.v1.UserService.RegisterUser:input_type -> rootstock.v1.RegisterUserRequest
+	42, // 48: rootstock.v1.UserService.GetMe:input_type -> rootstock.v1.GetMeRequest
+	44, // 49: rootstock.v1.UserService.Login:input_type -> rootstock.v1.LoginRequest
+	46, // 50: rootstock.v1.UserService.Logout:input_type -> rootstock.v1.LogoutRequest
+	48, // 51: rootstock.v1.UserService.RegisterResearcher:input_type -> rootstock.v1.RegisterResearcherRequest
+	50, // 52: rootstock.v1.UserService.VerifyEmail:input_type -> rootstock.v1.VerifyEmailRequest
+	52, // 53: rootstock.v1.UserService.UpdateUserType:input_type -> rootstock.v1.UpdateUserTypeRequest
+	54, // 54: rootstock.v1.ScitizenService.RegisterScitizen:input_type -> rootstock.v1.RegisterScitizenRequest
+	60, // 55: rootstock.v1.ScitizenService.GetDashboard:input_type -> rootstock.v1.GetDashboardRequest
+	62, // 56: rootstock.v1.ScitizenService.BrowsePublishedCampaigns:input_type -> rootstock.v1.BrowsePublishedCampaignsRequest
+	65, // 57: rootstock.v1.ScitizenService.GetCampaignDetail:input_type -> rootstock.v1.GetCampaignDetailRequest
+	67, // 58: rootstock.v1.ScitizenService.SearchCampaigns:input_type -> rootstock.v1.SearchCampaignsRequest
+	70, // 59: rootstock.v1.ScitizenService.EnrollDevice:input_type -> rootstock.v1.EnrollDeviceRequest
+	72, // 60: rootstock.v1.ScitizenService.WithdrawEnrollment:input_type -> rootstock.v1.WithdrawEnrollmentRequest
+	75, // 61: rootstock.v1.ScitizenService.GetDevices:input_type -> rootstock.v1.GetDevicesRequest
+	78, // 62: rootstock.v1.ScitizenService.GetDeviceDetail:input_type -> rootstock.v1.GetDeviceDetailRequest
+	81, // 63: rootstock.v1.ScitizenService.GetNotifications:input_type -> rootstock.v1.GetNotificationsRequest
+	84, // 64: rootstock.v1.ScitizenService.GetContributions:input_type -> rootstock.v1.GetContributionsRequest
+	57, // 65: rootstock.v1.ScitizenService.GetOnboardingState:input_type -> rootstock.v1.GetOnboardingStateRequest
+	86, // 66: rootstock.v1.NotificationService.ListNotifications:input_type -> rootstock.v1.ListNotificationsRequest
+	88, // 67: rootstock.v1.NotificationService.MarkRead:input_type -> rootstock.v1.MarkReadRequest
+	91, // 68: rootstock.v1.NotificationService.GetPreferences:input_type -> rootstock.v1.GetPreferencesRequest
+	93, // 69: rootstock.v1.NotificationService.UpdatePreferences:input_type -> rootstock.v1.UpdatePreferencesRequest
+	95, // 70: rootstock.v1.AdminService.SuspendByClass:input_type -> rootstock.v1.SuspendByClassRequest
+	1,  // 71: rootstock.v1.HealthService.Check:output_type -> rootstock.v1.CheckResponse
+	7,  // 72: rootstock.v1.CampaignService.CreateCampaign:output_type -> rootstock.v1.CreateCampaignResponse
+	9,  // 73: rootstock.v1.CampaignService.PublishCampaign:output_type -> rootstock.v1.PublishCampaignResponse
+	11, // 74: rootstock.v1.CampaignService.ListCampaigns:output_type -> rootstock.v1.ListCampaignsResponse
+	13, // 75: rootstock.v1.CampaignService.GetCampaignDashboard:output_type -> rootstock.v1.GetCampaignDashboardResponse
+	16, // 76: rootstock.v1.CampaignService.ExportCampaignData:output_type -> rootstock.v1.ExportCampaignDataResponse
+	18, // 77: rootstock.v1.OrgService.CreateOrg:output_type -> rootstock.v1.CreateOrgResponse
+	20, // 78: rootstock.v1.OrgService.NestOrg:output_type -> rootstock.v1.NestOrgResponse
+	22, // 79: rootstock.v1.OrgService.DefineRole:output_type -> rootstock.v1.DefineRoleResponse
+	24, // 80: rootstock.v1.OrgService.AssignRole:output_type -> rootstock.v1.AssignRoleResponse
+	26, // 81: rootstock.v1.OrgService.InviteUser:output_type -> rootstock.v1.InviteUserResponse
+	29, // 82: rootstock.v1.ScoreService.GetContribution:output_type -> rootstock.v1.GetContributionResponse
+	32, // 83: rootstock.v1.DeviceService.GetDevice:output_type -> rootstock.v1.GetDeviceResponse
+	34, // 84: rootstock.v1.DeviceService.RevokeDevice:output_type -> rootstock.v1.RevokeDeviceResponse
+	36, // 85: rootstock.v1.DeviceService.ReinstateDevice:output_type -> rootstock.v1.ReinstateDeviceResponse
+	38, // 86: rootstock.v1.DeviceService.EnrollInCampaign:output_type -> rootstock.v1.EnrollInCampaignResponse
+	41, // 87: rootstock.v1.UserService.RegisterUser:output_type -> rootstock.v1.RegisterUserResponse
+	43, // 88: rootstock.v1.UserService.GetMe:output_type -> rootstock.v1.GetMeResponse
+	45, // 89: rootstock.v1.UserService.Login:output_type -> rootstock.v1.LoginResponse
+	47, // 90: rootstock.v1.UserService.Logout:output_type -> rootstock.v1.LogoutResponse
+	49, // 91: rootstock.v1.UserService.RegisterResearcher:output_type -> rootstock.v1.RegisterResearcherResponse
+	51, // 92: rootstock.v1.UserService.VerifyEmail:output_type -> rootstock.v1.VerifyEmailResponse
+	53, // 93: rootstock.v1.UserService.UpdateUserType:output_type -> rootstock.v1.UpdateUserTypeResponse
+	55, // 94: rootstock.v1.ScitizenService.RegisterScitizen:output_type -> rootstock.v1.RegisterScitizenResponse
+	61, // 95: rootstock.v1.ScitizenService.GetDashboard:output_type -> rootstock.v1.GetDashboardResponse
+	64, // 96: rootstock.v1.ScitizenService.BrowsePublishedCampaigns:output_type -> rootstock.v1.BrowsePublishedCampaignsResponse
+	66, // 97: rootstock.v1.ScitizenService.GetCampaignDetail:output_type -> rootstock.v1.GetCampaignDetailResponse
+	68, // 98: rootstock.v1.ScitizenService.SearchCampaigns:output_type -> rootstock.v1.SearchCampaignsResponse
+	71, // 99: rootstock.v1.ScitizenService.EnrollDevice:output_type -> rootstock.v1.EnrollDeviceResponse
+	73, // 100: rootstock.v1.ScitizenService.WithdrawEnrollment:output_type -> rootstock.v1.WithdrawEnrollmentResponse
+	76, // 101: rootstock.v1.ScitizenService.GetDevices:output_type -> rootstock.v1.GetDevicesResponse
+	79, // 102: rootstock.v1.ScitizenService.GetDeviceDetail:output_type -> rootstock.v1.GetDeviceDetailResponse
+	82, // 103: rootstock.v1.ScitizenService.GetNotifications:output_type -> rootstock.v1.GetNotificationsResponse
+	85, // 104: rootstock.v1.ScitizenService.GetContributions:output_type -> rootstock.v1.GetContributionsResponse
+	58, // 105: rootstock.v1.ScitizenService.GetOnboardingState:output_type -> rootstock.v1.GetOnboardingStateResponse
+	87, // 106: rootstock.v1.NotificationService.ListNotifications:output_type -> rootstock.v1.ListNotificationsResponse
+	89, // 107: rootstock.v1.NotificationService.MarkRead:output_type -> rootstock.v1.MarkReadResponse
+	92, // 108: rootstock.v1.NotificationService.GetPreferences:output_type -> rootstock.v1.GetPreferencesResponse
+	94, // 109: rootstock.v1.NotificationService.UpdatePreferences:output_type -> rootstock.v1.UpdatePreferencesResponse
+	96, // 110: rootstock.v1.AdminService.SuspendByClass:output_type -> rootstock.v1.SuspendByClassResponse
+	71, // [71:111] is the sub-list for method output_type
+	31, // [31:71] is the sub-list for method input_type
+	31, // [31:31] is the sub-list for extension type_name
+	31, // [31:31] is the sub-list for extension extendee
+	0,  // [0:31] is the sub-list for field type_name
 }
 
 func init() { file_rootstock_v1_rootstock_proto_init() }
@@ -6122,21 +6229,21 @@ func file_rootstock_v1_rootstock_proto_init() {
 	file_rootstock_v1_rootstock_proto_msgTypes[10].OneofWrappers = []any{}
 	file_rootstock_v1_rootstock_proto_msgTypes[14].OneofWrappers = []any{}
 	file_rootstock_v1_rootstock_proto_msgTypes[30].OneofWrappers = []any{}
-	file_rootstock_v1_rootstock_proto_msgTypes[60].OneofWrappers = []any{}
-	file_rootstock_v1_rootstock_proto_msgTypes[61].OneofWrappers = []any{}
-	file_rootstock_v1_rootstock_proto_msgTypes[64].OneofWrappers = []any{}
-	file_rootstock_v1_rootstock_proto_msgTypes[72].OneofWrappers = []any{}
-	file_rootstock_v1_rootstock_proto_msgTypes[75].OneofWrappers = []any{}
-	file_rootstock_v1_rootstock_proto_msgTypes[78].OneofWrappers = []any{}
-	file_rootstock_v1_rootstock_proto_msgTypes[79].OneofWrappers = []any{}
-	file_rootstock_v1_rootstock_proto_msgTypes[84].OneofWrappers = []any{}
+	file_rootstock_v1_rootstock_proto_msgTypes[62].OneofWrappers = []any{}
+	file_rootstock_v1_rootstock_proto_msgTypes[63].OneofWrappers = []any{}
+	file_rootstock_v1_rootstock_proto_msgTypes[66].OneofWrappers = []any{}
+	file_rootstock_v1_rootstock_proto_msgTypes[74].OneofWrappers = []any{}
+	file_rootstock_v1_rootstock_proto_msgTypes[77].OneofWrappers = []any{}
+	file_rootstock_v1_rootstock_proto_msgTypes[80].OneofWrappers = []any{}
+	file_rootstock_v1_rootstock_proto_msgTypes[81].OneofWrappers = []any{}
+	file_rootstock_v1_rootstock_proto_msgTypes[86].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_rootstock_v1_rootstock_proto_rawDesc), len(file_rootstock_v1_rootstock_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   95,
+			NumMessages:   97,
 			NumExtensions: 0,
 			NumServices:   9,
 		},
