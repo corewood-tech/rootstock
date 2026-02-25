@@ -204,6 +204,17 @@ a {
 
 .page-content {
   flex-grow: 1;
+  width: 100%;
+  max-width: 72rem;
+  margin-left: auto;
+  margin-right: auto;
+  padding: var(--space-6);
+}
+
+@media (max-width: 640px) {
+  .page-content {
+    padding: var(--space-4);
+  }
 }
 
 
@@ -728,7 +739,6 @@ textarea.field__input {
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
-  padding: var(--space-6);
 }
 
 .campaign-list__header {
@@ -840,7 +850,6 @@ textarea.field__input {
 .wizard {
   max-width: 48rem;
   margin: 0 auto;
-  padding: var(--space-6);
 }
 
 .wizard__steps {
