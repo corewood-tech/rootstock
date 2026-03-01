@@ -12,6 +12,7 @@ import (
 	"rootstock/web-server/config"
 	campaignflows "rootstock/web-server/flows/campaign"
 	deviceflows "rootstock/web-server/flows/device"
+	notificationflows "rootstock/web-server/flows/notification"
 	orgflows "rootstock/web-server/flows/org"
 	readingflows "rootstock/web-server/flows/reading"
 	scitizenflows "rootstock/web-server/flows/scitizen"
@@ -144,6 +145,12 @@ func NewRPCServer(ctx context.Context, cfg *config.Config, pool *pgxpool.Pool, i
 	scitizenNotificationFlow := scitizenflows.NewNotificationFlow(scOps)
 	scitizenProgressFlow := scitizenflows.NewCampaignProgressFlow(scOps)
 
+	// Notification flows
+	notifListFlow := notificationflows.NewListNotificationsFlow(scOps)
+	notifMarkReadFlow := notificationflows.NewMarkReadFlow(eOps)
+	notifGetPrefsFlow := notificationflows.NewGetPreferencesFlow(eOps)
+	notifUpdatePrefsFlow := notificationflows.NewUpdatePreferencesFlow(eOps)
+
 	// Org flows
 	createOrgFlow := orgflows.NewCreateOrgFlow(oOps)
 	nestOrgFlow := orgflows.NewNestOrgFlow(oOps)
@@ -186,6 +193,11 @@ func NewRPCServer(ctx context.Context, cfg *config.Config, pool *pgxpool.Pool, i
 	adminHandler := connecthandlers.NewAdminServiceHandler(securityResponseFlow)
 	adminPath, adminH := rootstockv1connect.NewAdminServiceHandler(adminHandler, interceptors)
 
+	notificationHandler := connecthandlers.NewNotificationServiceHandler(
+		getUserFlow, notifListFlow, notifMarkReadFlow, notifGetPrefsFlow, notifUpdatePrefsFlow,
+	)
+	notificationPath, notificationH := rootstockv1connect.NewNotificationServiceHandler(notificationHandler, interceptors)
+
 	mux := http.NewServeMux()
 	mux.Handle(healthPath, healthH)
 	mux.Handle(campaignPath, campaignH)
@@ -195,6 +207,7 @@ func NewRPCServer(ctx context.Context, cfg *config.Config, pool *pgxpool.Pool, i
 	mux.Handle(userPath, userH)
 	mux.Handle(scitizenPath, scitizenH)
 	mux.Handle(adminPath, adminH)
+	mux.Handle(notificationPath, notificationH)
 
 	// Device enrollment (enrollment code auth, not JWT) + public CA cert
 	enrollHandler := httphandlers.NewEnrollHandler(registerDeviceFlow, getCACertFlow)

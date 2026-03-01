@@ -73,7 +73,7 @@
 		</div>
 
 		{#each campaigns as campaign (campaign.id)}
-			<div class="campaign-card">
+			<a href="{base}/{lang}/researcher/campaigns/{campaign.id}" class="campaign-card campaign-card--link">
 				<div class="campaign-card__top">
 					<span class="campaign-card__id">{campaign.id.slice(0, 8)}</span>
 					<span class={statusClass(campaign.status)}>{campaign.status}</span>
@@ -84,7 +84,7 @@
 				<div class="campaign-card__meta">
 					<span>{$t('campaign.created')}: {formatDate(campaign.createdAt)}</span>
 				</div>
-			</div>
+			</a>
 		{/each}
 	</div>
 {/if}

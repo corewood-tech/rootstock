@@ -5,7 +5,7 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('researcher-scitizen full loop', () => {
-  test('researcher creates campaign, scitizen sees it in browse', async ({ page }) => {
+  test('researcher creates campaign, publishes, scitizen sees it', async ({ page }) => {
     // Step 1: As authenticated researcher, go to campaign dashboard
     await page.goto('/app/en/researcher/');
     await expect(page.locator('.app-header__brand-name')).toHaveText('ROOTSTOCK', { timeout: 10_000 });
@@ -37,16 +37,64 @@ test.describe('researcher-scitizen full loop', () => {
 
     // Should redirect to dashboard
     await expect(page).toHaveURL(/\/researcher/, { timeout: 15_000 });
+    await page.waitForLoadState('networkidle');
 
-    // Step 3: Navigate to scitizen campaigns browse
+    // Step 3: Click into the newly created campaign detail
+    const firstCard = page.locator('.campaign-card--link').first();
+    const hasCampaigns = await firstCard.isVisible().catch(() => false);
+
+    if (hasCampaigns) {
+      await firstCard.click();
+      await expect(page).toHaveURL(/\/researcher\/campaigns\//, { timeout: 10_000 });
+      await expect(page.locator('.campaign-detail__header')).toBeVisible({ timeout: 10_000 });
+
+      // Step 4: Publish the campaign if it's in draft
+      const publishBtn = page.getByRole('button', { name: 'Publish Campaign' });
+      const canPublish = await publishBtn.isVisible().catch(() => false);
+
+      if (canPublish) {
+        await publishBtn.click();
+        // Wait for status to update — page reloads after publish
+        await expect(page.locator('.status-badge')).not.toHaveText('draft', { timeout: 15_000 });
+      }
+    }
+
+    // Step 5: Navigate to scitizen campaigns browse
     await page.goto('/app/en/scitizen/campaigns');
     await expect(page.locator('.app-header__brand-name')).toHaveText('ROOTSTOCK', { timeout: 10_000 });
 
     // The campaign grid or empty state should be visible
-    // (Campaign may need to be published before appearing; depends on workflow)
-    const hasCampaigns = await page.locator('.campaign-grid').isVisible().catch(() => false);
+    const hasBrowseCampaigns = await page.locator('.campaign-grid').isVisible().catch(() => false);
     const hasEmptyState = await page.locator('.empty-state').isVisible().catch(() => false);
-    expect(hasCampaigns || hasEmptyState).toBeTruthy();
+    expect(hasBrowseCampaigns || hasEmptyState).toBeTruthy();
+
+    if (hasBrowseCampaigns) {
+      // Step 6: Click into a campaign detail and verify enrollment flow is available
+      const campaignCard = page.locator('.campaign-card').first();
+      const hasCard = await campaignCard.isVisible().catch(() => false);
+
+      if (hasCard) {
+        await campaignCard.click();
+        await expect(page).toHaveURL(/\/scitizen\/campaigns\//, { timeout: 10_000 });
+        await expect(page.locator('.campaign-detail__header')).toBeVisible({ timeout: 10_000 });
+
+        // If campaign is published, enroll button should be visible
+        const enrollBtn = page.getByRole('button', { name: 'Enroll a Device' });
+        const hasEnroll = await enrollBtn.isVisible().catch(() => false);
+
+        if (hasEnroll) {
+          // Open device picker
+          await enrollBtn.click();
+          const modal = page.locator('[role="dialog"]');
+          await expect(modal).toBeVisible({ timeout: 5_000 });
+          await expect(modal.getByRole('heading', { name: 'Select a Device' })).toBeVisible();
+
+          // Cancel and confirm modal closes
+          await modal.getByRole('button', { name: 'Cancel' }).click();
+          await expect(modal).not.toBeVisible();
+        }
+      }
+    }
   });
 
   test('scitizen can navigate between all sections', async ({ page }) => {

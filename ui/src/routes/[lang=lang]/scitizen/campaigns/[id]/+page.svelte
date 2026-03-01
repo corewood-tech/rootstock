@@ -4,7 +4,7 @@
 	import { page } from '$app/stores';
 	import { t } from '$lib/i18n';
 	import { scitizenService } from '$lib/api/clients';
-	import type { GetCampaignDetailResponse } from '$lib/api/gen/rootstock/v1/rootstock_pb';
+	import type { GetCampaignDetailResponse, DeviceSummaryProto } from '$lib/api/gen/rootstock/v1/rootstock_pb';
 
 	const campaignId = $derived($page.params.id);
 
@@ -13,7 +13,11 @@
 	let error = $state('');
 	let enrolling = $state(false);
 	let enrollResult = $state('');
+	let showDevicePicker = $state(false);
 	let showConsent = $state(false);
+	let devices = $state<DeviceSummaryProto[]>([]);
+	let devicesLoading = $state(false);
+	let selectedDeviceId = $state<string | null>(null);
 
 	$effect(() => {
 		loadDetail();
@@ -31,17 +35,39 @@
 		}
 	}
 
-	async function handleEnroll(deviceId: string) {
+	async function openDevicePicker() {
+		devicesLoading = true;
+		showDevicePicker = true;
+		try {
+			const resp = await scitizenService.getDevices({});
+			devices = resp.devices.filter((d) => d.status === 'active');
+		} catch (e: any) {
+			enrollResult = e.message || 'Failed to load devices';
+			showDevicePicker = false;
+		} finally {
+			devicesLoading = false;
+		}
+	}
+
+	function selectDevice(deviceId: string) {
+		selectedDeviceId = deviceId;
+		showDevicePicker = false;
+		showConsent = true;
+	}
+
+	async function handleEnroll() {
+		if (!selectedDeviceId) return;
 		enrolling = true;
 		enrollResult = '';
 		try {
 			const resp = await scitizenService.enrollDevice({
-				deviceId,
+				deviceId: selectedDeviceId,
 				campaignId,
 				consent: { version: '1.0', scope: 'data_collection' },
 			});
 			enrollResult = resp.enrolled ? 'Enrolled successfully!' : resp.reason;
 			showConsent = false;
+			selectedDeviceId = null;
 		} catch (e: any) {
 			enrollResult = e.message || 'Enrollment failed';
 		} finally {
@@ -120,7 +146,7 @@
 
 		{#if detail.status === 'published'}
 			<section class="campaign-detail__section">
-				<button onclick={() => showConsent = true} class="btn btn--primary" disabled={enrolling}>
+				<button onclick={openDevicePicker} class="btn btn--primary" disabled={enrolling}>
 					{enrolling ? 'Enrolling...' : 'Enroll a Device'}
 				</button>
 				{#if enrollResult}
@@ -129,14 +155,46 @@
 			</section>
 		{/if}
 
+		{#if showDevicePicker}
+			<div class="modal-overlay" role="dialog" aria-modal="true" aria-label="Select Device">
+				<div class="modal">
+					<h2 class="heading heading--md">Select a Device</h2>
+					{#if devicesLoading}
+						<p class="text-secondary">{$t('common.loading')}</p>
+					{:else if devices.length === 0}
+						<p>No active devices available. Register a device first.</p>
+					{:else}
+						<ul class="device-list">
+							{#each devices as device (device.id)}
+								<li>
+									<button onclick={() => selectDevice(device.id)} class="device-option">
+										<span class="device-option__id">{device.id.slice(0, 8)}</span>
+										<span class="device-option__class">{device.class} &middot; Tier {device.tier}</span>
+										{#if device.sensors.length > 0}
+											<span class="device-option__sensors">{device.sensors.join(', ')}</span>
+										{/if}
+									</button>
+								</li>
+							{/each}
+						</ul>
+					{/if}
+					<div class="modal__actions">
+						<button onclick={() => showDevicePicker = false} class="btn btn--ghost">Cancel</button>
+					</div>
+				</div>
+			</div>
+		{/if}
+
 		{#if showConsent}
 			<div class="modal-overlay" role="dialog" aria-modal="true" aria-label="Consent">
 				<div class="modal">
 					<h2 class="heading heading--md">Consent Required</h2>
 					<p>By enrolling, you consent to sharing sensor data from your device for this campaign.</p>
 					<div class="modal__actions">
-						<button onclick={() => showConsent = false} class="btn btn--ghost">Cancel</button>
-						<button onclick={() => handleEnroll('default-device')} class="btn btn--primary">Accept & Enroll</button>
+						<button onclick={() => { showConsent = false; selectedDeviceId = null; }} class="btn btn--ghost">Cancel</button>
+						<button onclick={handleEnroll} class="btn btn--primary" disabled={enrolling}>
+							{enrolling ? 'Enrolling...' : 'Accept & Enroll'}
+						</button>
 					</div>
 				</div>
 			</div>
@@ -197,5 +255,41 @@
 		gap: 1rem;
 		justify-content: flex-end;
 		margin-top: 1.5rem;
+	}
+	.device-list {
+		list-style: none;
+		padding: 0;
+		margin: 1rem 0;
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
+	}
+	.device-option {
+		width: 100%;
+		display: flex;
+		flex-direction: column;
+		gap: 0.25rem;
+		padding: 0.75rem 1rem;
+		background: var(--color-surface, #1a1a2e);
+		border: 1px solid var(--color-border, #333);
+		border-radius: 0.5rem;
+		cursor: pointer;
+		text-align: left;
+		color: inherit;
+	}
+	.device-option:hover {
+		border-color: var(--color-primary, #6366f1);
+	}
+	.device-option__id {
+		font-weight: 600;
+		font-family: monospace;
+	}
+	.device-option__class {
+		font-size: 0.875rem;
+		color: var(--color-text-secondary, #aaa);
+	}
+	.device-option__sensors {
+		font-size: 0.8rem;
+		color: var(--color-text-secondary, #aaa);
 	}
 </style>
