@@ -6,8 +6,9 @@ test.describe('scitizen device management', () => {
   test('shows device list or empty state', async ({ page }) => {
     await page.goto('/app/en/scitizen/devices');
     await expect(page.locator('.app-header__brand-name')).toHaveText('ROOTSTOCK', { timeout: 10_000 });
+    await page.waitForLoadState('networkidle');
 
-    const hasDevices = await page.locator('.device-grid').isVisible().catch(() => false);
+    const hasDevices = await page.locator('.device-grid').isVisible({ timeout: 5_000 }).catch(() => false);
     const hasEmptyState = await page.locator('.empty-state').isVisible().catch(() => false);
     expect(hasDevices || hasEmptyState).toBeTruthy();
   });
@@ -20,9 +21,10 @@ test.describe('scitizen device management', () => {
   test('device cards or empty state render correctly', async ({ page }) => {
     await page.goto('/app/en/scitizen/devices');
     await expect(page.locator('.app-header__brand-name')).toHaveText('ROOTSTOCK', { timeout: 10_000 });
+    await page.waitForLoadState('networkidle');
 
     const firstCard = page.locator('.device-card').first();
-    const hasDevices = await firstCard.isVisible().catch(() => false);
+    const hasDevices = await firstCard.isVisible({ timeout: 5_000 }).catch(() => false);
 
     if (hasDevices) {
       await expect(firstCard.locator('.device-card__header')).toBeVisible();

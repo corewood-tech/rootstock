@@ -22,7 +22,7 @@ test.describe('scitizen campaign browse', () => {
     await expect(page.locator('.app-header__brand-name')).toHaveText('ROOTSTOCK', { timeout: 10_000 });
 
     await expect(page.getByPlaceholder('Search campaigns...')).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Search' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Search', exact: true })).toBeVisible();
   });
 
   test('search filters campaigns', async ({ page }) => {
@@ -30,7 +30,7 @@ test.describe('scitizen campaign browse', () => {
     await expect(page.locator('.app-header__brand-name')).toHaveText('ROOTSTOCK', { timeout: 10_000 });
 
     await page.getByPlaceholder('Search campaigns...').fill('temperature');
-    await page.getByRole('button', { name: 'Search' }).click();
+    await page.getByRole('button', { name: 'Search', exact: true }).click();
 
     // After search, should show results or empty state
     await page.waitForLoadState('networkidle');

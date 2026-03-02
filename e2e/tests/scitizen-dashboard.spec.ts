@@ -6,8 +6,9 @@ test.describe('scitizen dashboard', () => {
   test('shows dashboard with stats or empty state', async ({ page }) => {
     await page.goto('/app/en/scitizen/');
     await expect(page.locator('.app-header__brand-name')).toHaveText('ROOTSTOCK', { timeout: 10_000 });
+    await page.waitForLoadState('networkidle');
 
-    const hasStats = await page.locator('.stats-grid').isVisible().catch(() => false);
+    const hasStats = await page.locator('.stats-grid').isVisible({ timeout: 5_000 }).catch(() => false);
     const hasEmptyState = await page.locator('.empty-state').isVisible().catch(() => false);
     expect(hasStats || hasEmptyState).toBeTruthy();
   });

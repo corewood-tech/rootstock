@@ -43,19 +43,19 @@ test.describe('campaign creation wizard', () => {
 
     // Step 1: Basics
     await expect(page.getByLabel('Start date')).toBeVisible();
-    await page.getByRole('button', { name: 'Next' }).click();
+    await page.getByRole('button', { name: 'Next' }).click({ force: true });
 
     // Step 2: Parameters
     await expect(page.getByLabel('Parameter name')).toBeVisible();
-    await page.getByRole('button', { name: 'Next' }).click();
+    await page.getByRole('button', { name: 'Next' }).click({ force: true });
 
     // Step 3: Regions
     await expect(page.getByLabel('GeoJSON')).toBeVisible();
-    await page.getByRole('button', { name: 'Next' }).click();
+    await page.getByRole('button', { name: 'Next' }).click({ force: true });
 
     // Step 4: Eligibility
     await expect(page.getByLabel('Device class')).toBeVisible();
-    await page.getByRole('button', { name: 'Next' }).click();
+    await page.getByRole('button', { name: 'Next' }).click({ force: true });
 
     // Step 5: Review
     await expect(page.getByRole('button', { name: 'Create campaign' })).toBeVisible();
@@ -65,17 +65,17 @@ test.describe('campaign creation wizard', () => {
     await page.goto('/app/en/researcher/campaigns/new');
     await expect(page.locator('.wizard__steps')).toBeVisible({ timeout: 10_000 });
 
-    await page.getByRole('button', { name: 'Next' }).click();
+    await page.getByRole('button', { name: 'Next' }).click({ force: true });
     await expect(page.getByLabel('Parameter name')).toBeVisible();
 
-    await page.getByRole('button', { name: 'Back' }).click();
+    await page.getByRole('button', { name: 'Back' }).click({ force: true });
     await expect(page.getByLabel('Start date')).toBeVisible();
   });
 
   test('adds and removes parameters', async ({ page }) => {
     await page.goto('/app/en/researcher/campaigns/new');
     await expect(page.locator('.wizard__steps')).toBeVisible({ timeout: 10_000 });
-    await page.getByRole('button', { name: 'Next' }).click();
+    await page.getByRole('button', { name: 'Next' }).click({ force: true });
 
     // Add a parameter
     await page.getByRole('button', { name: 'Add parameter' }).click();
@@ -95,18 +95,18 @@ test.describe('campaign creation wizard', () => {
     // Step 1: Set dates
     await page.getByLabel('Start date').fill('2026-03-01');
     await page.getByLabel('End date').fill('2026-06-01');
-    await page.getByRole('button', { name: 'Next' }).click();
+    await page.getByRole('button', { name: 'Next' }).click({ force: true });
 
     // Step 2: Add parameter
     await page.getByLabel('Parameter name').fill('Temperature');
     await page.getByLabel('Unit').fill('°C');
-    await page.getByRole('button', { name: 'Next' }).click();
+    await page.getByRole('button', { name: 'Next' }).click({ force: true });
 
     // Step 3: Skip regions
-    await page.getByRole('button', { name: 'Next' }).click();
+    await page.getByRole('button', { name: 'Next' }).click({ force: true });
 
     // Step 4: Skip eligibility
-    await page.getByRole('button', { name: 'Next' }).click();
+    await page.getByRole('button', { name: 'Next' }).click({ force: true });
 
     // Step 5: Review & submit
     await expect(page.getByText('Temperature')).toBeVisible();

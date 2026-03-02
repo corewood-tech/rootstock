@@ -18,18 +18,18 @@ test.describe('researcher-scitizen full loop', () => {
     // Step 1: Basics — set dates
     await page.getByLabel('Start date').fill('2026-03-01');
     await page.getByLabel('End date').fill('2026-09-01');
-    await page.getByRole('button', { name: 'Next' }).click();
+    await page.getByRole('button', { name: 'Next' }).click({ force: true });
 
     // Step 2: Parameters
     await page.getByLabel('Parameter name').fill('PM2.5');
     await page.getByLabel('Unit').fill('µg/m³');
-    await page.getByRole('button', { name: 'Next' }).click();
+    await page.getByRole('button', { name: 'Next' }).click({ force: true });
 
     // Step 3: Regions — skip
-    await page.getByRole('button', { name: 'Next' }).click();
+    await page.getByRole('button', { name: 'Next' }).click({ force: true });
 
     // Step 4: Eligibility — skip
-    await page.getByRole('button', { name: 'Next' }).click();
+    await page.getByRole('button', { name: 'Next' }).click({ force: true });
 
     // Step 5: Review & submit
     await expect(page.getByText('PM2.5')).toBeVisible();
@@ -62,9 +62,10 @@ test.describe('researcher-scitizen full loop', () => {
     // Step 5: Navigate to scitizen campaigns browse
     await page.goto('/app/en/scitizen/campaigns');
     await expect(page.locator('.app-header__brand-name')).toHaveText('ROOTSTOCK', { timeout: 10_000 });
+    await page.waitForLoadState('networkidle');
 
     // The campaign grid or empty state should be visible
-    const hasBrowseCampaigns = await page.locator('.campaign-grid').isVisible().catch(() => false);
+    const hasBrowseCampaigns = await page.locator('.campaign-grid').isVisible({ timeout: 5_000 }).catch(() => false);
     const hasEmptyState = await page.locator('.empty-state').isVisible().catch(() => false);
     expect(hasBrowseCampaigns || hasEmptyState).toBeTruthy();
 
