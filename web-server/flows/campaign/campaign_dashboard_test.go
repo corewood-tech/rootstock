@@ -33,15 +33,14 @@ func setupCampaignDashboardTest(t *testing.T) (*CreateCampaignFlow, *DashboardFl
 	}
 
 	ctx := context.Background()
-	pool.Exec(ctx, "TRUNCATE campaigns CASCADE")
-	pool.Exec(ctx, "TRUNCATE readings CASCADE")
+	pool.Exec(ctx, "TRUNCATE reading_values, readings, campaigns CASCADE")
 
 	cRepo := campaignrepo.NewRepository(pool)
 	rRepo := readingrepo.NewRepository(pool)
 	cOps := campaignops.NewOps(cRepo)
 	rOps := readingops.NewOps(rRepo)
 	createFlow := NewCreateCampaignFlow(cOps, nil)
-	dashboardFlow := NewDashboardFlow(rOps)
+	dashboardFlow := NewDashboardFlow(rOps, "test-secret")
 
 	t.Cleanup(func() {
 		cRepo.Shutdown()

@@ -142,10 +142,10 @@ test.describe('researcher-scitizen full loop', () => {
     // Scitizen dashboard loads
     await page.goto('/app/en/scitizen/');
     await expect(page.locator('.app-header__brand-name')).toHaveText('ROOTSTOCK', { timeout: 10_000 });
+    await page.waitForLoadState('networkidle');
 
     // Dashboard content renders (stats or empty state)
-    const hasStats = await page.locator('.stats-grid').isVisible().catch(() => false);
-    const hasEmptyState = await page.locator('.empty-state').isVisible().catch(() => false);
-    expect(hasStats || hasEmptyState).toBeTruthy();
+    const statsOrEmpty = page.locator('.stats-grid').or(page.locator('.empty-state'));
+    await expect(statsOrEmpty).toBeVisible({ timeout: 10_000 });
   });
 });

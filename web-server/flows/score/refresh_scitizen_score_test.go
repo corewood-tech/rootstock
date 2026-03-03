@@ -36,7 +36,7 @@ func setupRefreshScoreTest(t *testing.T) (*RefreshScitizenScoreFlow, *pgxpool.Po
 	}
 
 	ctx := context.Background()
-	pool.Exec(ctx, "TRUNCATE devices, readings, scores, badges, sweepstakes_entries, device_campaigns, campaigns CASCADE")
+	pool.Exec(ctx, "TRUNCATE reading_values, devices, readings, scores, badges, sweepstakes_entries, device_campaigns, campaigns CASCADE")
 
 	dRepo := devicerepo.NewRepository(pool)
 	rRepo := readingrepo.NewRepository(pool)
@@ -67,10 +67,12 @@ func TestRefreshScitizenScore(t *testing.T) {
 	pool.Exec(ctx, `INSERT INTO devices (id, owner_id, status, class, firmware_version, tier, sensors)
 		VALUES ('dev-1', 'sci-1', 'active', 'tier1', '1.0.0', 1, '{"temperature"}')`)
 
-	// Insert an accepted reading for the device
-	pool.Exec(ctx, `INSERT INTO readings (id, device_id, campaign_id, value, timestamp, firmware_version, cert_serial, status)
-		VALUES ('r-1', 'dev-1', 'camp-1', 22.5, $1, '1.0.0', 'serial-1', 'accepted')`,
+	// Insert an accepted reading with a reading_value for the device
+	pool.Exec(ctx, `INSERT INTO readings (id, device_id, campaign_id, timestamp, firmware_version, cert_serial, status)
+		VALUES ('r-1', 'dev-1', 'camp-1', $1, '1.0.0', 'serial-1', 'accepted')`,
 		time.Now())
+	pool.Exec(ctx, `INSERT INTO reading_values (id, reading_id, parameter_name, value, status)
+		VALUES ('rv-1', 'r-1', 'temperature', 22.5, 'accepted')`)
 
 	result, err := flow.Run(ctx, RefreshScitizenScoreInput{DeviceID: "dev-1"})
 	if err != nil {

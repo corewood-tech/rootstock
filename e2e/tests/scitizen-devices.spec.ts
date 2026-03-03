@@ -39,6 +39,11 @@ test.describe('scitizen device management', () => {
   test('device navigation works', async ({ page }) => {
     await page.goto('/app/en/scitizen/devices');
     await expect(page.locator('.app-header__brand-name')).toHaveText('ROOTSTOCK', { timeout: 10_000 });
+    await page.waitForLoadState('networkidle');
+
+    const deviceGrid = page.locator('.device-grid');
+    const emptyState = page.locator('.empty-state');
+    await expect(deviceGrid.or(emptyState)).toBeVisible({ timeout: 10_000 });
 
     const firstCard = page.locator('.device-card').first();
     const hasDevices = await firstCard.isVisible().catch(() => false);

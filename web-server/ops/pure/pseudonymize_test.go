@@ -14,7 +14,7 @@ func TestPseudonymizeExport(t *testing.T) {
 			{
 				DeviceID:        "dev-1",
 				CampaignID:      "camp-1",
-				Value:           22.5,
+				Values:          map[string]float64{"temp": 22.5},
 				Timestamp:       now,
 				Geolocation:     &geo,
 				FirmwareVersion: "1.0.0",
@@ -24,7 +24,7 @@ func TestPseudonymizeExport(t *testing.T) {
 			{
 				DeviceID:        "dev-2",
 				CampaignID:      "camp-1",
-				Value:           23.1,
+				Values:          map[string]float64{"temp": 23.1},
 				Timestamp:       now,
 				Geolocation:     nil,
 				FirmwareVersion: "1.0.0",
@@ -64,8 +64,8 @@ func TestPseudonymizeExport(t *testing.T) {
 	if results[0].CampaignID != "camp-1" {
 		t.Errorf("campaign_id = %s, want camp-1", results[0].CampaignID)
 	}
-	if results[0].Value != 22.5 {
-		t.Errorf("value = %f, want 22.5", results[0].Value)
+	if results[0].Values["temp"] != 22.5 {
+		t.Errorf("values[temp] = %f, want 22.5", results[0].Values["temp"])
 	}
 	if results[0].Geolocation == nil || *results[0].Geolocation != "point" {
 		t.Error("geolocation should be preserved")

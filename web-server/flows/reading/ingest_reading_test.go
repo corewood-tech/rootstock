@@ -37,7 +37,7 @@ func setupIngestTest(t *testing.T) (*IngestReadingFlow, *pgxpool.Pool) {
 	}
 
 	ctx := context.Background()
-	pool.Exec(ctx, "TRUNCATE readings, devices, campaigns CASCADE")
+	pool.Exec(ctx, "TRUNCATE reading_values, readings, devices, campaigns CASCADE")
 
 	cRepo := campaignrepo.NewRepository(pool)
 	rRepo := readingrepo.NewRepository(pool)
@@ -94,7 +94,7 @@ func TestIngestValidReading(t *testing.T) {
 	rd, err := flow.Run(ctx, IngestReadingInput{
 		DeviceID:        deviceID,
 		CampaignID:      campaign.ID,
-		Value:           23.5,
+		Values:          map[string]float64{"temp": 23.5},
 		Timestamp:       now,
 		FirmwareVersion: "1.0.0",
 		CertSerial:      "serial-1",
@@ -135,7 +135,7 @@ func TestIngestOutOfRangeReading(t *testing.T) {
 	rd, err := flow.Run(ctx, IngestReadingInput{
 		DeviceID:        deviceID,
 		CampaignID:      campaign.ID,
-		Value:           999.0,
+		Values:          map[string]float64{"temp": 999.0},
 		Timestamp:       now,
 		FirmwareVersion: "1.0.0",
 		CertSerial:      "serial-1",
@@ -176,7 +176,7 @@ func TestIngestOutsideWindowReading(t *testing.T) {
 	rd, err := flow.Run(ctx, IngestReadingInput{
 		DeviceID:        deviceID,
 		CampaignID:      campaign.ID,
-		Value:           23.5,
+		Values:          map[string]float64{"temp": 23.5},
 		Timestamp:       now,
 		FirmwareVersion: "1.0.0",
 		CertSerial:      "serial-1",

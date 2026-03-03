@@ -131,6 +131,103 @@
 					</div>
 				</div>
 			</section>
+
+			{#if dashboard.parameterQuality.length > 0}
+				<section class="campaign-detail__section" aria-label="Parameter quality">
+					<h2 class="heading heading--md">Parameter Quality</h2>
+					<table class="data-table">
+						<thead>
+							<tr>
+								<th>Parameter</th>
+								<th>Accepted</th>
+								<th>Quarantined</th>
+								<th>Acceptance Rate</th>
+							</tr>
+						</thead>
+						<tbody>
+							{#each dashboard.parameterQuality as pq}
+								{@const total = pq.acceptedCount + pq.quarantinedCount}
+								<tr>
+									<td>{pq.parameterName}</td>
+									<td>{pq.acceptedCount}</td>
+									<td>{pq.quarantinedCount}</td>
+									<td>{total > 0 ? ((pq.acceptedCount / total) * 100).toFixed(1) : '—'}%</td>
+								</tr>
+							{/each}
+						</tbody>
+					</table>
+				</section>
+			{/if}
+
+			{#if dashboard.deviceBreakdown.length > 0}
+				<section class="campaign-detail__section" aria-label="Device breakdown">
+					<h2 class="heading heading--md">Device Breakdown</h2>
+					<table class="data-table">
+						<thead>
+							<tr>
+								<th>Device ID</th>
+								<th>Class</th>
+								<th>Acceptance Rate</th>
+								<th>Readings</th>
+								<th>Last Seen</th>
+							</tr>
+						</thead>
+						<tbody>
+							{#each dashboard.deviceBreakdown as db}
+								<tr>
+									<td><code>{db.pseudoDeviceId.slice(0, 8)}</code></td>
+									<td>{db.deviceClass}</td>
+									<td>{(db.acceptanceRate * 100).toFixed(1)}%</td>
+									<td>{db.readingCount}</td>
+									<td>{db.lastSeen ? formatDate(db.lastSeen) : '—'}</td>
+								</tr>
+							{/each}
+						</tbody>
+					</table>
+				</section>
+			{/if}
+
+			{#if dashboard.enrollmentFunnel}
+				<section class="campaign-detail__section" aria-label="Enrollment funnel">
+					<h2 class="heading heading--md">Enrollment Funnel</h2>
+					<div class="stats-row">
+						<div class="stat-card">
+							<span class="stat-card__value">{dashboard.enrollmentFunnel.enrolled}</span>
+							<span class="stat-card__label">Enrolled</span>
+						</div>
+						<div class="stat-card">
+							<span class="stat-card__value">{dashboard.enrollmentFunnel.active}</span>
+							<span class="stat-card__label">Active</span>
+						</div>
+						<div class="stat-card">
+							<span class="stat-card__value">{dashboard.enrollmentFunnel.contributing}</span>
+							<span class="stat-card__label">Contributing</span>
+						</div>
+					</div>
+				</section>
+			{/if}
+
+			{#if dashboard.temporalCoverage.length > 0}
+				<section class="campaign-detail__section" aria-label="Temporal coverage">
+					<h2 class="heading heading--md">Temporal Coverage</h2>
+					<table class="data-table">
+						<thead>
+							<tr>
+								<th>Time Bucket</th>
+								<th>Readings</th>
+							</tr>
+						</thead>
+						<tbody>
+							{#each dashboard.temporalCoverage as tc}
+								<tr>
+									<td>{formatDate(tc.bucket)}</td>
+									<td>{tc.count}</td>
+								</tr>
+							{/each}
+						</tbody>
+					</table>
+				</section>
+			{/if}
 		{/if}
 	{/if}
 </div>
@@ -184,5 +281,24 @@
 		color: var(--color-text-secondary, #aaa);
 		font-size: 0.875rem;
 		margin-top: 0.25rem;
+	}
+	.data-table {
+		width: 100%;
+		border-collapse: collapse;
+	}
+	.data-table th,
+	.data-table td {
+		padding: 0.5rem 1rem;
+		text-align: left;
+		border-bottom: 1px solid var(--color-border, #333);
+	}
+	.data-table th {
+		color: var(--color-text-secondary, #aaa);
+		font-weight: 600;
+		font-size: 0.875rem;
+	}
+	.data-table code {
+		font-family: var(--font-mono, monospace);
+		font-size: 0.875rem;
 	}
 </style>

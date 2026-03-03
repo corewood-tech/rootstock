@@ -33,10 +33,14 @@ func (f *ExportDataFlow) Run(ctx context.Context, input ExportDataInput) (*Expor
 	// 2. Map to pseudonymizable readings
 	pseudoInput := make([]pure.PseudonymizableReading, len(readings))
 	for i, r := range readings {
+		valuesMap := make(map[string]float64, len(r.Values))
+		for _, rv := range r.Values {
+			valuesMap[rv.ParameterName] = rv.Value
+		}
 		pseudoInput[i] = pure.PseudonymizableReading{
 			DeviceID:        r.DeviceID,
 			CampaignID:      r.CampaignID,
-			Value:           r.Value,
+			Values:          valuesMap,
 			Timestamp:       r.Timestamp,
 			Geolocation:     r.Geolocation,
 			FirmwareVersion: r.FirmwareVersion,
@@ -57,7 +61,7 @@ func (f *ExportDataFlow) Run(ctx context.Context, input ExportDataInput) (*Expor
 		exported[i] = ExportedReading{
 			PseudoDeviceID:  p.PseudoDeviceID,
 			CampaignID:      p.CampaignID,
-			Value:           p.Value,
+			Values:          p.Values,
 			Timestamp:       p.Timestamp,
 			Geolocation:     p.Geolocation,
 			FirmwareVersion: p.FirmwareVersion,

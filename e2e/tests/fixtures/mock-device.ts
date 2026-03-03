@@ -113,11 +113,12 @@ export class MockDevice {
     this.serial = result.serial;
   }
 
-  /** Publish a reading to the MQTT broker using mTLS. */
+  /** Publish a reading to the MQTT broker using mTLS.
+   *  Accepts either a single number (backward compat) or a values map. */
   async publishReading(
     request: APIRequestContext,
     campaignID: string,
-    value: number,
+    values: number | Record<string, number>,
   ): Promise<void> {
     // Fetch CA cert for TLS verification
     const caResponse = await request.get('http://caddy:9999/ca');
@@ -143,8 +144,9 @@ export class MockDevice {
     this.mqttClient = client;
 
     const topic = `rootstock/${this.deviceId}/data/${campaignID}`;
+    const resolvedValues = typeof values === 'number' ? { value: values } : values;
     const payload = JSON.stringify({
-      value,
+      values: resolvedValues,
       timestamp: new Date().toISOString(),
       firmware_version: this.firmwareVersion,
       cert_serial: this.serial,

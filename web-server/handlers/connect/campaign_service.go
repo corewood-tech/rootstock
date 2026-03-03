@@ -138,11 +138,47 @@ func (h *CampaignServiceHandler) GetCampaignDashboard(
 		return nil, err
 	}
 
-	return connect.NewResponse(&rootstockv1.GetCampaignDashboardResponse{
+	resp := &rootstockv1.GetCampaignDashboardResponse{
 		CampaignId:      dashboard.CampaignID,
 		AcceptedCount:   int32(dashboard.AcceptedCount),
 		QuarantineCount: int32(dashboard.QuarantineCount),
-	}), nil
+	}
+
+	for _, pq := range dashboard.ParameterQuality {
+		resp.ParameterQuality = append(resp.ParameterQuality, &rootstockv1.ParameterQualityProto{
+			ParameterName:    pq.ParameterName,
+			AcceptedCount:    int32(pq.AcceptedCount),
+			QuarantinedCount: int32(pq.QuarantinedCount),
+		})
+	}
+
+	for _, db := range dashboard.DeviceBreakdown {
+		entry := &rootstockv1.DeviceBreakdownProto{
+			PseudoDeviceId: db.PseudoDeviceID,
+			DeviceClass:    db.DeviceClass,
+			AcceptanceRate: db.AcceptanceRate,
+			ReadingCount:   int32(db.ReadingCount),
+		}
+		if db.LastSeen != nil {
+			entry.LastSeen = *db.LastSeen
+		}
+		resp.DeviceBreakdown = append(resp.DeviceBreakdown, entry)
+	}
+
+	resp.EnrollmentFunnel = &rootstockv1.EnrollmentFunnelProto{
+		Enrolled:     int32(dashboard.EnrollmentFunnel.Enrolled),
+		Active:       int32(dashboard.EnrollmentFunnel.Active),
+		Contributing: int32(dashboard.EnrollmentFunnel.Contributing),
+	}
+
+	for _, tc := range dashboard.TemporalCoverage {
+		resp.TemporalCoverage = append(resp.TemporalCoverage, &rootstockv1.TemporalBucketProto{
+			Bucket: tc.Bucket,
+			Count:  int32(tc.Count),
+		})
+	}
+
+	return connect.NewResponse(resp), nil
 }
 
 func (h *CampaignServiceHandler) ExportCampaignData(
@@ -166,7 +202,7 @@ func (h *CampaignServiceHandler) ExportCampaignData(
 		readings[i] = &rootstockv1.ExportedReadingProto{
 			PseudoDeviceId:  r.PseudoDeviceID,
 			CampaignId:      r.CampaignID,
-			Value:           r.Value,
+			Values:          r.Values,
 			Timestamp:       r.Timestamp.Format(time.RFC3339),
 			FirmwareVersion: r.FirmwareVersion,
 			IngestedAt:      r.IngestedAt.Format(time.RFC3339),

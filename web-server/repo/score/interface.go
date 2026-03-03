@@ -10,5 +10,6 @@ type Repository interface {
 	GetBadges(ctx context.Context, scitizenID string) ([]Badge, error)
 	GrantSweepstakes(ctx context.Context, input GrantSweepstakesInput) error
 	GetSweepstakesEntries(ctx context.Context, scitizenID string) ([]SweepstakesEntry, error)
+	GetLeaderboard(ctx context.Context, input GetLeaderboardInput) (*LeaderboardResult, error)
 	Shutdown()
 }

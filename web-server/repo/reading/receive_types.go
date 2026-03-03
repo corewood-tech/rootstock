@@ -2,11 +2,17 @@ package reading
 
 import "time"
 
+// ReadingValueInput is a single parameter measurement to persist.
+type ReadingValueInput struct {
+	ParameterName string
+	Value         float64
+}
+
 // PersistReadingInput is what the PersistReading op sends to the repository.
 type PersistReadingInput struct {
 	DeviceID        string
 	CampaignID      string
-	Value           float64
+	Values          []ReadingValueInput
 	Timestamp       time.Time
 	Geolocation     string // GeoJSON point, may be empty
 	FirmwareVersion string

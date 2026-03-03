@@ -219,4 +219,20 @@ test.describe.serial('capture screenshots', () => {
 
     await page.screenshot({ path: `${SHOTS}/05b-contributions.png`, fullPage: true });
   });
+
+  test('07 — leaderboard page', async ({ page }) => {
+    await page.goto('/app/en/scitizen/leaderboard');
+    await expect(page.locator('.app-header__brand-name')).toHaveText('ROOTSTOCK', { timeout: 10_000 });
+    await page.waitForLoadState('networkidle');
+
+    await page.screenshot({ path: `${SHOTS}/06-leaderboard.png`, fullPage: true });
+  });
+
+  test('08 — enriched researcher dashboard', async ({ page }) => {
+    await page.goto(`/app/en/researcher/campaigns/${campaignID}`);
+    await expect(page.locator('.campaign-detail__header')).toBeVisible({ timeout: 10_000 });
+    await page.waitForLoadState('networkidle');
+
+    await page.screenshot({ path: `${SHOTS}/07-enriched-dashboard.png`, fullPage: true });
+  });
 });

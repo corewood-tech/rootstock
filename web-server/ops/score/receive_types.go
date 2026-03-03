@@ -16,3 +16,12 @@ type GrantSweepstakesInput struct {
 	Entries          int
 	MilestoneTrigger string
 }
+
+// GetLeaderboardInput controls leaderboard queries.
+type GetLeaderboardInput struct {
+	CampaignID  *string
+	TimePeriod  string
+	Limit       int
+	Offset      int
+	RequesterID string
+}

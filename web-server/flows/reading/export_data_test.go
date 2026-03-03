@@ -32,7 +32,7 @@ func setupExportTest(t *testing.T) (*ExportDataFlow, *pgxpool.Pool) {
 	}
 
 	ctx := context.Background()
-	pool.Exec(ctx, "TRUNCATE readings, devices, campaigns CASCADE")
+	pool.Exec(ctx, "TRUNCATE reading_values, readings, devices, campaigns CASCADE")
 
 	rRepo := readingrepo.NewRepository(pool)
 	rOps := readingops.NewOps(rRepo)
@@ -57,10 +57,14 @@ func TestExportDataPseudonymizes(t *testing.T) {
 		ON CONFLICT (id) DO NOTHING`)
 
 	now := time.Now()
-	pool.Exec(ctx, `INSERT INTO readings (id, device_id, campaign_id, value, timestamp, firmware_version, cert_serial, status)
-		VALUES ('r-exp-1', 'dev-exp-1', 'camp-exp-1', 22.5, $1, '1.0.0', 'serial-1', 'accepted')`, now)
-	pool.Exec(ctx, `INSERT INTO readings (id, device_id, campaign_id, value, timestamp, firmware_version, cert_serial, status)
-		VALUES ('r-exp-2', 'dev-exp-1', 'camp-exp-1', 23.1, $1, '1.0.0', 'serial-1', 'quarantined')`, now)
+	pool.Exec(ctx, `INSERT INTO readings (id, device_id, campaign_id, timestamp, firmware_version, cert_serial, status)
+		VALUES ('r-exp-1', 'dev-exp-1', 'camp-exp-1', $1, '1.0.0', 'serial-1', 'accepted')`, now)
+	pool.Exec(ctx, `INSERT INTO reading_values (id, reading_id, parameter_name, value, status)
+		VALUES ('rv-exp-1', 'r-exp-1', 'temp', 22.5, 'accepted')`)
+	pool.Exec(ctx, `INSERT INTO readings (id, device_id, campaign_id, timestamp, firmware_version, cert_serial, status)
+		VALUES ('r-exp-2', 'dev-exp-1', 'camp-exp-1', $1, '1.0.0', 'serial-1', 'quarantined')`, now)
+	pool.Exec(ctx, `INSERT INTO reading_values (id, reading_id, parameter_name, value, status)
+		VALUES ('rv-exp-2', 'r-exp-2', 'temp', 23.1, 'quarantined')`)
 
 	result, err := flow.Run(ctx, ExportDataInput{
 		CampaignID: "camp-exp-1",
@@ -85,8 +89,8 @@ func TestExportDataPseudonymizes(t *testing.T) {
 	if r.PseudoDeviceID == "" {
 		t.Error("pseudo device ID should not be empty")
 	}
-	if r.Value != 22.5 {
-		t.Errorf("value = %f, want 22.5", r.Value)
+	if r.Values["temp"] != 22.5 {
+		t.Errorf("values[temp] = %f, want 22.5", r.Values["temp"])
 	}
 }
 
@@ -101,9 +105,13 @@ func TestExportDataPagination(t *testing.T) {
 
 	now := time.Now()
 	for i := 0; i < 5; i++ {
-		pool.Exec(ctx, `INSERT INTO readings (id, device_id, campaign_id, value, timestamp, firmware_version, cert_serial, status)
-			VALUES ($1, 'dev-exp-2', 'camp-exp-2', $2, $3, '1.0.0', 'serial-1', 'accepted')`,
-			fmt.Sprintf("r-page-%d", i), float64(20+i), now.Add(time.Duration(-i)*time.Minute))
+		rID := fmt.Sprintf("r-page-%d", i)
+		pool.Exec(ctx, `INSERT INTO readings (id, device_id, campaign_id, timestamp, firmware_version, cert_serial, status)
+			VALUES ($1, 'dev-exp-2', 'camp-exp-2', $2, '1.0.0', 'serial-1', 'accepted')`,
+			rID, now.Add(time.Duration(-i)*time.Minute))
+		pool.Exec(ctx, `INSERT INTO reading_values (id, reading_id, parameter_name, value, status)
+			VALUES ($1, $2, 'temp', $3, 'accepted')`,
+			fmt.Sprintf("rv-page-%d", i), rID, float64(20+i))
 	}
 
 	// First page

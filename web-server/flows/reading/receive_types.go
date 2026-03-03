@@ -6,7 +6,7 @@ import "time"
 type IngestReadingInput struct {
 	DeviceID        string
 	CampaignID      string
-	Value           float64
+	Values          map[string]float64 // parameter name -> value
 	Timestamp       time.Time
 	Geolocation     string
 	FirmwareVersion string

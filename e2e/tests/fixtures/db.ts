@@ -142,6 +142,51 @@ export async function seedScitizenProfile(userID: string): Promise<void> {
   );
 }
 
+/** Seed an app_user directly in the database. Returns the user ID. */
+export async function seedUser(
+  userType: string = 'scitizen',
+): Promise<string> {
+  const id = generateID();
+  const idpID = `test-idp-${id}`;
+  await getPool().query(
+    `INSERT INTO app_users (id, idp_id, user_type, status)
+     VALUES ($1, $2, $3, 'active')`,
+    [id, idpID, userType],
+  );
+  return id;
+}
+
+/** Insert reading values for a given reading ID. */
+export async function seedReadingValues(
+  readingId: string,
+  values: Record<string, number>,
+): Promise<void> {
+  for (const [paramName, value] of Object.entries(values)) {
+    const id = generateID();
+    await getPool().query(
+      `INSERT INTO reading_values (id, reading_id, parameter_name, value, status)
+       VALUES ($1, $2, $3, $4, 'accepted')`,
+      [id, readingId, paramName, value],
+    );
+  }
+}
+
+/** Query the leaderboard from scores table. */
+export async function getLeaderboard(): Promise<Array<{ scitizen_id: string; total: number }>> {
+  const result = await getPool().query(
+    'SELECT scitizen_id, total FROM scores ORDER BY total DESC',
+  );
+  return result.rows;
+}
+
+/** Set leaderboard_visible flag on scitizen profile. */
+export async function setLeaderboardVisible(userID: string, visible: boolean): Promise<void> {
+  await getPool().query(
+    'UPDATE scitizen_profiles SET leaderboard_visible = $1 WHERE user_id = $2',
+    [visible, userID],
+  );
+}
+
 /** Close the pool. Call in afterAll. */
 export async function cleanup(): Promise<void> {
   if (pool) {

@@ -22,7 +22,7 @@ func NewIngestReadingFlow(campaignOps *campaignops.Ops, readingOps *readingops.O
 	return &IngestReadingFlow{campaignOps: campaignOps, readingOps: readingOps, graphOps: graphOps}
 }
 
-// Run validates a reading against campaign rules, persists it, and quarantines if invalid.
+// Run validates a reading against campaign rules, persists it, and quarantines invalid values.
 func (f *IngestReadingFlow) Run(ctx context.Context, input IngestReadingInput) (*Reading, error) {
 	// 1. Get campaign validation rules
 	rules, err := f.campaignOps.GetCampaignRules(ctx, input.CampaignID)
@@ -41,7 +41,7 @@ func (f *IngestReadingFlow) Run(ctx context.Context, input IngestReadingInput) (
 	}
 	validationResult := pure.ValidateReading(
 		pure.ReadingInput{
-			Value:     input.Value,
+			Values:    input.Values,
 			Timestamp: input.Timestamp,
 		},
 		pure.ValidationRules{
@@ -51,15 +51,15 @@ func (f *IngestReadingFlow) Run(ctx context.Context, input IngestReadingInput) (
 		},
 	)
 
-	// 3. Persist the reading
+	// 3. Persist the reading with all values
 	opsInput := toOpsReadingInput(input)
 	opsReading, err := f.readingOps.PersistReading(ctx, opsInput)
 	if err != nil {
 		return nil, err
 	}
 
-	// 4. If invalid, quarantine it
-	if !validationResult.Valid {
+	// 4. If timestamp invalid, quarantine the whole reading
+	if !validationResult.Valid && len(validationResult.PerParameter) == 0 {
 		if err := f.readingOps.QuarantineReading(ctx, opsReading.ID, validationResult.Reason); err != nil {
 			return nil, err
 		}
@@ -67,33 +67,79 @@ func (f *IngestReadingFlow) Run(ctx context.Context, input IngestReadingInput) (
 		opsReading.QuarantineReason = &validationResult.Reason
 	}
 
-	// 5. Anomaly detection for valid readings (best-effort)
-	if validationResult.Valid && len(rules.Parameters) > 0 {
-		paramName := rules.Parameters[0].Name
-
-		// Update rolling baseline
-		if _, err := f.graphOps.UpdateBaseline(ctx, graphops.UpdateBaselineInput{
-			CampaignRef:   input.CampaignID,
-			ParameterName: paramName,
-			Value:         input.Value,
-		}); err != nil {
-			slog.WarnContext(ctx, "failed to update baseline", "campaign_id", input.CampaignID, "error", err)
+	// 5. Quarantine individual values that failed validation
+	failedParams := make(map[string]string) // name -> reason
+	for _, pv := range validationResult.PerParameter {
+		if !pv.Valid {
+			failedParams[pv.Name] = pv.Reason
 		}
+	}
+	for i := range opsReading.Values {
+		if reason, failed := failedParams[opsReading.Values[i].ParameterName]; failed {
+			if err := f.readingOps.QuarantineReadingValue(ctx, opsReading.Values[i].ID, reason); err != nil {
+				return nil, err
+			}
+			opsReading.Values[i].Status = "quarantined"
+			opsReading.Values[i].QuarantineReason = &reason
+		}
+	}
 
-		// Check for anomaly
-		anomaly, err := f.graphOps.CheckAnomaly(ctx, graphops.CheckAnomalyInput{
-			CampaignRef:   input.CampaignID,
-			ParameterName: paramName,
-			Value:         input.Value,
-		})
-		if err != nil {
-			slog.WarnContext(ctx, "failed to check anomaly", "campaign_id", input.CampaignID, "error", err)
-		} else if anomaly != nil {
-			if err := f.readingOps.QuarantineReading(ctx, opsReading.ID, anomaly.Reason); err != nil {
-				slog.WarnContext(ctx, "failed to quarantine anomaly", "reading_id", opsReading.ID, "error", err)
-			} else {
-				opsReading.Status = "quarantined"
-				opsReading.QuarantineReason = &anomaly.Reason
+	// 6. If all values are quarantined, quarantine the reading itself
+	if len(opsReading.Values) > 0 {
+		allQuarantined := true
+		for _, v := range opsReading.Values {
+			if v.Status != "quarantined" {
+				allQuarantined = false
+				break
+			}
+		}
+		if allQuarantined {
+			reason := "all parameter values quarantined"
+			if err := f.readingOps.QuarantineReading(ctx, opsReading.ID, reason); err != nil {
+				return nil, err
+			}
+			opsReading.Status = "quarantined"
+			opsReading.QuarantineReason = &reason
+		}
+	}
+
+	// 7. Anomaly detection for accepted values (best-effort, per parameter)
+	if opsReading.Status == "accepted" {
+		for paramName, value := range input.Values {
+			if _, failed := failedParams[paramName]; failed {
+				continue
+			}
+
+			// Update rolling baseline
+			if _, err := f.graphOps.UpdateBaseline(ctx, graphops.UpdateBaselineInput{
+				CampaignRef:   input.CampaignID,
+				ParameterName: paramName,
+				Value:         value,
+			}); err != nil {
+				slog.WarnContext(ctx, "failed to update baseline", "campaign_id", input.CampaignID, "parameter", paramName, "error", err)
+			}
+
+			// Check for anomaly
+			anomaly, err := f.graphOps.CheckAnomaly(ctx, graphops.CheckAnomalyInput{
+				CampaignRef:   input.CampaignID,
+				ParameterName: paramName,
+				Value:         value,
+			})
+			if err != nil {
+				slog.WarnContext(ctx, "failed to check anomaly", "campaign_id", input.CampaignID, "parameter", paramName, "error", err)
+			} else if anomaly != nil {
+				// Find the reading value and quarantine it
+				for i := range opsReading.Values {
+					if opsReading.Values[i].ParameterName == paramName {
+						if err := f.readingOps.QuarantineReadingValue(ctx, opsReading.Values[i].ID, anomaly.Reason); err != nil {
+							slog.WarnContext(ctx, "failed to quarantine anomaly value", "reading_value_id", opsReading.Values[i].ID, "error", err)
+						} else {
+							opsReading.Values[i].Status = "quarantined"
+							opsReading.Values[i].QuarantineReason = &anomaly.Reason
+						}
+						break
+					}
+				}
 			}
 		}
 	}
@@ -102,10 +148,17 @@ func (f *IngestReadingFlow) Run(ctx context.Context, input IngestReadingInput) (
 }
 
 func toOpsReadingInput(in IngestReadingInput) readingops.PersistReadingInput {
+	values := make([]readingops.ReadingValueInput, 0, len(in.Values))
+	for name, value := range in.Values {
+		values = append(values, readingops.ReadingValueInput{
+			ParameterName: name,
+			Value:         value,
+		})
+	}
 	return readingops.PersistReadingInput{
 		DeviceID:        in.DeviceID,
 		CampaignID:      in.CampaignID,
-		Value:           in.Value,
+		Values:          values,
 		Timestamp:       in.Timestamp,
 		Geolocation:     in.Geolocation,
 		FirmwareVersion: in.FirmwareVersion,
@@ -114,11 +167,10 @@ func toOpsReadingInput(in IngestReadingInput) readingops.PersistReadingInput {
 }
 
 func fromOpsReading(r *readingops.Reading) *Reading {
-	return &Reading{
+	rd := &Reading{
 		ID:               r.ID,
 		DeviceID:         r.DeviceID,
 		CampaignID:       r.CampaignID,
-		Value:            r.Value,
 		Timestamp:        r.Timestamp,
 		Geolocation:      r.Geolocation,
 		FirmwareVersion:  r.FirmwareVersion,
@@ -127,4 +179,15 @@ func fromOpsReading(r *readingops.Reading) *Reading {
 		Status:           r.Status,
 		QuarantineReason: r.QuarantineReason,
 	}
+	for _, rv := range r.Values {
+		rd.Values = append(rd.Values, ReadingValue{
+			ID:               rv.ID,
+			ReadingID:        rv.ReadingID,
+			ParameterName:    rv.ParameterName,
+			Value:            rv.Value,
+			Status:           rv.Status,
+			QuarantineReason: rv.QuarantineReason,
+		})
+	}
+	return rd
 }

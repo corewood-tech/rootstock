@@ -6,10 +6,11 @@ test.describe('scitizen campaign browse', () => {
   test('shows campaign list or empty state', async ({ page }) => {
     await page.goto('/app/en/scitizen/campaigns');
     await expect(page.locator('.app-header__brand-name')).toHaveText('ROOTSTOCK', { timeout: 10_000 });
+    await page.waitForLoadState('networkidle');
 
-    const hasCampaigns = await page.locator('.campaign-grid').isVisible().catch(() => false);
-    const hasEmptyState = await page.locator('.empty-state').isVisible().catch(() => false);
-    expect(hasCampaigns || hasEmptyState).toBeTruthy();
+    const campaignGrid = page.locator('.campaign-grid');
+    const emptyState = page.locator('.empty-state');
+    await expect(campaignGrid.or(emptyState)).toBeVisible({ timeout: 10_000 });
   });
 
   test('displays browse campaigns heading', async ({ page }) => {
@@ -34,14 +35,19 @@ test.describe('scitizen campaign browse', () => {
 
     // After search, should show results or empty state
     await page.waitForLoadState('networkidle');
-    const hasCampaigns = await page.locator('.campaign-grid').isVisible().catch(() => false);
-    const hasEmptyState = await page.locator('.empty-state').isVisible().catch(() => false);
-    expect(hasCampaigns || hasEmptyState).toBeTruthy();
+    const campaignGrid = page.locator('.campaign-grid');
+    const emptyState = page.locator('.empty-state');
+    await expect(campaignGrid.or(emptyState)).toBeVisible({ timeout: 10_000 });
   });
 
   test('campaign cards link to detail or empty state shown', async ({ page }) => {
     await page.goto('/app/en/scitizen/campaigns');
     await expect(page.locator('.app-header__brand-name')).toHaveText('ROOTSTOCK', { timeout: 10_000 });
+    await page.waitForLoadState('networkidle');
+
+    const campaignGrid = page.locator('.campaign-grid');
+    const emptyState = page.locator('.empty-state');
+    await expect(campaignGrid.or(emptyState)).toBeVisible({ timeout: 10_000 });
 
     const firstCard = page.locator('.campaign-card').first();
     const hasCampaigns = await firstCard.isVisible().catch(() => false);

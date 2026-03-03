@@ -25,12 +25,26 @@ type MQTTFlows struct {
 }
 
 // ReadingPayload is the JSON payload published by devices on telemetry topics.
+// Supports multi-value format: {"values": {"PM2.5": 23.5, "temp": 22.1}, ...}
+// Backward compat: if "values" is nil but "value" is set, converts to {"value": <value>}.
 type ReadingPayload struct {
-	Value           float64   `json:"value"`
-	Timestamp       time.Time `json:"timestamp"`
-	Geolocation     string    `json:"geolocation,omitempty"`
-	FirmwareVersion string    `json:"firmware_version"`
-	CertSerial      string    `json:"cert_serial"`
+	Values          map[string]float64 `json:"values,omitempty"`
+	Value           *float64           `json:"value,omitempty"`
+	Timestamp       time.Time          `json:"timestamp"`
+	Geolocation     string             `json:"geolocation,omitempty"`
+	FirmwareVersion string             `json:"firmware_version"`
+	CertSerial      string             `json:"cert_serial"`
+}
+
+// ResolvedValues returns the values map, handling backward compat.
+func (p *ReadingPayload) ResolvedValues() map[string]float64 {
+	if len(p.Values) > 0 {
+		return p.Values
+	}
+	if p.Value != nil {
+		return map[string]float64{"value": *p.Value}
+	}
+	return map[string]float64{}
 }
 
 // SetupMQTTSubscriptions registers inline subscriptions on the embedded broker
@@ -64,7 +78,7 @@ func SetupMQTTSubscriptions(ctx context.Context, server *mochi.Server, flows *MQ
 		input := readingflows.IngestReadingInput{
 			DeviceID:        deviceID,
 			CampaignID:      campaignID,
-			Value:           payload.Value,
+			Values:          payload.ResolvedValues(),
 			Timestamp:       payload.Timestamp,
 			Geolocation:     payload.Geolocation,
 			FirmwareVersion: payload.FirmwareVersion,

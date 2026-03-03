@@ -5,10 +5,10 @@ import (
 	"time"
 )
 
-// ReadingInput is the reading data to validate.
+// ReadingInput is the reading data to validate. Supports multi-value readings.
 type ReadingInput struct {
-	Value     float64
-	Timestamp time.Time
+	Values      map[string]float64 // parameter name -> value
+	Timestamp   time.Time
 	Geolocation *GeoPoint
 }
 
@@ -32,13 +32,22 @@ type ParameterRule struct {
 	MaxRange *float64
 }
 
-// ValidationResult is the outcome of reading validation.
-type ValidationResult struct {
+// ParameterValidation is the validation result for a single parameter.
+type ParameterValidation struct {
+	Name   string
 	Valid  bool
 	Reason string
 }
 
+// ValidationResult is the outcome of reading validation.
+type ValidationResult struct {
+	Valid        bool
+	Reason       string
+	PerParameter []ParameterValidation
+}
+
 // ValidateReading is a pure function: (reading, rules) -> valid/invalid + reason.
+// Each parameter is validated independently. Overall Valid = all parameters pass + timestamp valid.
 func ValidateReading(input ReadingInput, rules ValidationRules) ValidationResult {
 	// Check timestamp within campaign window
 	if rules.WindowStart != nil && input.Timestamp.Before(*rules.WindowStart) {
@@ -48,15 +57,45 @@ func ValidateReading(input ReadingInput, rules ValidationRules) ValidationResult
 		return ValidationResult{Valid: false, Reason: fmt.Sprintf("timestamp %s after campaign window end %s", input.Timestamp.Format(time.RFC3339), rules.WindowEnd.Format(time.RFC3339))}
 	}
 
-	// Check value against parameter ranges
+	// Build a rules lookup by parameter name
+	rulesByName := make(map[string]ParameterRule, len(rules.Parameters))
 	for _, p := range rules.Parameters {
-		if p.MinRange != nil && input.Value < *p.MinRange {
-			return ValidationResult{Valid: false, Reason: fmt.Sprintf("value %f below min range %f for %s", input.Value, *p.MinRange, p.Name)}
+		rulesByName[p.Name] = p
+	}
+
+	allValid := true
+	var perParam []ParameterValidation
+
+	for name, value := range input.Values {
+		pv := ParameterValidation{Name: name, Valid: true, Reason: "valid"}
+		if rule, ok := rulesByName[name]; ok {
+			if rule.MinRange != nil && value < *rule.MinRange {
+				pv.Valid = false
+				pv.Reason = fmt.Sprintf("value %f below min range %f for %s", value, *rule.MinRange, name)
+				allValid = false
+			}
+			if pv.Valid && rule.MaxRange != nil && value > *rule.MaxRange {
+				pv.Valid = false
+				pv.Reason = fmt.Sprintf("value %f above max range %f for %s", value, *rule.MaxRange, name)
+				allValid = false
+			}
 		}
-		if p.MaxRange != nil && input.Value > *p.MaxRange {
-			return ValidationResult{Valid: false, Reason: fmt.Sprintf("value %f above max range %f for %s", input.Value, *p.MaxRange, p.Name)}
+		perParam = append(perParam, pv)
+	}
+
+	reason := "valid"
+	if !allValid {
+		for _, pv := range perParam {
+			if !pv.Valid {
+				reason = pv.Reason
+				break
+			}
 		}
 	}
 
-	return ValidationResult{Valid: true, Reason: "valid"}
+	return ValidationResult{
+		Valid:        allValid,
+		Reason:       reason,
+		PerParameter: perParam,
+	}
 }

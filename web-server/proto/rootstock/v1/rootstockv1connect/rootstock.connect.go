@@ -143,6 +143,9 @@ const (
 	// ScitizenServiceGetOnboardingStateProcedure is the fully-qualified name of the ScitizenService's
 	// GetOnboardingState RPC.
 	ScitizenServiceGetOnboardingStateProcedure = "/rootstock.v1.ScitizenService/GetOnboardingState"
+	// ScitizenServiceGetLeaderboardProcedure is the fully-qualified name of the ScitizenService's
+	// GetLeaderboard RPC.
+	ScitizenServiceGetLeaderboardProcedure = "/rootstock.v1.ScitizenService/GetLeaderboard"
 	// NotificationServiceListNotificationsProcedure is the fully-qualified name of the
 	// NotificationService's ListNotifications RPC.
 	NotificationServiceListNotificationsProcedure = "/rootstock.v1.NotificationService/ListNotifications"
@@ -1036,6 +1039,7 @@ type ScitizenServiceClient interface {
 	GetNotifications(context.Context, *connect.Request[v1.GetNotificationsRequest]) (*connect.Response[v1.GetNotificationsResponse], error)
 	GetContributions(context.Context, *connect.Request[v1.GetContributionsRequest]) (*connect.Response[v1.GetContributionsResponse], error)
 	GetOnboardingState(context.Context, *connect.Request[v1.GetOnboardingStateRequest]) (*connect.Response[v1.GetOnboardingStateResponse], error)
+	GetLeaderboard(context.Context, *connect.Request[v1.GetLeaderboardRequest]) (*connect.Response[v1.GetLeaderboardResponse], error)
 }
 
 // NewScitizenServiceClient constructs a client for the rootstock.v1.ScitizenService service. By
@@ -1121,6 +1125,12 @@ func NewScitizenServiceClient(httpClient connect.HTTPClient, baseURL string, opt
 			connect.WithSchema(scitizenServiceMethods.ByName("GetOnboardingState")),
 			connect.WithClientOptions(opts...),
 		),
+		getLeaderboard: connect.NewClient[v1.GetLeaderboardRequest, v1.GetLeaderboardResponse](
+			httpClient,
+			baseURL+ScitizenServiceGetLeaderboardProcedure,
+			connect.WithSchema(scitizenServiceMethods.ByName("GetLeaderboard")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
@@ -1138,6 +1148,7 @@ type scitizenServiceClient struct {
 	getNotifications         *connect.Client[v1.GetNotificationsRequest, v1.GetNotificationsResponse]
 	getContributions         *connect.Client[v1.GetContributionsRequest, v1.GetContributionsResponse]
 	getOnboardingState       *connect.Client[v1.GetOnboardingStateRequest, v1.GetOnboardingStateResponse]
+	getLeaderboard           *connect.Client[v1.GetLeaderboardRequest, v1.GetLeaderboardResponse]
 }
 
 // RegisterScitizen calls rootstock.v1.ScitizenService.RegisterScitizen.
@@ -1200,6 +1211,11 @@ func (c *scitizenServiceClient) GetOnboardingState(ctx context.Context, req *con
 	return c.getOnboardingState.CallUnary(ctx, req)
 }
 
+// GetLeaderboard calls rootstock.v1.ScitizenService.GetLeaderboard.
+func (c *scitizenServiceClient) GetLeaderboard(ctx context.Context, req *connect.Request[v1.GetLeaderboardRequest]) (*connect.Response[v1.GetLeaderboardResponse], error) {
+	return c.getLeaderboard.CallUnary(ctx, req)
+}
+
 // ScitizenServiceHandler is an implementation of the rootstock.v1.ScitizenService service.
 type ScitizenServiceHandler interface {
 	RegisterScitizen(context.Context, *connect.Request[v1.RegisterScitizenRequest]) (*connect.Response[v1.RegisterScitizenResponse], error)
@@ -1214,6 +1230,7 @@ type ScitizenServiceHandler interface {
 	GetNotifications(context.Context, *connect.Request[v1.GetNotificationsRequest]) (*connect.Response[v1.GetNotificationsResponse], error)
 	GetContributions(context.Context, *connect.Request[v1.GetContributionsRequest]) (*connect.Response[v1.GetContributionsResponse], error)
 	GetOnboardingState(context.Context, *connect.Request[v1.GetOnboardingStateRequest]) (*connect.Response[v1.GetOnboardingStateResponse], error)
+	GetLeaderboard(context.Context, *connect.Request[v1.GetLeaderboardRequest]) (*connect.Response[v1.GetLeaderboardResponse], error)
 }
 
 // NewScitizenServiceHandler builds an HTTP handler from the service implementation. It returns the
@@ -1295,6 +1312,12 @@ func NewScitizenServiceHandler(svc ScitizenServiceHandler, opts ...connect.Handl
 		connect.WithSchema(scitizenServiceMethods.ByName("GetOnboardingState")),
 		connect.WithHandlerOptions(opts...),
 	)
+	scitizenServiceGetLeaderboardHandler := connect.NewUnaryHandler(
+		ScitizenServiceGetLeaderboardProcedure,
+		svc.GetLeaderboard,
+		connect.WithSchema(scitizenServiceMethods.ByName("GetLeaderboard")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/rootstock.v1.ScitizenService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case ScitizenServiceRegisterScitizenProcedure:
@@ -1321,6 +1344,8 @@ func NewScitizenServiceHandler(svc ScitizenServiceHandler, opts ...connect.Handl
 			scitizenServiceGetContributionsHandler.ServeHTTP(w, r)
 		case ScitizenServiceGetOnboardingStateProcedure:
 			scitizenServiceGetOnboardingStateHandler.ServeHTTP(w, r)
+		case ScitizenServiceGetLeaderboardProcedure:
+			scitizenServiceGetLeaderboardHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -1376,6 +1401,10 @@ func (UnimplementedScitizenServiceHandler) GetContributions(context.Context, *co
 
 func (UnimplementedScitizenServiceHandler) GetOnboardingState(context.Context, *connect.Request[v1.GetOnboardingStateRequest]) (*connect.Response[v1.GetOnboardingStateResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("rootstock.v1.ScitizenService.GetOnboardingState is not implemented"))
+}
+
+func (UnimplementedScitizenServiceHandler) GetLeaderboard(context.Context, *connect.Request[v1.GetLeaderboardRequest]) (*connect.Response[v1.GetLeaderboardResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("rootstock.v1.ScitizenService.GetLeaderboard is not implemented"))
 }
 
 // NotificationServiceClient is a client for the rootstock.v1.NotificationService service.

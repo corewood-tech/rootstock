@@ -51,6 +51,7 @@ scitizen_methods := {
 	"/rootstock.v1.ScitizenService/GetNotifications",
 	"/rootstock.v1.ScitizenService/GetContributions",
 	"/rootstock.v1.ScitizenService/GetOnboardingState",
+	"/rootstock.v1.ScitizenService/GetLeaderboard",
 	"/rootstock.v1.ScoreService/GetContribution",
 }
 

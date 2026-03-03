@@ -17,7 +17,7 @@ type PseudonymizeInput struct {
 type PseudonymizableReading struct {
 	DeviceID        string
 	CampaignID      string
-	Value           float64
+	Values          map[string]float64
 	Timestamp       time.Time
 	Geolocation     *string
 	FirmwareVersion string
@@ -29,7 +29,7 @@ type PseudonymizableReading struct {
 type PseudonymizedReading struct {
 	PseudoDeviceID  string
 	CampaignID      string
-	Value           float64
+	Values          map[string]float64
 	Timestamp       time.Time
 	Geolocation     *string
 	FirmwareVersion string
@@ -47,7 +47,7 @@ func PseudonymizeExport(input PseudonymizeInput) []PseudonymizedReading {
 		out[i] = PseudonymizedReading{
 			PseudoDeviceID:  hex.EncodeToString(mac.Sum(nil)),
 			CampaignID:      r.CampaignID,
-			Value:           r.Value,
+			Values:          r.Values,
 			Timestamp:       r.Timestamp,
 			Geolocation:     r.Geolocation,
 			FirmwareVersion: r.FirmwareVersion,

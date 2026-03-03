@@ -51,32 +51,40 @@ type getSweepReq struct {
 	resp       chan response[[]SweepstakesEntry]
 }
 
+type getLeaderboardReq struct {
+	ctx   context.Context
+	input GetLeaderboardInput
+	resp  chan response[*LeaderboardResult]
+}
+
 type shutdownReq struct {
 	resp chan struct{}
 }
 
 type pgRepo struct {
-	pool           *pgxpool.Pool
-	upsertCh      chan upsertReq
-	getScoreCh    chan getScoreReq
-	awardBadgeCh  chan awardBadgeReq
-	getBadgesCh   chan getBadgesReq
-	grantSweepCh  chan grantSweepReq
-	getSweepCh    chan getSweepReq
-	shutdownCh    chan shutdownReq
+	pool              *pgxpool.Pool
+	upsertCh         chan upsertReq
+	getScoreCh       chan getScoreReq
+	awardBadgeCh     chan awardBadgeReq
+	getBadgesCh      chan getBadgesReq
+	grantSweepCh     chan grantSweepReq
+	getSweepCh       chan getSweepReq
+	getLeaderboardCh chan getLeaderboardReq
+	shutdownCh       chan shutdownReq
 }
 
 // NewRepository creates a score repository backed by Postgres.
 func NewRepository(pool *pgxpool.Pool) Repository {
 	r := &pgRepo{
-		pool:          pool,
-		upsertCh:     make(chan upsertReq),
-		getScoreCh:   make(chan getScoreReq),
-		awardBadgeCh: make(chan awardBadgeReq),
-		getBadgesCh:  make(chan getBadgesReq),
-		grantSweepCh: make(chan grantSweepReq),
-		getSweepCh:   make(chan getSweepReq),
-		shutdownCh:   make(chan shutdownReq),
+		pool:             pool,
+		upsertCh:        make(chan upsertReq),
+		getScoreCh:      make(chan getScoreReq),
+		awardBadgeCh:    make(chan awardBadgeReq),
+		getBadgesCh:     make(chan getBadgesReq),
+		grantSweepCh:    make(chan grantSweepReq),
+		getSweepCh:      make(chan getSweepReq),
+		getLeaderboardCh: make(chan getLeaderboardReq),
+		shutdownCh:      make(chan shutdownReq),
 	}
 	go r.manage()
 	return r
@@ -103,6 +111,9 @@ func (r *pgRepo) manage() {
 		case req := <-r.getSweepCh:
 			val, err := r.doGetSweepstakes(req.ctx, req.scitizenID)
 			req.resp <- response[[]SweepstakesEntry]{val: val, err: err}
+		case req := <-r.getLeaderboardCh:
+			val, err := r.doGetLeaderboard(req.ctx, req.input)
+			req.resp <- response[*LeaderboardResult]{val: val, err: err}
 		case req := <-r.shutdownCh:
 			close(req.resp)
 			return
@@ -148,6 +159,13 @@ func (r *pgRepo) GrantSweepstakes(ctx context.Context, input GrantSweepstakesInp
 func (r *pgRepo) GetSweepstakesEntries(ctx context.Context, scitizenID string) ([]SweepstakesEntry, error) {
 	resp := make(chan response[[]SweepstakesEntry], 1)
 	r.getSweepCh <- getSweepReq{ctx: ctx, scitizenID: scitizenID, resp: resp}
+	res := <-resp
+	return res.val, res.err
+}
+
+func (r *pgRepo) GetLeaderboard(ctx context.Context, input GetLeaderboardInput) (*LeaderboardResult, error) {
+	resp := make(chan response[*LeaderboardResult], 1)
+	r.getLeaderboardCh <- getLeaderboardReq{ctx: ctx, input: input, resp: resp}
 	res := <-resp
 	return res.val, res.err
 }
@@ -262,4 +280,114 @@ func (r *pgRepo) doGetSweepstakes(ctx context.Context, scitizenID string) ([]Swe
 		entries = append(entries, e)
 	}
 	return entries, rows.Err()
+}
+
+func (r *pgRepo) doGetLeaderboard(ctx context.Context, input GetLeaderboardInput) (*LeaderboardResult, error) {
+	// Build the base query with RANK()
+	baseWhere := `sp.leaderboard_visible = true`
+	args := []any{}
+	argIdx := 1
+
+	// Campaign filter: only include scitizens enrolled in the given campaign
+	campaignJoin := ""
+	if input.CampaignID != nil {
+		campaignJoin = fmt.Sprintf(` JOIN campaign_enrollments ce_filter ON ce_filter.scitizen_id = s.scitizen_id AND ce_filter.campaign_id = $%d`, argIdx)
+		args = append(args, *input.CampaignID)
+		argIdx++
+	}
+
+	// Time period filter
+	if input.TimePeriod == "week" {
+		baseWhere += fmt.Sprintf(` AND s.updated_at >= now() - interval '7 days'`)
+	} else if input.TimePeriod == "month" {
+		baseWhere += fmt.Sprintf(` AND s.updated_at >= now() - interval '30 days'`)
+	}
+
+	// Count total
+	countQuery := fmt.Sprintf(
+		`SELECT COUNT(*) FROM scores s JOIN scitizen_profiles sp ON sp.user_id = s.scitizen_id%s WHERE %s`,
+		campaignJoin, baseWhere,
+	)
+	var total int
+	if err := r.pool.QueryRow(ctx, countQuery, args...).Scan(&total); err != nil {
+		return nil, fmt.Errorf("leaderboard count: %w", err)
+	}
+
+	// Main query
+	limitArg := argIdx
+	args = append(args, input.Limit)
+	argIdx++
+	offsetArg := argIdx
+	args = append(args, input.Offset)
+	argIdx++
+
+	query := fmt.Sprintf(
+		`SELECT ranked.rank, ranked.scitizen_id, ranked.total, ranked.badge_count, ranked.campaign_count
+		 FROM (
+			SELECT s.scitizen_id, s.total,
+				COALESCE(b.cnt, 0) AS badge_count,
+				COALESCE(ce.cnt, 0) AS campaign_count,
+				RANK() OVER (ORDER BY s.total DESC) AS rank
+			FROM scores s
+			JOIN scitizen_profiles sp ON sp.user_id = s.scitizen_id
+			LEFT JOIN (SELECT scitizen_id, COUNT(*) AS cnt FROM badges GROUP BY scitizen_id) b ON b.scitizen_id = s.scitizen_id
+			LEFT JOIN (SELECT scitizen_id, COUNT(DISTINCT campaign_id) AS cnt FROM campaign_enrollments WHERE status = 'active' GROUP BY scitizen_id) ce ON ce.scitizen_id = s.scitizen_id%s
+			WHERE %s
+		 ) ranked
+		 ORDER BY ranked.rank ASC
+		 LIMIT $%d OFFSET $%d`,
+		campaignJoin, baseWhere, limitArg, offsetArg,
+	)
+
+	rows, err := r.pool.Query(ctx, query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("leaderboard query: %w", err)
+	}
+	defer rows.Close()
+
+	var entries []LeaderboardEntry
+	for rows.Next() {
+		var e LeaderboardEntry
+		if err := rows.Scan(&e.Rank, &e.ScitizenID, &e.Score, &e.BadgeCount, &e.CampaignCount); err != nil {
+			return nil, fmt.Errorf("scan leaderboard: %w", err)
+		}
+		entries = append(entries, e)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	result := &LeaderboardResult{
+		Entries: entries,
+		Total:   total,
+	}
+
+	// Fetch requester's own rank if provided
+	if input.RequesterID != "" {
+		reqQuery := fmt.Sprintf(
+			`SELECT ranked.rank, ranked.scitizen_id, ranked.total, ranked.badge_count, ranked.campaign_count
+			 FROM (
+				SELECT s.scitizen_id, s.total,
+					COALESCE(b.cnt, 0) AS badge_count,
+					COALESCE(ce.cnt, 0) AS campaign_count,
+					RANK() OVER (ORDER BY s.total DESC) AS rank
+				FROM scores s
+				JOIN scitizen_profiles sp ON sp.user_id = s.scitizen_id
+				LEFT JOIN (SELECT scitizen_id, COUNT(*) AS cnt FROM badges GROUP BY scitizen_id) b ON b.scitizen_id = s.scitizen_id
+				LEFT JOIN (SELECT scitizen_id, COUNT(DISTINCT campaign_id) AS cnt FROM campaign_enrollments WHERE status = 'active' GROUP BY scitizen_id) ce ON ce.scitizen_id = s.scitizen_id%s
+				WHERE %s
+			 ) ranked
+			 WHERE ranked.scitizen_id = $%d`,
+			campaignJoin, baseWhere, argIdx,
+		)
+		reqArgs := append(args[:len(args)-2], input.RequesterID)
+		var req LeaderboardEntry
+		err := r.pool.QueryRow(ctx, reqQuery, reqArgs...).Scan(&req.Rank, &req.ScitizenID, &req.Score, &req.BadgeCount, &req.CampaignCount)
+		if err == nil {
+			result.Requester = &req
+		}
+		// If not found (no score yet), requester is nil — not an error
+	}
+
+	return result, nil
 }

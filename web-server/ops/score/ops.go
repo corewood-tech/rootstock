@@ -67,6 +67,15 @@ func toRepoGrantSweepstakesInput(in GrantSweepstakesInput) scorerepo.GrantSweeps
 	}
 }
 
+// GetLeaderboard returns a ranked leaderboard.
+func (o *Ops) GetLeaderboard(ctx context.Context, input GetLeaderboardInput) (*LeaderboardResult, error) {
+	result, err := o.repo.GetLeaderboard(ctx, toRepoGetLeaderboardInput(input))
+	if err != nil {
+		return nil, err
+	}
+	return fromRepoLeaderboardResult(result), nil
+}
+
 // GetBadges returns all badges awarded to a scitizen.
 func (o *Ops) GetBadges(ctx context.Context, scitizenID string) ([]Badge, error) {
 	results, err := o.repo.GetBadges(ctx, scitizenID)
@@ -94,4 +103,41 @@ func fromRepoScore(r *scorerepo.Score) *Score {
 		Total:       r.Total,
 		UpdatedAt:   r.UpdatedAt,
 	}
+}
+
+func toRepoGetLeaderboardInput(in GetLeaderboardInput) scorerepo.GetLeaderboardInput {
+	return scorerepo.GetLeaderboardInput{
+		CampaignID:  in.CampaignID,
+		TimePeriod:  in.TimePeriod,
+		Limit:       in.Limit,
+		Offset:      in.Offset,
+		RequesterID: in.RequesterID,
+	}
+}
+
+func fromRepoLeaderboardResult(r *scorerepo.LeaderboardResult) *LeaderboardResult {
+	entries := make([]LeaderboardEntry, len(r.Entries))
+	for i, e := range r.Entries {
+		entries[i] = LeaderboardEntry{
+			Rank:          e.Rank,
+			ScitizenID:    e.ScitizenID,
+			Score:         e.Score,
+			BadgeCount:    e.BadgeCount,
+			CampaignCount: e.CampaignCount,
+		}
+	}
+	result := &LeaderboardResult{
+		Entries: entries,
+		Total:   r.Total,
+	}
+	if r.Requester != nil {
+		result.Requester = &LeaderboardEntry{
+			Rank:          r.Requester.Rank,
+			ScitizenID:    r.Requester.ScitizenID,
+			Score:         r.Requester.Score,
+			BadgeCount:    r.Requester.BadgeCount,
+			CampaignCount: r.Requester.CampaignCount,
+		}
+	}
+	return result
 }

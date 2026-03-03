@@ -101,7 +101,7 @@ func NewRPCServer(ctx context.Context, cfg *config.Config, pool *pgxpool.Pool, i
 	createCampaignFlow := campaignflows.NewCreateCampaignFlow(cOps, gOps)
 	publishCampaignFlow := campaignflows.NewPublishCampaignFlow(cOps, gOps)
 	browseCampaignsFlow := campaignflows.NewBrowseCampaignsFlow(cOps)
-	campaignDashboardFlow := campaignflows.NewDashboardFlow(rOps)
+	campaignDashboardFlow := campaignflows.NewDashboardFlow(rOps, cfg.Export.HMACSecret)
 
 	// Device flows
 	getDeviceFlow := deviceflows.NewGetDeviceFlow(dOps)
@@ -119,6 +119,7 @@ func NewRPCServer(ctx context.Context, cfg *config.Config, pool *pgxpool.Pool, i
 	// Score flows
 	getContributionFlow := scoreflows.NewGetContributionFlow(sOps)
 	refreshScitizenScoreFlow := scoreflows.NewRefreshScitizenScoreFlow(dOps, rOps, sOps)
+	getLeaderboardFlow := scoreflows.NewGetLeaderboardFlow(sOps)
 
 	// Security flows
 	securityResponseFlow := securityflows.NewSecurityResponseFlow(dOps, rOps, nOps)
@@ -187,6 +188,7 @@ func NewRPCServer(ctx context.Context, cfg *config.Config, pool *pgxpool.Pool, i
 		scitizenBrowseCampaignsFlow, scitizenCampaignDetailFlow, scitizenCampaignSearchFlow,
 		scitizenEnrollDeviceFlow, scitizenWithdrawFlow, scitizenDeviceFlow,
 		scitizenOnboardingFlow, scitizenNotificationFlow, scitizenProgressFlow,
+		getLeaderboardFlow,
 	)
 	scitizenPath, scitizenH := rootstockv1connect.NewScitizenServiceHandler(scitizenHandler, interceptors)
 

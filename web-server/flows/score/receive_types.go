@@ -14,3 +14,12 @@ type UpdateContributionScoreInput struct {
 type RefreshScitizenScoreInput struct {
 	DeviceID string
 }
+
+// GetLeaderboardInput controls leaderboard queries.
+type GetLeaderboardInput struct {
+	CampaignID  *string
+	TimePeriod  string
+	Limit       int
+	Offset      int
+	RequesterID string
+}

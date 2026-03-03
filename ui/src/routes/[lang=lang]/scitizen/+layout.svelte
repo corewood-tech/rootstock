@@ -45,6 +45,7 @@
 		{ href: `${base}/${lang}/scitizen/campaigns`, label: 'Campaigns', icon: '🔬' },
 		{ href: `${base}/${lang}/scitizen/devices`, label: 'Devices', icon: '📡' },
 		{ href: `${base}/${lang}/scitizen/contributions`, label: 'Contributions', icon: '📈' },
+		{ href: `${base}/${lang}/scitizen/leaderboard`, label: 'Leaderboard', icon: '🏆' },
 		{ href: `${base}/${lang}/scitizen/notifications`, label: 'Notifications', icon: '🔔' },
 	]);
 </script>

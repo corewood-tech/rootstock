@@ -37,7 +37,7 @@ func setupTest(t *testing.T) (Repository, *pgxpool.Pool) {
 	}
 
 	ctx := context.Background()
-	pool.Exec(ctx, "TRUNCATE readings, devices, campaigns CASCADE")
+	pool.Exec(ctx, "TRUNCATE reading_values, readings, devices, campaigns CASCADE")
 
 	repo := NewRepository(pool)
 	t.Cleanup(func() {
@@ -79,7 +79,7 @@ func TestPersistAndQuery(t *testing.T) {
 	created, err := repo.Persist(ctx, PersistReadingInput{
 		DeviceID:        deviceID,
 		CampaignID:      campaignID,
-		Value:           23.5,
+		Values:          []ReadingValueInput{{ParameterName: "temp", Value: 23.5}},
 		Timestamp:       ts,
 		Geolocation:     `{"type":"Point","coordinates":[-73.98,40.74]}`,
 		FirmwareVersion: "1.0.0",
@@ -94,6 +94,12 @@ func TestPersistAndQuery(t *testing.T) {
 	if created.Status != "accepted" {
 		t.Errorf("status = %q, want %q", created.Status, "accepted")
 	}
+	if len(created.Values) != 1 {
+		t.Fatalf("expected 1 value, got %d", len(created.Values))
+	}
+	if created.Values[0].Value != 23.5 {
+		t.Errorf("value = %f, want 23.5", created.Values[0].Value)
+	}
 
 	readings, err := repo.Query(ctx, QueryReadingsInput{CampaignID: campaignID})
 	if err != nil {
@@ -102,8 +108,11 @@ func TestPersistAndQuery(t *testing.T) {
 	if len(readings) != 1 {
 		t.Fatalf("Query() = %d, want 1", len(readings))
 	}
-	if readings[0].Value != 23.5 {
-		t.Errorf("value = %f, want 23.5", readings[0].Value)
+	if len(readings[0].Values) != 1 {
+		t.Fatalf("query: expected 1 value, got %d", len(readings[0].Values))
+	}
+	if readings[0].Values[0].Value != 23.5 {
+		t.Errorf("value = %f, want 23.5", readings[0].Values[0].Value)
 	}
 }
 
@@ -113,7 +122,7 @@ func TestQuarantine(t *testing.T) {
 	deviceID, campaignID := createFixtures(t, pool)
 
 	rd, _ := repo.Persist(ctx, PersistReadingInput{
-		DeviceID: deviceID, CampaignID: campaignID, Value: 999.0,
+		DeviceID: deviceID, CampaignID: campaignID, Values: []ReadingValueInput{{ParameterName: "temp", Value: 999.0}},
 		Timestamp: time.Now().UTC(), FirmwareVersion: "1.0.0", CertSerial: "s1",
 	})
 
@@ -139,7 +148,7 @@ func TestQuarantineByWindow(t *testing.T) {
 	// Insert 3 readings
 	for i := 0; i < 3; i++ {
 		repo.Persist(ctx, PersistReadingInput{
-			DeviceID: deviceID, CampaignID: campaignID, Value: float64(i),
+			DeviceID: deviceID, CampaignID: campaignID, Values: []ReadingValueInput{{ParameterName: "temp", Value: float64(i)}},
 			Timestamp: base.Add(time.Duration(i*10) * time.Minute), FirmwareVersion: "1.0.0", CertSerial: "s1",
 		})
 	}
@@ -183,14 +192,17 @@ func TestGetCampaignQuality(t *testing.T) {
 
 	ts := time.Now().UTC()
 	repo.Persist(ctx, PersistReadingInput{
-		DeviceID: deviceID, CampaignID: campaignID, Value: 1.0,
+		DeviceID: deviceID, CampaignID: campaignID, Values: []ReadingValueInput{{ParameterName: "temp", Value: 1.0}},
 		Timestamp: ts, FirmwareVersion: "1.0.0", CertSerial: "s1",
 	})
 	rd, _ := repo.Persist(ctx, PersistReadingInput{
-		DeviceID: deviceID, CampaignID: campaignID, Value: 2.0,
+		DeviceID: deviceID, CampaignID: campaignID, Values: []ReadingValueInput{{ParameterName: "temp", Value: 2.0}},
 		Timestamp: ts, FirmwareVersion: "1.0.0", CertSerial: "s1",
 	})
-	repo.Quarantine(ctx, rd.ID, "outlier")
+	// Quarantine the reading value (not just the reading)
+	if len(rd.Values) > 0 {
+		repo.QuarantineValue(ctx, rd.Values[0].ID, "outlier")
+	}
 
 	quality, err := repo.GetCampaignQuality(ctx, campaignID)
 	if err != nil {

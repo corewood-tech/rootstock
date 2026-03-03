@@ -32,6 +32,11 @@ func (o *Ops) QuarantineReading(ctx context.Context, id string, reason string) e
 	return o.repo.Quarantine(ctx, id, reason)
 }
 
+// QuarantineReadingValue flags an individual reading value as quarantined.
+func (o *Ops) QuarantineReadingValue(ctx context.Context, readingValueID string, reason string) error {
+	return o.repo.QuarantineValue(ctx, readingValueID, reason)
+}
+
 // QueryReadings reads campaign data with provenance.
 // Op #22: FR-026
 func (o *Ops) QueryReadings(ctx context.Context, input QueryReadingsInput) ([]Reading, error) {
@@ -59,10 +64,63 @@ func (o *Ops) GetCampaignQuality(ctx context.Context, campaignID string) (*Quali
 	if err != nil {
 		return nil, err
 	}
-	return &QualityMetrics{
+	qm := &QualityMetrics{
 		CampaignID:      result.CampaignID,
 		AcceptedCount:   result.AcceptedCount,
 		QuarantineCount: result.QuarantineCount,
+	}
+	for _, pq := range result.PerParameter {
+		qm.PerParameter = append(qm.PerParameter, ParameterQuality{
+			ParameterName:    pq.ParameterName,
+			AcceptedCount:    pq.AcceptedCount,
+			QuarantinedCount: pq.QuarantinedCount,
+		})
+	}
+	return qm, nil
+}
+
+// GetCampaignDeviceBreakdown returns per-device stats with pseudonymized IDs.
+func (o *Ops) GetCampaignDeviceBreakdown(ctx context.Context, campaignID string, hmacSecret string) ([]DeviceBreakdown, error) {
+	results, err := o.repo.GetCampaignDeviceBreakdown(ctx, campaignID, hmacSecret)
+	if err != nil {
+		return nil, err
+	}
+	out := make([]DeviceBreakdown, len(results))
+	for i, r := range results {
+		out[i] = DeviceBreakdown{
+			PseudoDeviceID: r.PseudoDeviceID,
+			DeviceClass:    r.DeviceClass,
+			AcceptanceRate: r.AcceptanceRate,
+			ReadingCount:   r.ReadingCount,
+			LastSeen:       r.LastSeen,
+		}
+	}
+	return out, nil
+}
+
+// GetCampaignTemporalCoverage returns hourly reading counts.
+func (o *Ops) GetCampaignTemporalCoverage(ctx context.Context, campaignID string) ([]TemporalBucket, error) {
+	results, err := o.repo.GetCampaignTemporalCoverage(ctx, campaignID)
+	if err != nil {
+		return nil, err
+	}
+	out := make([]TemporalBucket, len(results))
+	for i, r := range results {
+		out[i] = TemporalBucket{Bucket: r.Bucket, Count: r.Count}
+	}
+	return out, nil
+}
+
+// GetEnrollmentFunnel returns enrollment stage counts.
+func (o *Ops) GetEnrollmentFunnel(ctx context.Context, campaignID string) (*EnrollmentFunnel, error) {
+	result, err := o.repo.GetEnrollmentFunnel(ctx, campaignID)
+	if err != nil {
+		return nil, err
+	}
+	return &EnrollmentFunnel{
+		Enrolled:     result.Enrolled,
+		Active:       result.Active,
+		Contributing: result.Contributing,
 	}, nil
 }
 
@@ -81,10 +139,17 @@ func (o *Ops) GetScitizenReadingStats(ctx context.Context, scitizenID string) (*
 }
 
 func toRepoPersistInput(in PersistReadingInput) readingrepo.PersistReadingInput {
+	values := make([]readingrepo.ReadingValueInput, len(in.Values))
+	for i, v := range in.Values {
+		values[i] = readingrepo.ReadingValueInput{
+			ParameterName: v.ParameterName,
+			Value:         v.Value,
+		}
+	}
 	return readingrepo.PersistReadingInput{
 		DeviceID:        in.DeviceID,
 		CampaignID:      in.CampaignID,
-		Value:           in.Value,
+		Values:          values,
 		Timestamp:       in.Timestamp,
 		Geolocation:     in.Geolocation,
 		FirmwareVersion: in.FirmwareVersion,
@@ -114,7 +179,7 @@ func toRepoQuarantineByWindowInput(in QuarantineByWindowInput) readingrepo.Quara
 }
 
 func fromRepoReading(r *readingrepo.Reading) *Reading {
-	return &Reading{
+	rd := &Reading{
 		ID:               r.ID,
 		DeviceID:         r.DeviceID,
 		CampaignID:       r.CampaignID,
@@ -127,4 +192,15 @@ func fromRepoReading(r *readingrepo.Reading) *Reading {
 		Status:           r.Status,
 		QuarantineReason: r.QuarantineReason,
 	}
+	for _, rv := range r.Values {
+		rd.Values = append(rd.Values, ReadingValue{
+			ID:               rv.ID,
+			ReadingID:        rv.ReadingID,
+			ParameterName:    rv.ParameterName,
+			Value:            rv.Value,
+			Status:           rv.Status,
+			QuarantineReason: rv.QuarantineReason,
+		})
+	}
+	return rd
 }

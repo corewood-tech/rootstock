@@ -32,7 +32,7 @@ func setupTest(t *testing.T) (*Ops, *pgxpool.Pool) {
 	}
 
 	ctx := context.Background()
-	pool.Exec(ctx, "TRUNCATE readings, devices, campaigns CASCADE")
+	pool.Exec(ctx, "TRUNCATE reading_values, readings, devices, campaigns CASCADE")
 
 	repo := readingrepo.NewRepository(pool)
 	ops := NewOps(repo)
@@ -62,7 +62,7 @@ func TestPersistAndQuery(t *testing.T) {
 	deviceID, campaignID := createFixtures(t, pool)
 
 	rd, err := ops.PersistReading(ctx, PersistReadingInput{
-		DeviceID: deviceID, CampaignID: campaignID, Value: 23.5,
+		DeviceID: deviceID, CampaignID: campaignID, Values: []ReadingValueInput{{ParameterName: "temp", Value: 23.5}},
 		Timestamp: time.Now().UTC(), FirmwareVersion: "1.0.0", CertSerial: "s1",
 	})
 	if err != nil {
@@ -87,12 +87,16 @@ func TestQuarantineReading(t *testing.T) {
 	deviceID, campaignID := createFixtures(t, pool)
 
 	rd, _ := ops.PersistReading(ctx, PersistReadingInput{
-		DeviceID: deviceID, CampaignID: campaignID, Value: 999.0,
+		DeviceID: deviceID, CampaignID: campaignID, Values: []ReadingValueInput{{ParameterName: "temp", Value: 999.0}},
 		Timestamp: time.Now().UTC(), FirmwareVersion: "1.0.0", CertSerial: "s1",
 	})
 
-	if err := ops.QuarantineReading(ctx, rd.ID, "outlier"); err != nil {
-		t.Fatalf("QuarantineReading(): %v", err)
+	// Quarantine the reading value to affect quality metrics
+	if len(rd.Values) == 0 {
+		t.Fatal("expected at least one reading value")
+	}
+	if err := ops.QuarantineReadingValue(ctx, rd.Values[0].ID, "outlier"); err != nil {
+		t.Fatalf("QuarantineReadingValue(): %v", err)
 	}
 
 	quality, err := ops.GetCampaignQuality(ctx, campaignID)

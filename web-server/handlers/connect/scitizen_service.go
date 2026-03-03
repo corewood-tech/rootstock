@@ -9,6 +9,7 @@ import (
 
 	"rootstock/web-server/auth"
 	scitizenflows "rootstock/web-server/flows/scitizen"
+	scoreflows "rootstock/web-server/flows/score"
 	userflows "rootstock/web-server/flows/user"
 	rootstockv1 "rootstock/web-server/proto/rootstock/v1"
 )
@@ -28,6 +29,7 @@ type ScitizenServiceHandler struct {
 	onboarding         *scitizenflows.OnboardingFlow
 	notifications      *scitizenflows.NotificationFlow
 	campaignProgress   *scitizenflows.CampaignProgressFlow
+	getLeaderboard     *scoreflows.GetLeaderboardFlow
 }
 
 // NewScitizenServiceHandler creates the handler with all required flows.
@@ -44,6 +46,7 @@ func NewScitizenServiceHandler(
 	onboarding *scitizenflows.OnboardingFlow,
 	notifications *scitizenflows.NotificationFlow,
 	campaignProgress *scitizenflows.CampaignProgressFlow,
+	getLeaderboard *scoreflows.GetLeaderboardFlow,
 ) *ScitizenServiceHandler {
 	return &ScitizenServiceHandler{
 		getUser:            getUser,
@@ -58,6 +61,7 @@ func NewScitizenServiceHandler(
 		onboarding:         onboarding,
 		notifications:      notifications,
 		campaignProgress:   campaignProgress,
+		getLeaderboard:     getLeaderboard,
 	}
 }
 
@@ -486,6 +490,62 @@ func (h *ScitizenServiceHandler) GetOnboardingState(
 			TosAccepted:          state.TOSAccepted,
 		},
 	}), nil
+}
+
+func (h *ScitizenServiceHandler) GetLeaderboard(
+	ctx context.Context,
+	req *connect.Request[rootstockv1.GetLeaderboardRequest],
+) (*connect.Response[rootstockv1.GetLeaderboardResponse], error) {
+	userID, err := h.resolveUserID(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	msg := req.Msg
+	input := scoreflows.GetLeaderboardInput{
+		CampaignID:  msg.CampaignId,
+		Limit:       int(msg.GetLimit()),
+		Offset:      int(msg.GetOffset()),
+		RequesterID: userID,
+	}
+	if msg.TimePeriod != nil {
+		input.TimePeriod = *msg.TimePeriod
+	}
+	if input.Limit == 0 {
+		input.Limit = 20
+	}
+
+	result, err := h.getLeaderboard.Run(ctx, input)
+	if err != nil {
+		return nil, err
+	}
+
+	entries := make([]*rootstockv1.LeaderboardEntryProto, len(result.Entries))
+	for i, e := range result.Entries {
+		entries[i] = &rootstockv1.LeaderboardEntryProto{
+			Rank:          int32(e.Rank),
+			ScitizenId:    e.ScitizenID,
+			Score:         e.Score,
+			BadgeCount:    int32(e.BadgeCount),
+			CampaignCount: int32(e.CampaignCount),
+		}
+	}
+
+	resp := &rootstockv1.GetLeaderboardResponse{
+		Entries: entries,
+		Total:   int32(result.Total),
+	}
+	if result.Requester != nil {
+		resp.Requester = &rootstockv1.LeaderboardEntryProto{
+			Rank:          int32(result.Requester.Rank),
+			ScitizenId:    result.Requester.ScitizenID,
+			Score:         result.Requester.Score,
+			BadgeCount:    int32(result.Requester.BadgeCount),
+			CampaignCount: int32(result.Requester.CampaignCount),
+		}
+	}
+
+	return connect.NewResponse(resp), nil
 }
 
 func campaignSummaryToProto(c *scitizenflows.CampaignSummary) *rootstockv1.CampaignSummaryProto {

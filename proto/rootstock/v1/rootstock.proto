@@ -90,16 +90,45 @@ message GetCampaignDashboardRequest {
   string campaign_id = 1;
 }
 
+message ParameterQualityProto {
+  string parameter_name = 1;
+  int32 accepted_count = 2;
+  int32 quarantined_count = 3;
+}
+
+message DeviceBreakdownProto {
+  string pseudo_device_id = 1;
+  string device_class = 2;
+  double acceptance_rate = 3;
+  int32 reading_count = 4;
+  string last_seen = 5;
+}
+
+message EnrollmentFunnelProto {
+  int32 enrolled = 1;
+  int32 active = 2;
+  int32 contributing = 3;
+}
+
+message TemporalBucketProto {
+  string bucket = 1;
+  int32 count = 2;
+}
+
 message GetCampaignDashboardResponse {
   string campaign_id = 1;
   int32 accepted_count = 2;
   int32 quarantine_count = 3;
+  repeated ParameterQualityProto parameter_quality = 4;
+  repeated DeviceBreakdownProto device_breakdown = 5;
+  EnrollmentFunnelProto enrollment_funnel = 6;
+  repeated TemporalBucketProto temporal_coverage = 7;
 }
 
 message ExportedReadingProto {
   string pseudo_device_id = 1;
   string campaign_id = 2;
-  double value = 3;
+  map<string, double> values = 3;
   string timestamp = 4;
   optional string geolocation = 5;
   string firmware_version = 6;
@@ -358,6 +387,7 @@ service ScitizenService {
   rpc GetNotifications(GetNotificationsRequest) returns (GetNotificationsResponse);
   rpc GetContributions(GetContributionsRequest) returns (GetContributionsResponse);
   rpc GetOnboardingState(GetOnboardingStateRequest) returns (GetOnboardingStateResponse);
+  rpc GetLeaderboard(GetLeaderboardRequest) returns (GetLeaderboardResponse);
 }
 
 // NotificationService manages notification preferences and read state.
@@ -558,6 +588,29 @@ message GetContributionsResponse {
   repeated ReadingHistoryProto histories = 1;
   double contribution_score = 2;
   repeated BadgeProto badges = 3;
+}
+
+// Leaderboard messages
+
+message LeaderboardEntryProto {
+  int32 rank = 1;
+  string scitizen_id = 2;
+  double score = 3;
+  int32 badge_count = 4;
+  int32 campaign_count = 5;
+}
+
+message GetLeaderboardRequest {
+  optional string campaign_id = 1;
+  optional string time_period = 2;
+  int32 limit = 3;
+  int32 offset = 4;
+}
+
+message GetLeaderboardResponse {
+  repeated LeaderboardEntryProto entries = 1;
+  int32 total = 2;
+  optional LeaderboardEntryProto requester = 3;
 }
 
 // Notification service messages

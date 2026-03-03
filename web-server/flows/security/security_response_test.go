@@ -37,7 +37,7 @@ func setupSecurityResponseTest(t *testing.T) (*SecurityResponseFlow, *pgxpool.Po
 	}
 
 	ctx := context.Background()
-	pool.Exec(ctx, "TRUNCATE devices, readings, scores, badges, sweepstakes_entries, device_campaigns, campaigns CASCADE")
+	pool.Exec(ctx, "TRUNCATE reading_values, devices, readings, scores, badges, sweepstakes_entries, device_campaigns, campaigns CASCADE")
 
 	dRepo := devicerepo.NewRepository(pool)
 	rRepo := readingrepo.NewRepository(pool)

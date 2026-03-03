@@ -38,3 +38,19 @@ type Score struct {
 	Total       float64
 	UpdatedAt   time.Time
 }
+
+// LeaderboardEntry is a single row in the leaderboard.
+type LeaderboardEntry struct {
+	Rank          int
+	ScitizenID    string
+	Score         float64
+	BadgeCount    int
+	CampaignCount int
+}
+
+// LeaderboardResult holds the full leaderboard response.
+type LeaderboardResult struct {
+	Entries   []LeaderboardEntry
+	Total     int
+	Requester *LeaderboardEntry
+}

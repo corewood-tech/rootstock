@@ -15,6 +15,7 @@ import (
 //go:embed policies/authz.rego
 var basePolicy string
 
+// evalReq wraps an authorization evaluation request for the channel-based repo.
 type evalReq struct {
 	ctx   context.Context
 	input AuthzInput

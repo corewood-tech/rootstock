@@ -117,9 +117,13 @@ test.describe('researcher campaign detail', () => {
 
     // Dashboard section should be visible for non-draft campaigns
     await expect(page.getByRole('heading', { name: 'Dashboard' })).toBeVisible({ timeout: 10_000 });
-    await expect(page.locator('.stat-card')).toHaveCount(2);
     await expect(page.getByText('Accepted Readings')).toBeVisible();
     await expect(page.getByText('Quarantined Readings')).toBeVisible();
+    // Enrollment funnel adds 3 more stat-cards (Enrolled, Active, Contributing)
+    await expect(page.getByRole('heading', { name: 'Enrollment Funnel' })).toBeVisible();
+    await expect(page.getByText('Enrolled')).toBeVisible();
+    await expect(page.getByText('Active')).toBeVisible();
+    await expect(page.getByText('Contributing')).toBeVisible();
   });
 
   test('back link navigates to campaign list', async ({ page }) => {
