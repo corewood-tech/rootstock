@@ -1,4 +1,4 @@
-FROM golang:1.25rc2-alpine
+FROM golang:1.25-alpine
 
 RUN go install github.com/air-verse/air@latest && \
     go install google.golang.org/protobuf/cmd/protoc-gen-go@latest && \
